@@ -220,6 +220,9 @@ DROP TABLE IF EXISTS public.profile_writing CASCADE;
 DROP TABLE IF EXISTS public.public_profile CASCADE;
 DROP TABLE IF EXISTS public.tenant_settings CASCADE;
 DROP TABLE IF EXISTS public.user_profile CASCADE;
+-- Platform tenant billing (billing row references the plan and the organization)
+DROP TABLE IF EXISTS public.tenant_product_billing CASCADE;
+DROP TABLE IF EXISTS public.platform_billing_plan CASCADE;
 DROP TABLE IF EXISTS public.tenant_organization CASCADE;
 DROP TABLE IF EXISTS public.databasechangeloglock CASCADE;
 DROP TABLE IF EXISTS public.databasechangelog CASCADE;
@@ -929,6 +932,20 @@ CREATE SEQUENCE IF NOT EXISTS public.gas_station_daily_metrics_id_seq
     CACHE 1;
 
 CREATE SEQUENCE IF NOT EXISTS public.gas_station_recommendation_id_seq
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    START WITH 1
+    CACHE 1;
+
+CREATE SEQUENCE IF NOT EXISTS public.platform_billing_plan_id_seq
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    START WITH 1
+    CACHE 1;
+
+CREATE SEQUENCE IF NOT EXISTS public.tenant_product_billing_id_seq
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -3072,6 +3089,87 @@ COMMENT ON COLUMN public.tenant_organization.site_type IS 'Product archetype for
 COMMENT ON COLUMN public.tenant_organization.site_template_version IS 'Optional theme/template variant within a site_type.';
 COMMENT ON COLUMN public.tenant_organization.stripe_subscription_id IS 'Stripe subscription id for the tenant platform subscription (gas station per-location billing).';
 
+-- Platform fee catalog and one billing row per tenant per product.
+-- Per-table id sequences (this schema drops sequence_generator). No ALTER scripts.
+
+CREATE TABLE public.platform_billing_plan (
+    id bigint DEFAULT nextval('public.platform_billing_plan_id_seq'::regclass) NOT NULL,
+    tenant_id character varying(255),
+    product character varying(32) NOT NULL,
+    name character varying(255) NOT NULL,
+    code character varying(64) NOT NULL,
+    billing_mode character varying(20) NOT NULL,
+    billing_interval character varying(20),
+    list_price_usd numeric(21,2) NOT NULL,
+    published boolean DEFAULT false NOT NULL,
+    feature_summary character varying(2000),
+    graduated_tiers_json text,
+    stripe_product_id character varying(255),
+    stripe_price_id character varying(255),
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT platform_billing_plan_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_platform_billing_plan__product_code UNIQUE (product, code),
+    CONSTRAINT chk_platform_billing_plan__product CHECK ((product IN ('EVENT_SITE', 'GAS_STATION'))),
+    CONSTRAINT chk_platform_billing_plan__billing_mode CHECK ((billing_mode IN ('RECURRING', 'ONE_TIME', 'BOTH'))),
+    CONSTRAINT chk_platform_billing_plan__interval CHECK (((billing_interval IS NULL) OR (billing_interval IN ('MONTH', 'YEAR')))),
+    CONSTRAINT chk_platform_billing_plan__price CHECK ((list_price_usd >= (0)::numeric))
+);
+
+COMMENT ON TABLE public.platform_billing_plan IS 'Catalog of platform fees a tenant can be assigned. Distinct from ticket prices and membership plans.';
+COMMENT ON COLUMN public.platform_billing_plan.tenant_id IS 'Null for the shared catalog. Reserved so a future tenant-private plan can be stored without a new table.';
+COMMENT ON COLUMN public.platform_billing_plan.graduated_tiers_json IS 'Optional gas-station tiers, for example [{"upTo":3,"unitAmountUsd":199},{"upTo":10,"unitAmountUsd":149},{"upTo":null,"unitAmountUsd":99}].';
+
+CREATE TABLE public.tenant_product_billing (
+    id bigint DEFAULT nextval('public.tenant_product_billing_id_seq'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    product character varying(32) NOT NULL,
+    charge_enabled boolean DEFAULT false NOT NULL,
+    status character varying(32) DEFAULT 'COMPLIMENTARY' NOT NULL,
+    platform_plan_id bigint,
+    custom_fee_usd numeric(21,2),
+    billing_mode character varying(20),
+    review_by_date date,
+    grace_days integer DEFAULT 14 NOT NULL,
+    grace_ends_at timestamp without time zone,
+    notes character varying(2000),
+    stripe_price_id character varying(255),
+    stripe_subscription_id character varying(255),
+    stripe_payment_id character varying(255),
+    paid_through_date date,
+    location_quantity integer,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT tenant_product_billing_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_tenant_product_billing__tenant_product UNIQUE (tenant_id, product),
+    CONSTRAINT chk_tenant_product_billing__product CHECK ((product IN ('EVENT_SITE', 'GAS_STATION'))),
+    CONSTRAINT chk_tenant_product_billing__status CHECK ((status IN ('COMPLIMENTARY', 'PAYMENT_DUE', 'ACTIVE', 'PAST_DUE', 'LOCKED'))),
+    CONSTRAINT chk_tenant_product_billing__billing_mode CHECK (((billing_mode IS NULL) OR (billing_mode IN ('RECURRING', 'ONE_TIME')))),
+    CONSTRAINT chk_tenant_product_billing__grace CHECK ((grace_days >= 0)),
+    CONSTRAINT chk_tenant_product_billing__custom_fee CHECK (((custom_fee_usd IS NULL) OR (custom_fee_usd >= (0)::numeric))),
+    CONSTRAINT fk_tenant_product_billing__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
+    CONSTRAINT fk_tenant_product_billing__plan_id FOREIGN KEY (platform_plan_id) REFERENCES public.platform_billing_plan(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_tenant_product_billing_tenant ON public.tenant_product_billing (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_tenant_product_billing_status ON public.tenant_product_billing (status);
+
+COMMENT ON TABLE public.tenant_product_billing IS 'One platform-fee row per tenant per product (event site or gas station). The charge switch defaults off. A review-by date does not start a charge.';
+COMMENT ON COLUMN public.tenant_product_billing.charge_enabled IS 'Super-admin switch. Off means complimentary and Stripe is not called.';
+COMMENT ON COLUMN public.tenant_product_billing.custom_fee_usd IS 'Negotiated amount. When set, it replaces the catalog price and gas-station quantity pricing.';
+
+INSERT INTO public.platform_billing_plan (product, name, code, billing_mode, billing_interval, list_price_usd, published, feature_summary, graduated_tiers_json)
+SELECT 'EVENT_SITE', 'Event site Starter', 'event-starter', 'BOTH', 'MONTH', 49.00, true, 'Placeholder monthly catalog price for a small event site.', NULL
+WHERE NOT EXISTS (SELECT 1 FROM public.platform_billing_plan WHERE product = 'EVENT_SITE' AND code = 'event-starter');
+
+INSERT INTO public.platform_billing_plan (product, name, code, billing_mode, billing_interval, list_price_usd, published, feature_summary, graduated_tiers_json)
+SELECT 'EVENT_SITE', 'Event site Standard', 'event-standard', 'BOTH', 'MONTH', 149.00, true, 'Placeholder monthly catalog price for a standard event site.', NULL
+WHERE NOT EXISTS (SELECT 1 FROM public.platform_billing_plan WHERE product = 'EVENT_SITE' AND code = 'event-standard');
+
+INSERT INTO public.platform_billing_plan (product, name, code, billing_mode, billing_interval, list_price_usd, published, feature_summary, graduated_tiers_json)
+SELECT 'GAS_STATION', 'Gas station locations', 'gas-graduated', 'RECURRING', 'MONTH', 199.00, true, 'Placeholder graduated per-location price. A custom flat fee replaces this quantity.', '[{"upTo":3,"unitAmountUsd":199.00},{"upTo":10,"unitAmountUsd":149.00},{"upTo":null,"unitAmountUsd":99.00}]'
+WHERE NOT EXISTS (SELECT 1 FROM public.platform_billing_plan WHERE product = 'GAS_STATION' AND code = 'gas-graduated');
+
 
 --
 -- TOC entry 231 (class 1259 OID 82809)
@@ -3493,6 +3591,7 @@ COMMENT ON TABLE public.gas_station_location IS 'Physical store locations owned 
 COMMENT ON COLUMN public.gas_station_location.region IS 'Free-text region/district label for chain grouping and rollups (e.g. "North Bay"). Promote to a dedicated table only if per-region settings are ever needed.';
 COMMENT ON COLUMN public.gas_station_location.latitude IS 'Geo latitude for competitor-proximity, weather and local-event signals used by the AI engine.';
 COMMENT ON COLUMN public.gas_station_location.longitude IS 'Geo longitude — see latitude.';
+COMMENT ON COLUMN public.gas_station_location.included_in_subscription IS 'When true and the location is active, it counts toward the gas-station platform subscription quantity. A custom flat fee ignores this count.';
 
 -- =====================================================================
 -- 5. gas_station_integration — registry of connected systems per station
@@ -7278,6 +7377,18 @@ SELECT pg_catalog.setval(
 SELECT pg_catalog.setval(
     'public.gas_station_recommendation_id_seq',
     GREATEST(COALESCE((SELECT MAX(id) FROM public.gas_station_recommendation), 1), 1),
+    true
+);
+-- platform_billing_plan
+SELECT pg_catalog.setval(
+    'public.platform_billing_plan_id_seq',
+    GREATEST(COALESCE((SELECT MAX(id) FROM public.platform_billing_plan), 1), 1),
+    true
+);
+-- tenant_product_billing
+SELECT pg_catalog.setval(
+    'public.tenant_product_billing_id_seq',
+    GREATEST(COALESCE((SELECT MAX(id) FROM public.tenant_product_billing), 1), 1),
     true
 );
 -- tenant_email_addresses
