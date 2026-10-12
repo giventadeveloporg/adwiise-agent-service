@@ -11,4 +11,5 @@ public enum SiteType {
     PERSONAL_PROFILE,
     HYBRID,
     GAS_STATION,
+    LIQUOR_STORE,
 }

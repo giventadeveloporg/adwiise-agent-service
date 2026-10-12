@@ -312,6 +312,24 @@ public class TenantSettings implements Serializable {
     @Column(name = "gas_daily_brief_hour_local")
     private Integer gasDailyBriefHourLocal;
 
+    @Column(name = "enable_retail_module")
+    private Boolean enableRetailModule;
+
+    @Size(max = 1024)
+    @Column(name = "retail_ai_engine_base_url", length = 1024)
+    private String retailAiEngineBaseUrl;
+
+    @Size(max = 512)
+    @Column(name = "retail_ai_engine_api_key_ref", length = 512)
+    private String retailAiEngineApiKeyRef;
+
+    @Size(max = 1048)
+    @Column(name = "retail_ai_engine_webhook_token", length = 1048)
+    private String retailAiEngineWebhookToken;
+
+    @Column(name = "retail_daily_brief_hour_local")
+    private Integer retailDailyBriefHourLocal;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -962,6 +980,46 @@ public class TenantSettings implements Serializable {
 
     public void setGasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
         this.gasDailyBriefHourLocal = gasDailyBriefHourLocal;
+    }
+
+    public Boolean getEnableRetailModule() {
+        return this.enableRetailModule;
+    }
+
+    public void setEnableRetailModule(Boolean enableRetailModule) {
+        this.enableRetailModule = enableRetailModule;
+    }
+
+    public String getRetailAiEngineBaseUrl() {
+        return this.retailAiEngineBaseUrl;
+    }
+
+    public void setRetailAiEngineBaseUrl(String retailAiEngineBaseUrl) {
+        this.retailAiEngineBaseUrl = retailAiEngineBaseUrl;
+    }
+
+    public String getRetailAiEngineApiKeyRef() {
+        return this.retailAiEngineApiKeyRef;
+    }
+
+    public void setRetailAiEngineApiKeyRef(String retailAiEngineApiKeyRef) {
+        this.retailAiEngineApiKeyRef = retailAiEngineApiKeyRef;
+    }
+
+    public String getRetailAiEngineWebhookToken() {
+        return this.retailAiEngineWebhookToken;
+    }
+
+    public void setRetailAiEngineWebhookToken(String retailAiEngineWebhookToken) {
+        this.retailAiEngineWebhookToken = retailAiEngineWebhookToken;
+    }
+
+    public Integer getRetailDailyBriefHourLocal() {
+        return this.retailDailyBriefHourLocal;
+    }
+
+    public void setRetailDailyBriefHourLocal(Integer retailDailyBriefHourLocal) {
+        this.retailDailyBriefHourLocal = retailDailyBriefHourLocal;
     }
 
     public ZonedDateTime getCreatedAt() {

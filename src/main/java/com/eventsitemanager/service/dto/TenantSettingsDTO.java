@@ -272,6 +272,19 @@ public class TenantSettingsDTO implements Serializable {
 
     private Integer gasDailyBriefHourLocal;
 
+    private Boolean enableRetailModule;
+
+    @Size(max = 1024)
+    private String retailAiEngineBaseUrl;
+
+    @Size(max = 512)
+    private String retailAiEngineApiKeyRef;
+
+    @Size(max = 1048)
+    private String retailAiEngineWebhookToken;
+
+    private Integer retailDailyBriefHourLocal;
+
     @Schema(
         description = "Parsed default hero image URLs (GET only; computed from defaultHeroImageUrlsJson)",
         accessMode = Schema.AccessMode.READ_ONLY
@@ -975,6 +988,46 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setGasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
         this.gasDailyBriefHourLocal = gasDailyBriefHourLocal;
+    }
+
+    public Boolean getEnableRetailModule() {
+        return enableRetailModule;
+    }
+
+    public void setEnableRetailModule(Boolean enableRetailModule) {
+        this.enableRetailModule = enableRetailModule;
+    }
+
+    public String getRetailAiEngineBaseUrl() {
+        return retailAiEngineBaseUrl;
+    }
+
+    public void setRetailAiEngineBaseUrl(String retailAiEngineBaseUrl) {
+        this.retailAiEngineBaseUrl = retailAiEngineBaseUrl;
+    }
+
+    public String getRetailAiEngineApiKeyRef() {
+        return retailAiEngineApiKeyRef;
+    }
+
+    public void setRetailAiEngineApiKeyRef(String retailAiEngineApiKeyRef) {
+        this.retailAiEngineApiKeyRef = retailAiEngineApiKeyRef;
+    }
+
+    public String getRetailAiEngineWebhookToken() {
+        return retailAiEngineWebhookToken;
+    }
+
+    public void setRetailAiEngineWebhookToken(String retailAiEngineWebhookToken) {
+        this.retailAiEngineWebhookToken = retailAiEngineWebhookToken;
+    }
+
+    public Integer getRetailDailyBriefHourLocal() {
+        return retailDailyBriefHourLocal;
+    }
+
+    public void setRetailDailyBriefHourLocal(Integer retailDailyBriefHourLocal) {
+        this.retailDailyBriefHourLocal = retailDailyBriefHourLocal;
     }
 
     public List<String> getDefaultHeroImageUrls() {
