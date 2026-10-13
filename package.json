@@ -2,7 +2,7 @@
   "name": "event-site-manager-service",
   "version": "0.0.0",
   "private": true,
-  "description": "Event Site Manager Service backend",
+  "description": "Kluvo Platform Service backend",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {

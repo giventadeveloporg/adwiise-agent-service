@@ -1,6 +1,6 @@
 {
-  "name": "Event Site Manager Service",
-  "description": "JHipster Spring Boot application for Event Site Manager Service",
+  "name": "Kluvo Platform Service",
+  "description": "Kluvo platform API service",
   "image": "heroku/java",
   "addons": [
     {

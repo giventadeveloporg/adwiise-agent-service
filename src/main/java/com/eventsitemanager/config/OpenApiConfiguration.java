@@ -17,7 +17,7 @@ public class OpenApiConfiguration {
         return new OpenAPI()
             .info(
                 new Info()
-                    .title("Event Site Manager Service API")
+                    .title("Kluvo Platform Service API")
                     .description("API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks")
                     .version("1.0")
                     .license(new License().name("Unlicensed"))

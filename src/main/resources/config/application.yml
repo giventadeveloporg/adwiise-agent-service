@@ -204,8 +204,8 @@ jhipster:
   api-docs:
     default-include-pattern: /api/**
     management-include-pattern: /management/**
-    title: Event Site Manager Service API
-    description: Event Site Manager Service API documentation
+    title: Kluvo Platform Service API
+    description: Kluvo Platform Service API documentation
     version: 0.0.1
     terms-of-service-url:
     contact-name:
