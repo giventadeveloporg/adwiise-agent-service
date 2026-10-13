@@ -4,7 +4,7 @@ globs: src/main/java/**/domain/*.java, src/main/java/**/SequenceSynchronization*
 alwaysApply: false
 ---
 
-# Per-Table Sequence Alignment (event-site-manager-service)
+# Per-Table Sequence Alignment (kluvo-ai-service)
 
 This service is the **active REST API**. Each application table uses `public.{table_name}_id_seq` (shared `sequence_generator` removed).
 

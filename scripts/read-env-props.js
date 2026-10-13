@@ -3,7 +3,7 @@
  * Reads Java-style .properties from infrastructure_deployment/deployment-scripts/production-vpc/environments
  * and returns them as a plain object. Use for deploy scripts or syncing to GitHub.
  *
- * Paths are relative to this project (event-site-manager-service). Manual deployment scripts
+ * Paths are relative to this project (kluvo-ai-service). Manual deployment scripts
  * and environment configs live under infrastructure_deployment/.
  *
  * Usage:
@@ -35,7 +35,7 @@ const ENVS_DIR = path.join(
 const DEFAULT_ENV = 'dev';
 const DEFAULT_PROPS_PATH = path.join(
   ENVS_DIR,
-  'event-site-manager-dev.properties'
+  'kluvo-ai-dev.properties'
 );
 
 /**

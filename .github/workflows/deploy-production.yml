@@ -27,10 +27,10 @@ env:
   # S3/SES runtime region injected into the container (matches application.yml default)
   AWS_S3_REGION: ${{ vars.AWS_REGION || 'us-east-2' }}
   # Set ECR_REPOSITORY_PROD in GitHub environment variables to override the default repo name
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_PROD || 'event-site-manager-prod' }}
-  ECS_CLUSTER: event-site-manager-prod-cluster
-  ECS_SERVICE: event-site-manager-prod-backend-service
-  ECS_TASK_DEFINITION: event-site-manager-prod-backend
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_PROD || 'kluvo-ai-prod' }}
+  ECS_CLUSTER: kluvo-ai-prod-cluster
+  ECS_SERVICE: kluvo-ai-prod-backend-service
+  ECS_TASK_DEFINITION: kluvo-ai-prod-backend
   CONTAINER_NAME: spring-boot-backend
 
 jobs:

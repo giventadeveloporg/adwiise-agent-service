@@ -2,11 +2,11 @@
 -- This script ensures proper user and database setup
 
 -- Create the database if it doesn't exist
-SELECT 'CREATE DATABASE event_site_manager_db'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'event_site_manager_db')\gexec
+SELECT 'CREATE DATABASE kluvo_ai_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'kluvo_ai_db')\gexec
 
 -- Connect to the new database
-\c event_site_manager_db;
+\c kluvo_ai_db;
 
 -- Create the application user if it doesn't exist
 DO $$
@@ -18,7 +18,7 @@ END
 $$;
 
 -- Grant necessary privileges to the application user
-GRANT ALL PRIVILEGES ON DATABASE event_site_manager_db TO event_site_app;
+GRANT ALL PRIVILEGES ON DATABASE kluvo_ai_db TO event_site_app;
 GRANT ALL PRIVILEGES ON SCHEMA public TO event_site_app;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO event_site_app;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO event_site_app;
@@ -42,7 +42,7 @@ END
 $$;
 
 -- Grant database privileges to admin user
-GRANT ALL PRIVILEGES ON DATABASE event_site_manager_db TO event_site_admin;
+GRANT ALL PRIVILEGES ON DATABASE kluvo_ai_db TO event_site_admin;
 
 -- Output success message
 SELECT 'PostgreSQL initialization completed successfully' AS status;

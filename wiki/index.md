@@ -1,4 +1,4 @@
-# Wiki Index — event-site-manager-service
+# Wiki Index — kluvo-ai-service
 
 > Auto-generated on 2026-04-15. LLM maintains this file.
 

@@ -370,7 +370,7 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
         JwtClaimsSet claims = JwtClaimsSet
             .builder()
-            .issuer("event-site-manager-service")
+            .issuer("kluvo-ai-service")
             .issuedAt(now)
             .expiresAt(expiresAt)
             .subject(clerkUserId)

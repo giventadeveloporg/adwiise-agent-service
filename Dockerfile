@@ -1,7 +1,7 @@
 FROM eclipse-temurin:17-jre
 
 # Copy JAR file
-COPY target/event-site-manager-service-0.0.1-SNAPSHOT.jar /app.jar
+COPY target/kluvo-ai-service-0.0.1-SNAPSHOT.jar /app.jar
 
 # Expose the application port.
 # The ECS task definition must set SERVER_PORT (e.g. 80) and SPRING_PROFILES_ACTIVE

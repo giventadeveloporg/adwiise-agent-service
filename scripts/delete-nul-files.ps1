@@ -1,5 +1,5 @@
 # Standalone Script to Scan and Delete Files with Reserved Device Names (NUL, CON, PRN, etc.)
-# Project: event-site-manager-service
+# Project: kluvo-ai-service
 # Purpose: Automatically find and remove problematic files created by corrupted scripts
 
 param(

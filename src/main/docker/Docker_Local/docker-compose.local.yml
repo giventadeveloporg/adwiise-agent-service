@@ -22,7 +22,7 @@ services:
       SPRING_LIQUIBASE_ENABLED: false
 
       # Database Configuration - Use container name for Docker networking
-      RDS_ENDPOINT: ${RDS_ENDPOINT:-event_site_manager_db-postgresql-1}
+      RDS_ENDPOINT: ${RDS_ENDPOINT:-kluvo_ai_db-postgresql-1}
       # Note: These should be set in .env file, but providing defaults for local dev
       DB_NAME: ${DB_NAME:-postgres}
       DB_USERNAME: ${DB_USERNAME:-postgres}
@@ -110,9 +110,8 @@ networks:
   # Connect to PostgreSQL network (external - created by postgres docker-compose)
   postgres-network:
     external: true
-    name: event_site_manager_db_default
+    name: kluvo_ai_db_default
   # Connect to batch-jobs network (external - created by batch-jobs docker-compose)
   batch-jobs-network:
     external: true
-    name: event-site-manager-batch-jobs_batch-jobs-network
-
+    name: kluvo-ai-batch-jobs_batch-jobs-network

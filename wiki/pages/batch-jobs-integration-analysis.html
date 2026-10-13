@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Batch Jobs Integration Analysis — event-site-manager-service</title>
+    <title>Batch Jobs Integration Analysis — kluvo-ai-service</title>
     <style>
       :root {
         --code-bg: #e8f4f8;
@@ -210,17 +210,16 @@
     <header class="doc-header">
       <h1>Batch Jobs Integration Analysis</h1>
       <p>
-        How <strong>event-site-manager-service</strong> (main backend, port 8080) integrates with
-        <strong>event-site-manager-batch-jobs</strong> (batch microservice, port 8081, context path <code>/batch-jobs</code>). Generated
-        from source analysis of both repositories.
+        How <strong>kluvo-ai-service</strong> (main backend, port 8080) integrates with <strong>kluvo-ai-batch-jobs</strong> (batch
+        microservice, port 8081, context path <code>/batch-jobs</code>). Generated from source analysis of both repositories.
       </p>
     </header>
 
     <main>
       <p class="meta">
         Repositories:
-        <code class="code-highlight">F:\project_workspace\event-site-manager-service</code> ·
-        <code class="code-highlight">F:\project_workspace\event-site-manager-batch-jobs</code> · Last reviewed: June 2026
+        <code class="code-highlight">F:\project_workspace\kluvo-ai-service</code> ·
+        <code class="code-highlight">F:\project_workspace\kluvo-ai-batch-jobs</code> · Last reviewed: June 2026
       </p>
 
       <div class="section-intro">
@@ -262,7 +261,7 @@
 
       <pre>
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  event-site-manager-service (:8080)                                         │
+│  kluvo-ai-service (:8080)                                         │
 │  ┌──────────────────┐   ┌─────────────────────┐   ┌──────────────────────┐  │
 │  │ REST controllers │ → │ BatchJob* services  │ → │ WebClient (JWT)      │  │
 │  │ /api/cron        │   │ Promotion/Manual/   │   │ batchJobsWebClient   │  │
@@ -271,7 +270,7 @@
 └──────────────────────────────────────────────────────────────│──────────────┘
                                                                ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  event-site-manager-batch-jobs (:8081, context /batch-jobs)                 │
+│  kluvo-ai-batch-jobs (:8081, context /batch-jobs)                 │
 │  BatchJobController + BatchJobMonitoringController  →  Spring Batch / @Async │
 │  AWS SES · S3 · Stripe · shared PostgreSQL (batch_job_execution_log, …)     │
 │  BackendApiService ──JWT──► main service (:8080) for PATCH/GET callbacks    │
@@ -693,7 +692,7 @@ Stripe fees job may PATCH ticket transactions on main via batch-jobs BackendApiS
         <div class="section-header">Local Docker</div>
         <p><code class="script-name">src/main/docker/Docker_Local/docker-compose.local.yml</code> sets:</p>
         <pre><code>BATCH_JOBS_SERVICE_URL=http://batch-jobs:8081/batch-jobs</code></pre>
-        <p>Main app joins external network <code>event-site-manager-batch-jobs_batch-jobs-network</code>.</p>
+        <p>Main app joins external network <code>kluvo-ai-batch-jobs_batch-jobs-network</code>.</p>
       </div>
 
       <h2>7. Dependencies</h2>
@@ -708,17 +707,17 @@ Stripe fees job may PATCH ticket transactions on main via batch-jobs BackendApiS
         </thead>
         <tbody>
           <tr>
-            <td>event-site-manager-service</td>
+            <td>kluvo-ai-service</td>
             <td><code>spring-boot-starter-webflux</code></td>
             <td class="badge-yes">Yes — WebClient</td>
           </tr>
           <tr>
-            <td>event-site-manager-service</td>
+            <td>kluvo-ai-service</td>
             <td><code>software.amazon.awssdk:batch</code></td>
             <td class="badge-no">No — legacy</td>
           </tr>
           <tr>
-            <td>event-site-manager-batch-jobs</td>
+            <td>kluvo-ai-batch-jobs</td>
             <td><code>spring-boot-starter-batch</code>, web, PostgreSQL, AWS SES/S3, Stripe</td>
             <td class="badge-yes">Yes — job runtime</td>
           </tr>
@@ -752,7 +751,7 @@ Stripe fees job may PATCH ticket transactions on main via batch-jobs BackendApiS
       <footer>
         Related: <code>wiki/pages/batch-job-admin-integration.md</code> · Main config:
         <code>src/main/resources/config/application.yml</code> (batch-jobs.service) · Batch controller:
-        <code>event-site-manager-batch-jobs/.../BatchJobController.java</code>
+        <code>kluvo-ai-batch-jobs/.../BatchJobController.java</code>
       </footer>
     </main>
 

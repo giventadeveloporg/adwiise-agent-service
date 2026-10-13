@@ -1,5 +1,5 @@
 {
-  "name": "event-site-manager-service",
+  "name": "kluvo-ai-service",
   "version": "0.0.0",
   "private": true,
   "description": "Kluvo Platform Service backend",

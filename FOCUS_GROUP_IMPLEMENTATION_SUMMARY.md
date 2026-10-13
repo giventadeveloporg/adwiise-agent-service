@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully implemented a complete Focus Group backend system for the event-site-manager-service Spring Boot application following JHipster 8.0.0 patterns and conventions.
+Successfully implemented a complete Focus Group backend system for the kluvo-ai-service Spring Boot application following JHipster 8.0.0 patterns and conventions.
 
 ## Components Created
 

@@ -48,13 +48,13 @@ spring:
         - USER
   task:
     execution:
-      thread-name-prefix: event-site-manager-service-task-
+      thread-name-prefix: kluvo-ai-service-task-
       pool:
         core-size: 2
         max-size: 50
         queue-capacity: 10000
     scheduling:
-      thread-name-prefix: event-site-manager-service-scheduling-
+      thread-name-prefix: kluvo-ai-service-scheduling-
       pool:
         size: 2
   output:

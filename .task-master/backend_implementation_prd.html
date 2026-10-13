@@ -186,8 +186,8 @@
       <h1>Backend Implementation PRD: QR Scanner & Enhanced Reporting</h1>
       <p><strong>Generated:</strong> January 2026</p>
       <p><strong>Frontend Project:</strong> E:\project_workspace\mosc-temp</p>
-      <p><strong>Backend Project:</strong> E:\project_workspace\event-site-manager-service</p>
-      <p><strong>Batch Job Project:</strong> E:\project_workspace\event-site-manager-batch-jobs</p>
+      <p><strong>Backend Project:</strong> E:\project_workspace\kluvo-ai-service</p>
+      <p><strong>Batch Job Project:</strong> E:\project_workspace\kluvo-ai-batch-jobs</p>
       <p><strong>Source:</strong> .task-master/tasks/tasks.json</p>
 
       <div class="summary-box">
@@ -214,14 +214,14 @@
           <li>Proxy handlers inject <code>tenantId.equals</code> automatically</li>
           <li>Uses JWT authentication via <code>fetchWithJwtRetry</code></li>
         </ul>
-        <p><strong>Backend:</strong> Spring Boot REST API (E:\project_workspace\event-site-manager-service)</p>
+        <p><strong>Backend:</strong> Spring Boot REST API (E:\project_workspace\kluvo-ai-service)</p>
         <ul>
           <li>Spring Data REST for CRUD operations</li>
           <li>JHipster-style criteria query filters</li>
           <li>JWT authentication required</li>
           <li>Multi-tenant architecture (tenant-scoped data)</li>
         </ul>
-        <p><strong>Batch Jobs:</strong> Spring Batch (E:\project_workspace\event-site-manager-batch-jobs)</p>
+        <p><strong>Batch Jobs:</strong> Spring Batch (E:\project_workspace\kluvo-ai-batch-jobs)</p>
         <ul>
           <li>Handles scheduled tasks and data processing</li>
           <li>May be used for analytics aggregation (optional)</li>
@@ -867,24 +867,23 @@
         <p><strong>Copy this prompt and provide it to the backend team:</strong></p>
         <div class="code-block" style="white-space: pre-wrap; background: #f8f9fa; color: #333; border: 1px solid #ddd">
           We need backend support for QR Scanner and Enhanced Reporting features for our event ticketing system. **PROJECT CONTEXT:** -
-          Frontend: Next.js 15+ (E:\project_workspace\mosc-temp) - Backend: Spring Boot REST API
-          (E:\project_workspace\event-site-manager-service) - Database: PostgreSQL (schema:
-          code_html_template/SQLS/Current_Sqls/Latest_Schema_Post__Blob_Claude_12.sql) **REQUIREMENTS:** 1. **VERIFY EXISTING API FILTER
-          SUPPORT** (Required): - Test if GET /api/event-ticket-transactions supports: * checkInStatus.equals filter (on check_in_status
-          VARCHAR field) * checkInTime.greaterThanOrEqual filter (on check_in_time TIMESTAMP field) * checkInTime.lessThanOrEqual filter (on
-          check_in_time TIMESTAMP field) - Test if GET /api/event-ticket-transactions/statistics/{eventId} supports: * startDate query
-          parameter (ISO 8601: YYYY-MM-DD) * endDate query parameter (ISO 8601: YYYY-MM-DD) - Document test results and share with frontend
-          team 2. **ENSURE CHECK-IN ENDPOINT WORKS** (Required): - Verify PATCH /api/event-ticket-transactions/{id} accepts: * checkInStatus
-          field (set to 'CHECKED_IN') * checkInTime field (TIMESTAMP) * numberOfGuestsCheckedIn field (INTEGER) - Add validation to prevent
-          duplicate check-ins - Add validation to prevent check-in of REFUNDED/CANCELLED transactions 3. **OPTIONAL PERFORMANCE ENDPOINTS**
-          (Recommended): - Add GET /api/event-ticket-transactions/check-in-analytics/{eventId} endpoint * Accepts startDate and endDate
-          query parameters * Returns aggregated check-in statistics (see PRD Section 3.3) - Add GET
-          /api/event-ticket-transactions/sales-analytics/{eventId} endpoint * Accepts startDate and endDate query parameters * Returns
-          aggregated sales statistics (see PRD Section 3.3) 4. **DATABASE INDEXES** (Optional): - Add indexes for check-in queries (see PRD
-          Section 9.1) **SECURITY REQUIREMENTS:** - All endpoints must filter by tenantId.equals (multi-tenant security) - All endpoints
-          require JWT authentication - Validate tenant_id on all operations **TESTING:** - Run verification tests (see PRD Section 7.1) -
-          Document results and share with frontend team **REFERENCE DOCUMENTS:** - Full PRD:
-          documentation/event_ticketing/backend_implementation_prd.html - Database Schema:
+          Frontend: Next.js 15+ (E:\project_workspace\mosc-temp) - Backend: Spring Boot REST API (E:\project_workspace\kluvo-ai-service) -
+          Database: PostgreSQL (schema: code_html_template/SQLS/Current_Sqls/Latest_Schema_Post__Blob_Claude_12.sql) **REQUIREMENTS:** 1.
+          **VERIFY EXISTING API FILTER SUPPORT** (Required): - Test if GET /api/event-ticket-transactions supports: * checkInStatus.equals
+          filter (on check_in_status VARCHAR field) * checkInTime.greaterThanOrEqual filter (on check_in_time TIMESTAMP field) *
+          checkInTime.lessThanOrEqual filter (on check_in_time TIMESTAMP field) - Test if GET
+          /api/event-ticket-transactions/statistics/{eventId} supports: * startDate query parameter (ISO 8601: YYYY-MM-DD) * endDate query
+          parameter (ISO 8601: YYYY-MM-DD) - Document test results and share with frontend team 2. **ENSURE CHECK-IN ENDPOINT WORKS**
+          (Required): - Verify PATCH /api/event-ticket-transactions/{id} accepts: * checkInStatus field (set to 'CHECKED_IN') * checkInTime
+          field (TIMESTAMP) * numberOfGuestsCheckedIn field (INTEGER) - Add validation to prevent duplicate check-ins - Add validation to
+          prevent check-in of REFUNDED/CANCELLED transactions 3. **OPTIONAL PERFORMANCE ENDPOINTS** (Recommended): - Add GET
+          /api/event-ticket-transactions/check-in-analytics/{eventId} endpoint * Accepts startDate and endDate query parameters * Returns
+          aggregated check-in statistics (see PRD Section 3.3) - Add GET /api/event-ticket-transactions/sales-analytics/{eventId} endpoint *
+          Accepts startDate and endDate query parameters * Returns aggregated sales statistics (see PRD Section 3.3) 4. **DATABASE INDEXES**
+          (Optional): - Add indexes for check-in queries (see PRD Section 9.1) **SECURITY REQUIREMENTS:** - All endpoints must filter by
+          tenantId.equals (multi-tenant security) - All endpoints require JWT authentication - Validate tenant_id on all operations
+          **TESTING:** - Run verification tests (see PRD Section 7.1) - Document results and share with frontend team **REFERENCE
+          DOCUMENTS:** - Full PRD: documentation/event_ticketing/backend_implementation_prd.html - Database Schema:
           code_html_template/SQLS/Current_Sqls/Latest_Schema_Post__Blob_Claude_12.sql - API Docs:
           documentation/Swagger_API_Docs/api-docs.json **PRIORITY:** - Phase 1 (Verification): HIGH - Required for frontend implementation -
           Phase 2 (Optional Endpoints): MEDIUM - Performance optimization Please review the full PRD document for complete specifications
@@ -968,9 +967,9 @@
       <p style="text-align: center; color: #666; font-size: 14px">
         Generated: January 2026 | Backend Implementation PRD: QR Scanner & Enhanced Reporting
         <br />
-        Frontend: E:\project_workspace\mosc-temp | Backend: E:\project_workspace\event-site-manager-service
+        Frontend: E:\project_workspace\mosc-temp | Backend: E:\project_workspace\kluvo-ai-service
         <br />
-        Batch Jobs: E:\project_workspace\event-site-manager-batch-jobs
+        Batch Jobs: E:\project_workspace\kluvo-ai-batch-jobs
       </p>
     </div>
   </body>

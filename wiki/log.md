@@ -1,4 +1,4 @@
-# Operation Log — event-site-manager-service
+# Operation Log — kluvo-ai-service
 
 > Append-only. Each entry prefixed with date and operation type.
 

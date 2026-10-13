@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.eventsitemanager</groupId>
-    <artifactId>event-site-manager-service</artifactId>
+    <artifactId>kluvo-ai-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Kluvo Platform Service</name>
@@ -1000,7 +1000,7 @@
                                 <skipValidateSpec>false</skipValidateSpec>
                                 <configOptions>
                                     <delegatePattern>true</delegatePattern>
-                                    <title>event-site-manager-service</title>
+                                    <title>kluvo-ai-service</title>
                                     <useSpringBoot3>true</useSpringBoot3>
                                 </configOptions>
                             </configuration>

@@ -1,7 +1,7 @@
 # Verification Results for QR Scanner & Enhanced Reporting Features
 
 **Date:** January 2026
-**Backend Project:** E:\project_workspace\event-site-manager-service
+**Backend Project:** E:\project_workspace\kluvo-ai-service
 **Frontend Project:** E:\project_workspace\mosc-temp
 **Source PRD:** `.task-master/backend_implementation_prd.html`
 
@@ -729,7 +729,7 @@ This document (VERIFICATION_RESULTS.md) serves as the comprehensive documentatio
 cd src/main/resources/sqls/migrations
 
 -- Run the migration
-psql -h localhost -U postgres -d event_site_manager_db -f add_check_in_sales_analytics_indexes.sql
+psql -h localhost -U postgres -d kluvo_ai_db -f add_check_in_sales_analytics_indexes.sql
 ```
 
 Or include it in your database migration process.

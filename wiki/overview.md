@@ -1,4 +1,4 @@
-# Overview — event-site-manager-service
+# Overview — kluvo-ai-service
 
 > Evolving synthesis maintained by the LLM. Updated as new sources are ingested.
 
