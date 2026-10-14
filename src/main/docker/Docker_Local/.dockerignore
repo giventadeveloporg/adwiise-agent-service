@@ -1,0 +1,5 @@
+# Build context only. Runtime secrets are loaded by compose env_file, not COPY.
+.env
+.env.*
+*.md
+*.ps1

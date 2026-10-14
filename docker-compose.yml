@@ -1,0 +1,60 @@
+name: adwiise-agent-service
+
+services:
+  # Spring Boot Application
+  app:
+    # Secrets stay in src/main/docker/Docker_Local/.env (gitignored).
+    # Do not interpolate ${VAR} here: a repo-root .env is also gitignored and must not
+    # override these container settings. env_file is the only secret source.
+    env_file:
+      - src/main/docker/Docker_Local/.env
+    build:
+      context: src/main/docker/Docker_Local
+      dockerfile: Dockerfile.local
+    container_name: adwiise-agent-service-app
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8080:8080'
+    environment:
+      # Not present in Docker_Local/.env. Literals keep the previous compose defaults
+      # without reading the repo-root .env.
+      SPRING_PROFILES_ACTIVE: local-postgres-cache
+      JAVA_OPTS: -Xmx512m -Xms256m
+      SPRING_LIQUIBASE_ENABLED: 'false'
+      CACHE_TYPE: caffeine
+      POSTGRES_CACHE_TABLE: event_site_app_cache
+      POSTGRES_CACHE_ENABLED: 'true'
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET: dummy-secret-key-for-local-development-only-change-in-production
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET: OTBjY2UxOWE1NjI4YWU4ZmJkZjliNzYwOTBiM2Y3MmJkMzRlZGVhNTE0MDFjNWZkZTM4MDk4MzkxZmEzMDg3NzEzMTk3YjZiYTVhNTAzZmE0NjQ5ODFjMjcyYTIxOTZiMGQ4ZDE5ODIwMTI1Yzk2YjMzNmY4ZDdkM2U4Mzk0MWU=
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS: '86400'
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME: '2592000'
+      JHIPSTER_MAIL_FROM: event-site-manager@local.com
+      JHIPSTER_MAIL_BASE_URL: http://localhost:8080
+    volumes:
+      - ./logs:/var/log/spring-boot-app
+      - ./target:/app/target
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/management/health']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - adwiise-agent-service-network
+      - postgres-network
+      - batch-jobs-network
+
+networks:
+  adwiise-agent-service-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/16
+  # Connect to PostgreSQL network (external - created by postgres docker-compose)
+  postgres-network:
+    external: true
+    name: adwiise_agent_db_default
+  # Connect to batch-jobs network (external - created by batch-jobs docker-compose)
+  batch-jobs-network:
+    external: true
+    name: adwiise-agent-batch-jobs_batch-jobs-network

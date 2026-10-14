@@ -160,6 +160,10 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 1024)
     private String tiktokUrl;
 
+    /** Git repository URL for the project that belongs to this tenant. */
+    @Size(max = 1024)
+    private String repositoryUrl;
+
     private Long homepageCacheVersion;
 
     @Schema(
@@ -686,6 +690,14 @@ public class TenantSettingsDTO implements Serializable {
         this.tiktokUrl = tiktokUrl;
     }
 
+    public String getRepositoryUrl() {
+        return repositoryUrl;
+    }
+
+    public void setRepositoryUrl(String repositoryUrl) {
+        this.repositoryUrl = repositoryUrl;
+    }
+
     public Long getHomepageCacheVersion() {
         return homepageCacheVersion;
     }
@@ -1130,6 +1142,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", linkedinUrl='" + getLinkedinUrl() + "'" +
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", repositoryUrl='" + getRepositoryUrl() + "'" +
                 ", homepageCacheVersion=" + getHomepageCacheVersion() +
                 ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +

@@ -41,6 +41,8 @@ local.properties
 ######################
 # Environment variables
 ######################
+# Local Docker secrets stay in src/main/docker/Docker_Local/.env.
+# Repo-root .env is also local-only. Never commit either file.
 .env
 .env.local
 .env.development
@@ -49,6 +51,8 @@ local.properties
 .env.production.*
 .env.local*
 env-template.txt
+/src/main/docker/Docker_Local/.env
+/src/main/docker/Docker_Local/.env.*
 # External tool builders
 .externalToolBuilders/**
 

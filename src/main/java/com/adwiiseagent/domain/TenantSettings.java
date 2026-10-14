@@ -181,6 +181,11 @@ public class TenantSettings implements Serializable {
     @Column(name = "tiktok_url", length = 1024)
     private String tiktokUrl;
 
+    /** Git repository URL for the project that belongs to this tenant. Null when no dedicated repo exists. */
+    @Size(max = 1024)
+    @Column(name = "repository_url", length = 1024)
+    private String repositoryUrl;
+
     @NotNull
     @Column(name = "homepage_cache_version", nullable = false)
     private Long homepageCacheVersion = 0L;
@@ -1477,6 +1482,19 @@ public class TenantSettings implements Serializable {
         this.googleAdsensePlacementsJson = googleAdsensePlacementsJson;
     }
 
+    public String getRepositoryUrl() {
+        return this.repositoryUrl;
+    }
+
+    public TenantSettings repositoryUrl(String repositoryUrl) {
+        this.setRepositoryUrl(repositoryUrl);
+        return this;
+    }
+
+    public void setRepositoryUrl(String repositoryUrl) {
+        this.repositoryUrl = repositoryUrl;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -1545,6 +1563,7 @@ public class TenantSettings implements Serializable {
                 ", linkedinUrl='" + getLinkedinUrl() + "'" +
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", repositoryUrl='" + getRepositoryUrl() + "'" +
                 ", homepageCacheVersion=" + getHomepageCacheVersion() +
                 ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +

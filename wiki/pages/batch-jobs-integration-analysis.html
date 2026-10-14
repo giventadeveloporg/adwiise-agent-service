@@ -691,7 +691,10 @@ Stripe fees job may PATCH ticket transactions on main via batch-jobs BackendApiS
 
       <div class="section-container parameters">
         <div class="section-header">Local Docker</div>
-        <p><code class="script-name">src/main/docker/Docker_Local/docker-compose.local.yml</code> sets:</p>
+        <p>
+          <code class="script-name">docker-compose.yml</code> (repository root) loads <code>BATCH_JOBS_SERVICE_URL</code> from
+          <code>src/main/docker/Docker_Local/.env</code>. The previous compose default was:
+        </p>
         <pre><code>BATCH_JOBS_SERVICE_URL=http://batch-jobs:8081/batch-jobs</code></pre>
         <p>Main app joins external network <code>adwiise-agent-batch-jobs_batch-jobs-network</code>.</p>
       </div>

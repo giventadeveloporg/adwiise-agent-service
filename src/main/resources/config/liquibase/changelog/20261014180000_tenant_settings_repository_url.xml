@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- One optional git URL per tenant. Not a new table: tenant_settings is already 1:1 with tenant_organization. -->
+    <changeSet id="20261014180000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="repository_url"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            ALTER TABLE public.tenant_settings
+                ADD COLUMN IF NOT EXISTS repository_url character varying(1024);
+
+            COMMENT ON COLUMN public.tenant_settings.repository_url IS
+                'Git repository URL for the project that belongs to this tenant. Empty when the tenant has no dedicated repository. Editable by platform super admin only.';
+        ]]></sql>
+    </changeSet>
+
+    <!-- Super-admin Tenant ID edits must follow child rows. Existing FKs were ON DELETE CASCADE only. -->
+    <changeSet id="20261014180000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT CASE WHEN COUNT(*) &gt; 0 THEN 1 ELSE 0 END
+                FROM pg_constraint con
+                JOIN pg_class rel ON rel.oid = con.conrelid
+                JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+                JOIN pg_class frel ON frel.oid = con.confrelid
+                WHERE con.contype = 'f'
+                  AND nsp.nspname = 'public'
+                  AND frel.relname = 'tenant_organization'
+                  AND pg_get_constraintdef(con.oid) LIKE '%(tenant_id)%'
+                  AND pg_get_constraintdef(con.oid) NOT LIKE '%ON UPDATE CASCADE%'
+            </sqlCheck>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            DO $$
+            DECLARE r record;
+            BEGIN
+                FOR r IN
+                    SELECT con.conname AS conname,
+                           rel.relname AS relname,
+                           pg_get_constraintdef(con.oid) AS def
+                    FROM pg_constraint con
+                    JOIN pg_class rel ON rel.oid = con.conrelid
+                    JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+                    JOIN pg_class frel ON frel.oid = con.confrelid
+                    WHERE con.contype = 'f'
+                      AND nsp.nspname = 'public'
+                      AND frel.relname = 'tenant_organization'
+                      AND pg_get_constraintdef(con.oid) LIKE '%(tenant_id)%'
+                      AND pg_get_constraintdef(con.oid) NOT LIKE '%ON UPDATE CASCADE%'
+                LOOP
+                    EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', r.relname, r.conname);
+                    EXECUTE format(
+                        'ALTER TABLE public.%I ADD CONSTRAINT %I %s',
+                        r.relname,
+                        r.conname,
+                        replace(r.def, 'ON DELETE CASCADE', 'ON UPDATE CASCADE ON DELETE CASCADE')
+                    );
+                END LOOP;
+            END $$;
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>
