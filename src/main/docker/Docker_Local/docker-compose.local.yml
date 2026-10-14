@@ -106,7 +106,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.24.0.0/16
   # Connect to PostgreSQL network (external - created by postgres docker-compose)
   postgres-network:
     external: true
