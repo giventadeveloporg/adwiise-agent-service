@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Kluvo Platform Service API",
+    "title": "AdwiiseAgent Platform Service API",
     "description": "API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks",
     "license": { "name": "Unlicensed" },
     "version": "1.0"

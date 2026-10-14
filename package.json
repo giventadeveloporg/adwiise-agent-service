@@ -2,7 +2,7 @@
   "name": "kluvo-ai-service",
   "version": "0.0.0",
   "private": true,
-  "description": "Kluvo Platform Service backend",
+  "description": "AdwiiseAgent Platform Service backend",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {

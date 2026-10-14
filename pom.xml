@@ -7,8 +7,8 @@
     <artifactId>kluvo-ai-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Kluvo Platform Service</name>
-    <description>Kluvo Platform Service</description>
+    <name>AdwiiseAgent Platform Service</name>
+    <description>AdwiiseAgent Platform Service</description>
 
     <properties>
         <!--

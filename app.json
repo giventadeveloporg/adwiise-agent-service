@@ -1,6 +1,6 @@
 {
-  "name": "Kluvo Platform Service",
-  "description": "Kluvo platform API service",
+  "name": "AdwiiseAgent Platform Service",
+  "description": "AdwiiseAgent platform API service",
   "image": "heroku/java",
   "addons": [
     {
