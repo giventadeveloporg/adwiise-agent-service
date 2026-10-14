@@ -1,5 +1,5 @@
 # Standalone Script to Scan and Delete Files with Reserved Device Names (NUL, CON, PRN, etc.)
-# Project: kluvo-ai-service
+# Project: adwiise-agent-service
 # Purpose: Automatically find and remove problematic files created by corrupted scripts
 
 param(

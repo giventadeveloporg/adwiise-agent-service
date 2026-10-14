@@ -1,5 +1,5 @@
 from pathlib import Path
-root = Path(r"c:/project_workspace/kluvo-ai-service")
+root = Path(r"c:/project_workspace/adwiise-agent-service")
 main = root / "scripts/generate_event_competitions_stack.py"
 part2 = root / "scripts/gen_stack_part2.py"
 text = main.read_text(encoding="utf-8")

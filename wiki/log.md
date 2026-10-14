@@ -1,4 +1,4 @@
-# Operation Log — kluvo-ai-service
+# Operation Log — adwiise-agent-service
 
 > Append-only. Each entry prefixed with date and operation type.
 

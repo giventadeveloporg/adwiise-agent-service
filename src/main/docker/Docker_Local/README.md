@@ -6,7 +6,7 @@ Run the backend from this directory. All compose settings are loaded from **`.en
 
 - Docker Desktop
 - PostgreSQL stack running (`src/main/docker/postgres_docker`)
-- External networks: `kluvo_ai_db_default`, `kluvo-ai-batch-jobs_batch-jobs-network`
+- External networks: `adwiise_agent_db_default`, `adwiise-agent-batch-jobs_batch-jobs-network`
 - Built JAR at repo root: `target/nextjs-template-boot-0.0.1-SNAPSHOT.jar` (run `mvn package -DskipTests` from project root if missing)
 
 ## Configure
@@ -15,7 +15,7 @@ Edit `.env` in this directory (not `src/main/docker/.env`). Key settings:
 
 | Variable                                         | Purpose                                                                                     |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `RDS_ENDPOINT`                                   | Postgres hostname on Docker network (e.g. `kluvo_ai_db-postgresql-1`)                       |
+| `RDS_ENDPOINT`                                   | Postgres hostname on Docker network (e.g. `adwiise_agent_db-postgresql-1`)                  |
 | `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`          | Database connection (set values in `.env` only)                                             |
 | `JWT_API_AUTH_USERNAME`, `JWT_API_AUTH_PASSWORD` | Service JWT login (must match frontend `API_JWT_USER` / `API_JWT_PASS`; set in `.env` only) |
 | `SPRING_PROFILES_ACTIVE`                         | Spring profile (default `local-postgres-cache`)                                             |

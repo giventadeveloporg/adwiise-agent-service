@@ -36,13 +36,13 @@ spring:
         - USER
   task:
     execution:
-      thread-name-prefix: kluvo-ai-service-task-
+      thread-name-prefix: adwiise-agent-service-task-
       pool:
         core-size: 1
         max-size: 50
         queue-capacity: 10000
     scheduling:
-      thread-name-prefix: kluvo-ai-service-scheduling-
+      thread-name-prefix: adwiise-agent-service-scheduling-
       pool:
         size: 20
   thymeleaf:

@@ -36,7 +36,7 @@ public class PaymentCredentialEncryptionService {
 
             // Decode encryption key (base64)
             // Remove any whitespace or escape characters that might be in the environment variable
-            // This matches the implementation in kluvo-ai-batch-jobs for consistency
+            // This matches the implementation in adwiise-agent-batch-jobs for consistency
             // Handle escaped equals signs and remove any invalid backslash characters
             String cleanKey = encryptionKeyBase64
                 .trim() // Remove leading/trailing whitespace

@@ -1,4 +1,4 @@
-# Overview — kluvo-ai-service
+# Overview — adwiise-agent-service
 
 > Evolving synthesis maintained by the LLM. Updated as new sources are ingested.
 

@@ -1,7 +1,7 @@
 # Implementation Summary: QR Scanner & Enhanced Reporting Features
 
 **Date:** January 2026
-**Backend Project:** E:\project_workspace\kluvo-ai-service
+**Backend Project:** E:\project_workspace\adwiise-agent-service
 **Frontend Project:** E:\project_workspace\mosc-temp
 **PRD Source:** `.task-master/backend_implementation_prd.html`
 
@@ -247,7 +247,7 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 ```sql
 -- Run the migration script
-psql -h localhost -U postgres -d kluvo_ai_db -f src/main/resources/sqls/migrations/add_check_in_sales_analytics_indexes.sql
+psql -h localhost -U postgres -d adwiise_agent_db -f src/main/resources/sqls/migrations/add_check_in_sales_analytics_indexes.sql
 ```
 
 ---
@@ -447,7 +447,7 @@ All code compiles without errors. Verified with `mvn compile -q -DskipTests`.
 1. ✅ **Run Database Migration**
 
    ```sql
-   psql -h localhost -U postgres -d kluvo_ai_db -f src/main/resources/sqls/migrations/add_check_in_sales_analytics_indexes.sql
+   psql -h localhost -U postgres -d adwiise_agent_db -f src/main/resources/sqls/migrations/add_check_in_sales_analytics_indexes.sql
    ```
 
 2. ✅ **Start Application and Verify**
@@ -528,5 +528,5 @@ The backend is ready for frontend integration. All endpoints are functional, val
 ---
 
 **Generated:** January 2026
-**Backend Project:** E:\project_workspace\kluvo-ai-service
+**Backend Project:** E:\project_workspace\adwiise-agent-service
 **PRD Source:** `.task-master/backend_implementation_prd.html`

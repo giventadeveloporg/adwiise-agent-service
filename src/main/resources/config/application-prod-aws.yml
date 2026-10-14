@@ -73,7 +73,7 @@ spring:
   # Database Configuration - RDS PostgreSQL
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:kluvo_ai_db}
+    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:adwiise_agent_db}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
     hikari:

@@ -53,8 +53,8 @@ spring:
 
   #  datasource:
   #    type: com.zaxxer.hikari.HikariDataSource
-  #    url: jdbc:postgresql://localhost:5432/kluvo_ai_db
-  ##    url: jdbc:postgresql://event-site-manager-postgres-prod.cwffi3ch4r75.us-east-1.rds.amazonaws.com:5432/kluvo_ai_db
+  #    url: jdbc:postgresql://localhost:5432/adwiise_agent_db
+  ##    url: jdbc:postgresql://event-site-manager-postgres-prod.cwffi3ch4r75.us-east-1.rds.amazonaws.com:5432/adwiise_agent_db
   ##    username: giventauser
   ##    password: giventauser
   #    username: event_site_app
@@ -66,7 +66,7 @@ spring:
   #      maximum-pool-size: 5
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:kluvo_ai_db}
+    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:adwiise_agent_db}
     username: ${DB_USERNAME:event_site_app}
     password: ${DB_PASSWORD:event_site_app!}
     hikari:

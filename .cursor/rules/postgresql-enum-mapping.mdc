@@ -101,6 +101,6 @@ When creating database migrations or schema definitions:
 
 ## Notes
 
-- The backend project (`kluvo-ai-service`) may use PostgreSQL enum types with `@JdbcTypeCode(SqlTypes.OTHER)` annotation
+- The backend project (`adwiise-agent-service`) may use PostgreSQL enum types with `@JdbcTypeCode(SqlTypes.OTHER)` annotation
 - The batch jobs project uses VARCHAR to avoid enum type casting issues
 - This pattern ensures compatibility and avoids PostgreSQL enum type casting errors

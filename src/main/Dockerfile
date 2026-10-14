@@ -1,7 +1,7 @@
 FROM openjdk:17-jre-slim
 
 # Copy JAR file
-COPY target/kluvo-ai-service-0.0.1-SNAPSHOT.jar /app.jar
+COPY target/adwiise-agent-service-0.0.1-SNAPSHOT.jar /app.jar
 
 # Expose port (will be set via environment variables)
 EXPOSE 80

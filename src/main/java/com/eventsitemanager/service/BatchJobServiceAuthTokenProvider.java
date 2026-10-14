@@ -19,7 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 /**
  * Obtains and caches a JWT for server-to-server calls to the batch-jobs microservice.
- * Uses the same {@code /api/authenticate} flow as {@code kluvo-ai-batch-jobs}'s {@code BackendApiService}.
+ * Uses the same {@code /api/authenticate} flow as {@code adwiise-agent-batch-jobs}'s {@code BackendApiService}.
  */
 @Component
 public class BatchJobServiceAuthTokenProvider {
