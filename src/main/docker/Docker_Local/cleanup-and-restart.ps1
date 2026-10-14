@@ -25,9 +25,9 @@ docker container prune -f
 # Write-Host "`nCleaning up unused images..." -ForegroundColor Yellow
 # docker image prune -f
 
-Write-Host "`nRebuilding and starting with new project name 'event-mgmnt-site'..." -ForegroundColor Green
+Write-Host "`nRebuilding and starting with new project name 'adwiise-agent-service'..." -ForegroundColor Green
 docker compose --env-file .env -f docker-compose.local.yml up -d --build
 
-Write-Host "`nDone! The container should now appear as 'event-mgmnt-site' in Docker Desktop." -ForegroundColor Green
+Write-Host "`nDone! The container should now appear as 'adwiise-agent-service' in Docker Desktop." -ForegroundColor Green
 Write-Host "Check status with: docker ps" -ForegroundColor Cyan
 

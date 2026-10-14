@@ -1,4 +1,4 @@
-name: event-mgmnt-site
+name: adwiise-agent-service
 
 services:
   # Spring Boot Application
@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.local
-    container_name: event-mgmnt-site-app
+    container_name: adwiise-agent-service-app
     restart: unless-stopped
     ports:
       - '127.0.0.1:8080:8080'
@@ -97,12 +97,12 @@ services:
       retries: 5
       start_period: 120s
     networks:
-      - event-mgmnt-site-network
+      - adwiise-agent-service-network
       - postgres-network
       - batch-jobs-network
 
 networks:
-  event-mgmnt-site-network:
+  adwiise-agent-service-network:
     driver: bridge
     ipam:
       config:
