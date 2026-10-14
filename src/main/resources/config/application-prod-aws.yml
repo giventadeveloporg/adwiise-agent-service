@@ -16,7 +16,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.eventsitemanager: INFO
+    com.adwiiseagent: INFO
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
@@ -53,7 +53,7 @@ management:
     export:
       cloudwatch:
         enabled: ${CLOUDWATCH_METRICS_ENABLED:true}
-        namespace: ${CLOUDWATCH_METRICS_NAMESPACE:EventSiteManager/Application}
+        namespace: ${CLOUDWATCH_METRICS_NAMESPACE:AdwiiseAgent/Application}
         batch-size: 20
     distribution:
       percentiles-histogram:
@@ -261,7 +261,7 @@ aws:
     bucket: ${S3_BUCKET_NAME:event-site-manager-storage}
     region: ${S3_REGION:us-east-2}
   cloudwatch:
-    namespace: ${CLOUDWATCH_NAMESPACE:EventSiteManager/Application}
+    namespace: ${CLOUDWATCH_NAMESPACE:AdwiiseAgent/Application}
     enabled: ${CLOUDWATCH_ENABLED:true}
 
 # JWT API Authentication Credentials (Externalized for Security)

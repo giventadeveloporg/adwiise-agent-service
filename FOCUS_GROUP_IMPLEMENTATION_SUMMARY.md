@@ -8,19 +8,19 @@ Successfully implemented a complete Focus Group backend system for the adwiise-a
 
 ### 1. JPA Entities (3 files)
 
-- **FocusGroup** (`src/main/java/com/eventsitemanager/domain/FocusGroup.java`)
+- **FocusGroup** (`src/main/java/com/adwiiseagent/domain/FocusGroup.java`)
 
   - Fields: id, tenantId, name, slug, description, coverImageUrl, isActive, createdAt, updatedAt
   - Unique constraints: (tenantId, slug), (tenantId, name)
   - Auto-populated timestamps via @PrePersist/@PreUpdate
 
-- **FocusGroupMember** (`src/main/java/com/eventsitemanager/domain/FocusGroupMember.java`)
+- **FocusGroupMember** (`src/main/java/com/adwiiseagent/domain/FocusGroupMember.java`)
 
   - Fields: id, tenantId, focusGroup (ManyToOne), userProfileId, role, status, createdAt, updatedAt
   - Unique constraint: (tenantId, focusGroup_id, userProfileId)
   - ManyToOne relationship to FocusGroup
 
-- **EventFocusGroup** (`src/main/java/com/eventsitemanager/domain/EventFocusGroup.java`)
+- **EventFocusGroup** (`src/main/java/com/adwiiseagent/domain/EventFocusGroup.java`)
   - Fields: id, tenantId, eventId, focusGroup (ManyToOne), createdAt, updatedAt
   - Unique constraint: (tenantId, eventId, focusGroup_id)
   - ManyToOne relationship to FocusGroup

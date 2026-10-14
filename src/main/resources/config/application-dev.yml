@@ -18,13 +18,13 @@ logging:
     ROOT: DEBUG
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
-    com.eventsitemanager: DEBUG
+    com.adwiiseagent: DEBUG
 
 spring:
   devtools:
     restart:
       enabled: false # Temporarily disabled due to Stripe classloader issue
-      # additional-exclude: static/**,com/eventsitemanager/service/payment/adapter/**
+      # additional-exclude: static/**,com/adwiiseagent/service/payment/adapter/**
     livereload:
       enabled: false # we use Webpack dev server + BrowserSync for livereload
   jackson:

@@ -1,0 +1,12 @@
+package com.adwiiseagent.domain.enumeration;
+
+/**
+ * The SubscriptionStatusType enumeration.
+ */
+public enum SubscriptionStatusType {
+    ACTIVE,
+    SUSPENDED,
+    CANCELLED,
+    EXPIRED,
+    TRIAL,
+}

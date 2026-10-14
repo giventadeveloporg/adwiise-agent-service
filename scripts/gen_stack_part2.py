@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA = ROOT / "src/main/java/com/eventsitemanager"
-TEST = ROOT / "src/test/java/com/eventsitemanager"
+JAVA = ROOT / "src/main/java/com/adwiiseagent"
+TEST = ROOT / "src/test/java/com/adwiiseagent"
 
 WRITTEN: list[str] = []
 
@@ -223,7 +223,7 @@ STACK += [
         ],
         "custom_repo": [
             "boolean existsByCompetitionIdAndParticipantProfileIdAndIdNot(Long competitionId, Long participantProfileId, Long id);",
-            "long countByCompetitionIdAndRegistrationStatusNotIn(Long competitionId, java.util.Collection<com.eventsitemanager.domain.enumeration.CompetitionRegistrationStatus> statuses);",
+            "long countByCompetitionIdAndRegistrationStatusNotIn(Long competitionId, java.util.Collection<com.adwiiseagent.domain.enumeration.CompetitionRegistrationStatus> statuses);",
             "long countByGroupLeaderRegistrationId(Long groupLeaderRegistrationId);",
         ],
         "special_service_impl": "registration",
@@ -300,9 +300,9 @@ def gen_entity(cfg: dict) -> None:
     if any(f["type"] == "BigDecimal" for f in cfg["fields"]):
         imports.append("import java.math.BigDecimal;")
     if any(f["type"] == "enum" for f in cfg["fields"]):
-        imports.append("import com.eventsitemanager.domain.enumeration.*;")
+        imports.append("import com.adwiiseagent.domain.enumeration.*;")
     for rel in cfg.get("relations", []):
-        imports.append(f"import com.eventsitemanager.domain.{rel['entity']};")
+        imports.append(f"import com.adwiiseagent.domain.{rel['entity']};")
     imports += [
         "import org.hibernate.annotations.Cache;",
         "import org.hibernate.annotations.CacheConcurrencyStrategy;",
@@ -422,13 +422,13 @@ def gen_dto(cfg: dict) -> None:
     if any(f["type"] == "BigDecimal" for f in cfg["fields"]):
         imports.append("import java.math.BigDecimal;")
     if any(f["type"] == "enum" for f in cfg["fields"]):
-        imports.append("import com.eventsitemanager.domain.enumeration.*;")
+        imports.append("import com.adwiiseagent.domain.enumeration.*;")
     for rel in cfg.get("relations", []):
-        imports.append(f"import com.eventsitemanager.service.dto.{rel['dto']};")
+        imports.append(f"import com.adwiiseagent.service.dto.{rel['dto']};")
     lines = imports + [
         "",
         "/**",
-        f" * A DTO for the {{@link com.eventsitemanager.domain.{cls}}} entity.",
+        f" * A DTO for the {{@link com.adwiiseagent.domain.{cls}}} entity.",
         " */",
         '@SuppressWarnings("common-java:DuplicatedBlocks")',
         f"public class {dto} implements Serializable {{",
@@ -511,9 +511,9 @@ def gen_repository(cfg: dict) -> None:
         imports_opt = "import java.util.Collection;\n"
     else:
         imports_opt = ""
-    content = f"""package com.eventsitemanager.repository;
+    content = f"""package com.adwiiseagent.repository;
 
-import com.eventsitemanager.domain.{cls};
+import com.adwiiseagent.domain.{cls};
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -536,7 +536,7 @@ def gen_mapper(cfg: dict) -> None:
             f'    @Named("{r["named"]}")',
             "    @BeanMapping(ignoreByDefault = true)",
             '    @Mapping(target = "id", source = "id")',
-            f"    {r['dto']} toDto{r['named'].replace('Id','').replace('eventDetails','EventDetails').replace('userProfile','UserProfile')}(com.eventsitemanager.domain.{r['entity']} entity);",
+            f"    {r['dto']} toDto{r['named'].replace('Id','').replace('eventDetails','EventDetails').replace('userProfile','UserProfile')}(com.adwiiseagent.domain.{r['entity']} entity);",
         ]
     # fix named method names - use simple pattern
     named = []
@@ -546,14 +546,14 @@ def gen_mapper(cfg: dict) -> None:
             f'    @Named("{r["named"]}")',
             "    @BeanMapping(ignoreByDefault = true)",
             '    @Mapping(target = "id", source = "id")',
-            f"    {r['dto']} {method}(com.eventsitemanager.domain.{r['entity']} entity);",
+            f"    {r['dto']} {method}(com.adwiiseagent.domain.{r['entity']} entity);",
         ]
-    imports = ["import com.eventsitemanager.domain." + cls + ";", "import com.eventsitemanager.service.dto." + dto + ";"]
+    imports = ["import com.adwiiseagent.domain." + cls + ";", "import com.adwiiseagent.service.dto." + dto + ";"]
     for r in cfg.get("relations", []):
-        imports.append(f"import com.eventsitemanager.domain.{r['entity']};")
-        imports.append(f"import com.eventsitemanager.service.dto.{r['dto']};")
+        imports.append(f"import com.adwiiseagent.domain.{r['entity']};")
+        imports.append(f"import com.adwiiseagent.service.dto.{r['dto']};")
     content = (
-        "package com.eventsitemanager.service.mapper;\n\n"
+        "package com.adwiiseagent.service.mapper;\n\n"
         + "\n".join(imports)
         + "\nimport org.mapstruct.*;\n\n"
         + "/**\n * Mapper for the entity {@link "
@@ -581,15 +581,15 @@ def gen_mapper(cfg: dict) -> None:
 
 def gen_service_interface(cfg: dict) -> None:
     cls, dto = cfg["class"], cfg["class"] + "DTO"
-    content = f"""package com.eventsitemanager.service;
+    content = f"""package com.adwiiseagent.service;
 
-import {JAVA.as_posix() if False else 'com.eventsitemanager.service.dto.' + dto};
+import {JAVA.as_posix() if False else 'com.adwiiseagent.service.dto.' + dto};
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Service Interface for managing {{@link com.eventsitemanager.domain.{cls}}}.
+ * Service Interface for managing {{@link com.adwiiseagent.domain.{cls}}}.
  */
 public interface {cls}Service {{
     {dto} save({dto} {camel(cls)}DTO);
@@ -606,20 +606,20 @@ public interface {cls}Service {{
 }}
 """
     # fix import path
-    content = content.replace(f"{JAVA.as_posix() if False else 'com.eventsitemanager.service.dto.' + dto}", f"com.eventsitemanager.service.dto.{dto}")
+    content = content.replace(f"{JAVA.as_posix() if False else 'com.adwiiseagent.service.dto.' + dto}", f"com.adwiiseagent.service.dto.{dto}")
     write(JAVA / "service" / f"{cls}Service.java", content)
 
 
 
 def gen_service_impl_default(cfg: dict) -> None:
     cls, dto, var = cfg["class"], cfg["class"] + "DTO", camel(cfg["class"])
-    content = f"""package com.eventsitemanager.service.impl;
+    content = f"""package com.adwiiseagent.service.impl;
 
-import com.eventsitemanager.domain.{cls};
-import com.eventsitemanager.repository.{cls}Repository;
-import com.eventsitemanager.service.{cls}Service;
-import com.eventsitemanager.service.dto.{dto};
-import com.eventsitemanager.service.mapper.{cls}Mapper;
+import com.adwiiseagent.domain.{cls};
+import com.adwiiseagent.repository.{cls}Repository;
+import com.adwiiseagent.service.{cls}Service;
+import com.adwiiseagent.service.dto.{dto};
+import com.adwiiseagent.service.mapper.{cls}Mapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -717,11 +717,11 @@ def gen_criteria(cfg: dict) -> None:
     cls = cfg["class"]
     fields = [{"name": "id", "type": "Long"}] + cfg["fields"]
     lines = [
-        "package com.eventsitemanager.service.criteria;",
+        "package com.adwiiseagent.service.criteria;",
         "",
     ]
     if any(f["type"] == "enum" for f in cfg["fields"]):
-        lines.append("import com.eventsitemanager.domain.enumeration.*;")
+        lines.append("import com.adwiiseagent.domain.enumeration.*;")
     lines += [
         "import java.io.Serializable;",
         "import java.util.Objects;",
@@ -730,7 +730,7 @@ def gen_criteria(cfg: dict) -> None:
         "import tech.jhipster.service.filter.*;",
         "",
         "/**",
-        f" * Criteria class for the {{@link com.eventsitemanager.domain.{cls}}} entity.",
+        f" * Criteria class for the {{@link com.adwiiseagent.domain.{cls}}} entity.",
         " */",
         "@ParameterObject",
         '@SuppressWarnings("common-java:DuplicatedBlocks")',
@@ -828,14 +828,14 @@ def gen_query_service(cfg: dict) -> None:
     cls = cfg["class"]
     metamodel = cls + "_"
     lines = [
-        "package com.eventsitemanager.service;",
+        "package com.adwiiseagent.service;",
         "",
-        "import com.eventsitemanager.domain.*;",
-        f"import com.eventsitemanager.domain.{cls};",
-        f"import com.eventsitemanager.repository.{cls}Repository;",
-        f"import com.eventsitemanager.service.criteria.{cls}Criteria;",
-        f"import com.eventsitemanager.service.dto.{cls}DTO;",
-        f"import com.eventsitemanager.service.mapper.{cls}Mapper;",
+        "import com.adwiiseagent.domain.*;",
+        f"import com.adwiiseagent.domain.{cls};",
+        f"import com.adwiiseagent.repository.{cls}Repository;",
+        f"import com.adwiiseagent.service.criteria.{cls}Criteria;",
+        f"import com.adwiiseagent.service.dto.{cls}DTO;",
+        f"import com.adwiiseagent.service.mapper.{cls}Mapper;",
         "import jakarta.persistence.criteria.JoinType;",
         "import java.util.List;",
         "import org.slf4j.Logger;",
@@ -930,14 +930,14 @@ def gen_resource(cfg: dict) -> None:
     cls, dto, en = cfg["class"], cfg["class"] + "DTO", cfg["entity_name"]
     api = cfg["api"]
     var = camel(cls)
-    content = f"""package com.eventsitemanager.web.rest;
+    content = f"""package com.adwiiseagent.web.rest;
 
-import com.eventsitemanager.errors.BadRequestAlertException;
-import com.eventsitemanager.repository.{cls}Repository;
-import com.eventsitemanager.service.{cls}QueryService;
-import com.eventsitemanager.service.{cls}Service;
-import com.eventsitemanager.service.criteria.{cls}Criteria;
-import com.eventsitemanager.service.dto.{dto};
+import com.adwiiseagent.errors.BadRequestAlertException;
+import com.adwiiseagent.repository.{cls}Repository;
+import com.adwiiseagent.service.{cls}QueryService;
+import com.adwiiseagent.service.{cls}Service;
+import com.adwiiseagent.service.criteria.{cls}Criteria;
+import com.adwiiseagent.service.dto.{dto};
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -1051,25 +1051,25 @@ public class {cls}Resource {{
 
 
 
-REGISTRATION_SERVICE_IMPL = r'''package com.eventsitemanager.service.impl;
+REGISTRATION_SERVICE_IMPL = r'''package com.adwiiseagent.service.impl;
 
-import com.eventsitemanager.domain.EventCompetition;
-import com.eventsitemanager.domain.EventCompetitionParticipant;
-import com.eventsitemanager.domain.EventCompetitionRegistration;
-import com.eventsitemanager.domain.EventCompetitionSettings;
-import com.eventsitemanager.domain.enumeration.CompetitionAudienceMode;
-import com.eventsitemanager.domain.enumeration.CompetitionEligibleAudience;
-import com.eventsitemanager.domain.enumeration.CompetitionParticipantType;
-import com.eventsitemanager.domain.enumeration.CompetitionRegistrationStatus;
-import com.eventsitemanager.domain.enumeration.CompetitionType;
-import com.eventsitemanager.errors.BadRequestAlertException;
-import com.eventsitemanager.errors.ConflictException;
-import com.eventsitemanager.repository.EventCompetitionRegistrationRepository;
-import com.eventsitemanager.repository.EventCompetitionRepository;
-import com.eventsitemanager.repository.EventCompetitionSettingsRepository;
-import com.eventsitemanager.service.EventCompetitionRegistrationService;
-import com.eventsitemanager.service.dto.EventCompetitionRegistrationDTO;
-import com.eventsitemanager.service.mapper.EventCompetitionRegistrationMapper;
+import com.adwiiseagent.domain.EventCompetition;
+import com.adwiiseagent.domain.EventCompetitionParticipant;
+import com.adwiiseagent.domain.EventCompetitionRegistration;
+import com.adwiiseagent.domain.EventCompetitionSettings;
+import com.adwiiseagent.domain.enumeration.CompetitionAudienceMode;
+import com.adwiiseagent.domain.enumeration.CompetitionEligibleAudience;
+import com.adwiiseagent.domain.enumeration.CompetitionParticipantType;
+import com.adwiiseagent.domain.enumeration.CompetitionRegistrationStatus;
+import com.adwiiseagent.domain.enumeration.CompetitionType;
+import com.adwiiseagent.errors.BadRequestAlertException;
+import com.adwiiseagent.errors.ConflictException;
+import com.adwiiseagent.repository.EventCompetitionRegistrationRepository;
+import com.adwiiseagent.repository.EventCompetitionRepository;
+import com.adwiiseagent.repository.EventCompetitionSettingsRepository;
+import com.adwiiseagent.service.EventCompetitionRegistrationService;
+import com.adwiiseagent.service.dto.EventCompetitionRegistrationDTO;
+import com.adwiiseagent.service.mapper.EventCompetitionRegistrationMapper;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
@@ -1238,16 +1238,16 @@ public class EventCompetitionRegistrationServiceImpl implements EventCompetition
 '''
 
 
-RESULT_SERVICE_IMPL = r'''package com.eventsitemanager.service.impl;
+RESULT_SERVICE_IMPL = r'''package com.adwiiseagent.service.impl;
 
-import com.eventsitemanager.domain.EventCompetitionResult;
-import com.eventsitemanager.domain.EventMedia;
-import com.eventsitemanager.errors.BadRequestAlertException;
-import com.eventsitemanager.repository.EventCompetitionResultRepository;
-import com.eventsitemanager.repository.EventMediaRepository;
-import com.eventsitemanager.service.EventCompetitionResultService;
-import com.eventsitemanager.service.dto.EventCompetitionResultDTO;
-import com.eventsitemanager.service.mapper.EventCompetitionResultMapper;
+import com.adwiiseagent.domain.EventCompetitionResult;
+import com.adwiiseagent.domain.EventMedia;
+import com.adwiiseagent.errors.BadRequestAlertException;
+import com.adwiiseagent.repository.EventCompetitionResultRepository;
+import com.adwiiseagent.repository.EventMediaRepository;
+import com.adwiiseagent.service.EventCompetitionResultService;
+import com.adwiiseagent.service.dto.EventCompetitionResultDTO;
+import com.adwiiseagent.service.mapper.EventCompetitionResultMapper;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1429,7 +1429,7 @@ def patch_event_details() -> None:
 def gen_registration_tests() -> None:
     write(
         TEST / "domain/EventCompetitionRegistrationTestSamples.java",
-        """package com.eventsitemanager.domain;
+        """package com.adwiiseagent.domain;
 
 import java.util.Random;
 import java.util.UUID;
@@ -1457,16 +1457,16 @@ public class EventCompetitionRegistrationTestSamples {
     # Resource IT - simplified create test
     write(
         TEST / "web/rest/EventCompetitionRegistrationResourceIT.java",
-        """package com.eventsitemanager.web.rest;
+        """package com.adwiiseagent.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.eventsitemanager.IntegrationTest;
-import com.eventsitemanager.domain.EventCompetitionRegistration;
-import com.eventsitemanager.repository.EventCompetitionRegistrationRepository;
-import com.eventsitemanager.service.mapper.EventCompetitionRegistrationMapper;
+import com.adwiiseagent.IntegrationTest;
+import com.adwiiseagent.domain.EventCompetitionRegistration;
+import com.adwiiseagent.repository.EventCompetitionRegistrationRepository;
+import com.adwiiseagent.service.mapper.EventCompetitionRegistrationMapper;
 import jakarta.persistence.EntityManager;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;

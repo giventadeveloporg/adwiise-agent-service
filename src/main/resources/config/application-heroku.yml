@@ -9,7 +9,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.eventsitemanager: INFO
+    com.adwiiseagent: INFO
 
 management:
   prometheus:

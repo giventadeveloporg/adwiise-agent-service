@@ -101,7 +101,7 @@ springdoc:
     tagsSorter: alpha
     disable-swagger-default-url: true
   show-actuator: true
-  packages-to-scan: com.eventsitemanager.web.rest
+  packages-to-scan: com.adwiiseagent.web.rest
   paths-to-match: /**
   default-produces-media-type: application/json
   default-consumes-media-type: application/json

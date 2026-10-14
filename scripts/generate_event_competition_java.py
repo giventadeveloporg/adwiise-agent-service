@@ -3,8 +3,8 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA = ROOT / "src/main/java/com/eventsitemanager"
-TEST = ROOT / "src/test/java/com/eventsitemanager"
+JAVA = ROOT / "src/main/java/com/adwiiseagent"
+TEST = ROOT / "src/test/java/com/adwiiseagent"
 
 ENTITIES = [
     "EventCompetitionSettings",
@@ -55,7 +55,7 @@ def gen_repository(name: str):
 """
     elif name == "EventCompetitionRegistration":
         extra = """
-    long countByCompetitionIdAndRegistrationStatusNotIn(Long competitionId, java.util.Collection<com.eventsitemanager.domain.enumeration.CompetitionRegistrationStatus> statuses);
+    long countByCompetitionIdAndRegistrationStatusNotIn(Long competitionId, java.util.Collection<com.adwiiseagent.domain.enumeration.CompetitionRegistrationStatus> statuses);
 
     boolean existsByCompetitionIdAndParticipantProfileIdAndIdNot(Long competitionId, Long participantProfileId, Long excludeId);
 
@@ -63,9 +63,9 @@ def gen_repository(name: str):
 """
     write(
         JAVA / "repository" / f"{name}Repository.java",
-        f"""package com.eventsitemanager.repository;
+        f"""package com.adwiiseagent.repository;
 
-import com.eventsitemanager.domain.{name};
+import com.adwiiseagent.domain.{name};
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -79,9 +79,9 @@ public interface {name}Repository extends JpaRepository<{name}, Long>, JpaSpecif
 def gen_service_interface(name: str):
     write(
         JAVA / "service" / f"{name}Service.java",
-        f"""package com.eventsitemanager.service;
+        f"""package com.adwiiseagent.service;
 
-import com.eventsitemanager.service.dto.{name}DTO;
+import com.adwiiseagent.service.dto.{name}DTO;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,13 +102,13 @@ def gen_service_impl(name: str):
     ce = camel_entity(name)
     write(
         JAVA / "service/impl" / f"{name}ServiceImpl.java",
-        f"""package com.eventsitemanager.service.impl;
+        f"""package com.adwiiseagent.service.impl;
 
-import com.eventsitemanager.domain.{name};
-import com.eventsitemanager.repository.{name}Repository;
-import com.eventsitemanager.service.{name}Service;
-import com.eventsitemanager.service.dto.{name}DTO;
-import com.eventsitemanager.service.mapper.{name}Mapper;
+import com.adwiiseagent.domain.{name};
+import com.adwiiseagent.repository.{name}Repository;
+import com.adwiiseagent.service.{name}Service;
+import com.adwiiseagent.service.dto.{name}DTO;
+import com.adwiiseagent.service.mapper.{name}Mapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -247,12 +247,12 @@ def gen_mapper(name: str, relations: list[tuple[str, str]]):
     EventMediaDTO toDtoEventMediaId(EventMedia eventMedia);
 
 """
-    imports = """import com.eventsitemanager.domain.*;
-import com.eventsitemanager.service.dto.*;
+    imports = """import com.adwiiseagent.domain.*;
+import com.adwiiseagent.service.dto.*;
 import org.mapstruct.*;"""
     write(
         JAVA / "service/mapper" / f"{name}Mapper.java",
-        f"""package com.eventsitemanager.service.mapper;
+        f"""package com.adwiiseagent.service.mapper;
 
 {imports}
 
@@ -270,14 +270,14 @@ def gen_resource(name: str):
     en = ENTITY_NAMES[name]
     write(
         JAVA / "web/rest" / f"{name}Resource.java",
-        f"""package com.eventsitemanager.web.rest;
+        f"""package com.adwiiseagent.web.rest;
 
-import com.eventsitemanager.errors.BadRequestAlertException;
-import com.eventsitemanager.repository.{name}Repository;
-import com.eventsitemanager.service.{name}QueryService;
-import com.eventsitemanager.service.{name}Service;
-import com.eventsitemanager.service.criteria.{name}Criteria;
-import com.eventsitemanager.service.dto.{name}DTO;
+import com.adwiiseagent.errors.BadRequestAlertException;
+import com.adwiiseagent.repository.{name}Repository;
+import com.adwiiseagent.service.{name}QueryService;
+import com.adwiiseagent.service.{name}Service;
+import com.adwiiseagent.service.criteria.{name}Criteria;
+import com.adwiiseagent.service.dto.{name}DTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

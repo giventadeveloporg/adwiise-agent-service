@@ -20,7 +20,7 @@ This service is the **active REST API**. Each application table uses `public.{ta
 ```
 
 - **Unique** `name` per entity class; `sequenceName` matches the table sequence.
-- All entities under `src/main/java/com/eventsitemanager/domain/` use **`allocationSize = 1`**.
+- All entities under `src/main/java/com/adwiiseagent/domain/` use **`allocationSize = 1`**.
 
 ## Runtime components (this repo)
 

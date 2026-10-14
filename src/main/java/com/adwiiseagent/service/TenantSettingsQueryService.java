@@ -1,0 +1,342 @@
+package com.adwiiseagent.service;
+
+import com.adwiiseagent.domain.*; // for static metamodels
+import com.adwiiseagent.domain.TenantSettings;
+import com.adwiiseagent.repository.TenantSettingsRepository;
+import com.adwiiseagent.service.criteria.TenantSettingsCriteria;
+import com.adwiiseagent.service.dto.TenantSettingsDTO;
+import com.adwiiseagent.service.mapper.TenantSettingsMapper;
+import jakarta.persistence.criteria.JoinType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tech.jhipster.service.QueryService;
+
+/**
+ * Service for executing complex queries for {@link TenantSettings} entities in
+ * the database.
+ * The main input is a {@link TenantSettingsCriteria} which gets converted to
+ * {@link Specification},
+ * in a way that all the filters must apply.
+ * It returns a {@link Page} of {@link TenantSettingsDTO} which fulfills the
+ * criteria.
+ */
+@Service
+@Transactional(readOnly = true)
+public class TenantSettingsQueryService extends QueryService<TenantSettings> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TenantSettingsQueryService.class);
+
+    private final TenantSettingsRepository tenantSettingsRepository;
+
+    private final TenantSettingsMapper tenantSettingsMapper;
+
+    public TenantSettingsQueryService(TenantSettingsRepository tenantSettingsRepository, TenantSettingsMapper tenantSettingsMapper) {
+        this.tenantSettingsRepository = tenantSettingsRepository;
+        this.tenantSettingsMapper = tenantSettingsMapper;
+    }
+
+    /**
+     * Return a {@link Page} of {@link TenantSettingsDTO} which matches the criteria
+     * from the database.
+     *
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @param page     The page, which should be returned.
+     * @return the matching entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<TenantSettingsDTO> findByCriteria(TenantSettingsCriteria criteria, Pageable page) {
+        LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        final Specification<TenantSettings> specification = createSpecification(criteria);
+        return tenantSettingsRepository.findAll(specification, page).map(tenantSettingsMapper::toDto);
+    }
+
+    /**
+     * Return the number of matching entities in the database.
+     *
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @return the number of matching entities.
+     */
+    @Transactional(readOnly = true)
+    public long countByCriteria(TenantSettingsCriteria criteria) {
+        LOG.debug("count by criteria : {}", criteria);
+        final Specification<TenantSettings> specification = createSpecification(criteria);
+        return tenantSettingsRepository.count(specification);
+    }
+
+    /**
+     * Function to convert {@link TenantSettingsCriteria} to a {@link Specification}
+     *
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @return the matching {@link Specification} of the entity.
+     */
+    protected Specification<TenantSettings> createSpecification(TenantSettingsCriteria criteria) {
+        Specification<TenantSettings> specification = Specification.where(null);
+        if (criteria != null) {
+            // This has to be called first, because the distinct method returns null
+            if (criteria.getDistinct() != null) {
+                specification = specification.and(distinct(criteria.getDistinct()));
+            }
+            if (criteria.getId() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getId(), TenantSettings_.id));
+            }
+            if (criteria.getTenantId() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getTenantId(), TenantSettings_.tenantId));
+            }
+            if (criteria.getAllowUserRegistration() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getAllowUserRegistration(), TenantSettings_.allowUserRegistration));
+            }
+            if (criteria.getRequireAdminApproval() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getRequireAdminApproval(), TenantSettings_.requireAdminApproval));
+            }
+            if (criteria.getEnableWhatsappIntegration() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getEnableWhatsappIntegration(), TenantSettings_.enableWhatsappIntegration)
+                    );
+            }
+            if (criteria.getEnableEmailMarketing() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getEnableEmailMarketing(), TenantSettings_.enableEmailMarketing));
+            }
+            if (criteria.getIsMembershipSubscriptionEnabled() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getIsMembershipSubscriptionEnabled(), TenantSettings_.isMembershipSubscriptionEnabled)
+                    );
+            }
+            if (criteria.getWhatsappApiKey() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getWhatsappApiKey(), TenantSettings_.whatsappApiKey));
+            }
+            if (criteria.getEmailProviderConfig() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getEmailProviderConfig(), TenantSettings_.emailProviderConfig));
+            }
+            if (criteria.getMaxEventsPerMonth() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getMaxEventsPerMonth(), TenantSettings_.maxEventsPerMonth));
+            }
+            if (criteria.getMaxAttendeesPerEvent() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getMaxAttendeesPerEvent(), TenantSettings_.maxAttendeesPerEvent));
+            }
+            if (criteria.getEnableGuestRegistration() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getEnableGuestRegistration(), TenantSettings_.enableGuestRegistration));
+            }
+            if (criteria.getMaxGuestsPerAttendee() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getMaxGuestsPerAttendee(), TenantSettings_.maxGuestsPerAttendee));
+            }
+            if (criteria.getDefaultEventCapacity() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getDefaultEventCapacity(), TenantSettings_.defaultEventCapacity));
+            }
+            if (criteria.getPlatformFeePercentage() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getPlatformFeePercentage(), TenantSettings_.platformFeePercentage));
+            }
+            if (criteria.getCustomCss() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getCustomCss(), TenantSettings_.customCss));
+            }
+            if (criteria.getCustomJs() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getCustomJs(), TenantSettings_.customJs));
+            }
+            if (criteria.getShowEventsSectionInHomePage() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowEventsSectionInHomePage(), TenantSettings_.showEventsSectionInHomePage)
+                    );
+            }
+            if (criteria.getShowTeamMembersSectionInHomePage() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowTeamMembersSectionInHomePage(), TenantSettings_.showTeamMembersSectionInHomePage)
+                    );
+            }
+            if (criteria.getShowSponsorsSectionInHomePage() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowSponsorsSectionInHomePage(), TenantSettings_.showSponsorsSectionInHomePage)
+                    );
+            }
+            if (criteria.getTwilioAccountSid() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getTwilioAccountSid(), TenantSettings_.twilioAccountSid));
+            }
+            if (criteria.getTwilioAuthToken() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getTwilioAuthToken(), TenantSettings_.twilioAuthToken));
+            }
+            if (criteria.getTwilioWhatsappFrom() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getTwilioWhatsappFrom(), TenantSettings_.twilioWhatsappFrom));
+            }
+            if (criteria.getWhatsappWebhookUrl() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getWhatsappWebhookUrl(), TenantSettings_.whatsappWebhookUrl));
+            }
+            if (criteria.getWhatsappWebhookToken() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getWhatsappWebhookToken(), TenantSettings_.whatsappWebhookToken));
+            }
+            if (criteria.getEmailFooterHtmlUrl() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getEmailFooterHtmlUrl(), TenantSettings_.emailFooterHtmlUrl));
+            }
+            if (criteria.getEmailHeaderImageUrl() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getEmailHeaderImageUrl(), TenantSettings_.emailHeaderImageUrl));
+            }
+            if (criteria.getLogoImageUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getLogoImageUrl(), TenantSettings_.logoImageUrl));
+            }
+            if (criteria.getFacebookUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getFacebookUrl(), TenantSettings_.facebookUrl));
+            }
+            if (criteria.getInstagramUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getInstagramUrl(), TenantSettings_.instagramUrl));
+            }
+            if (criteria.getTwitterUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getTwitterUrl(), TenantSettings_.twitterUrl));
+            }
+            if (criteria.getLinkedinUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getLinkedinUrl(), TenantSettings_.linkedinUrl));
+            }
+            if (criteria.getYoutubeUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getYoutubeUrl(), TenantSettings_.youtubeUrl));
+            }
+            if (criteria.getTiktokUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getTiktokUrl(), TenantSettings_.tiktokUrl));
+            }
+            if (criteria.getHomepageCacheVersion() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getHomepageCacheVersion(), TenantSettings_.homepageCacheVersion));
+            }
+            if (criteria.getShowPublicProfileHeroSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowPublicProfileHeroSection(), TenantSettings_.showPublicProfileHeroSection)
+                    );
+            }
+            if (criteria.getShowProfileWritingsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileWritingsSection(), TenantSettings_.showProfileWritingsSection)
+                    );
+            }
+            if (criteria.getShowProfileAchievementsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileAchievementsSection(), TenantSettings_.showProfileAchievementsSection)
+                    );
+            }
+            if (criteria.getShowProfileAffiliationsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileAffiliationsSection(), TenantSettings_.showProfileAffiliationsSection)
+                    );
+            }
+            if (criteria.getShowProfileMediaDownloadsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileMediaDownloadsSection(), TenantSettings_.showProfileMediaDownloadsSection)
+                    );
+            }
+            if (criteria.getShowProfileContactSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileContactSection(), TenantSettings_.showProfileContactSection)
+                    );
+            }
+            if (criteria.getShowProfileProjectsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileProjectsSection(), TenantSettings_.showProfileProjectsSection)
+                    );
+            }
+            if (criteria.getShowProfileServicesSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileServicesSection(), TenantSettings_.showProfileServicesSection)
+                    );
+            }
+            if (criteria.getShowProfileFamilySection() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowProfileFamilySection(), TenantSettings_.showProfileFamilySection));
+            }
+            if (criteria.getShowHeaderHome() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderHome(), TenantSettings_.showHeaderHome));
+            }
+            if (criteria.getShowHeaderAbout() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderAbout(), TenantSettings_.showHeaderAbout));
+            }
+            if (criteria.getShowHeaderEvents() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderEvents(), TenantSettings_.showHeaderEvents));
+            }
+            if (criteria.getShowHeaderFeatures() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderFeatures(), TenantSettings_.showHeaderFeatures));
+            }
+            if (criteria.getShowHeaderCalendar() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderCalendar(), TenantSettings_.showHeaderCalendar));
+            }
+            if (criteria.getShowHeaderGallery() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderGallery(), TenantSettings_.showHeaderGallery));
+            }
+            if (criteria.getShowHeaderContact() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderContact(), TenantSettings_.showHeaderContact));
+            }
+            if (criteria.getShowHeaderNews() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderNews(), TenantSettings_.showHeaderNews));
+            }
+            if (criteria.getShowHeaderDownloads() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowHeaderDownloads(), TenantSettings_.showHeaderDownloads));
+            }
+            if (criteria.getShowHeaderLinks() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderLinks(), TenantSettings_.showHeaderLinks));
+            }
+            if (criteria.getShowHeaderServices() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderServices(), TenantSettings_.showHeaderServices));
+            }
+            if (criteria.getShowHeaderAchievements() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowHeaderAchievements(), TenantSettings_.showHeaderAchievements));
+            }
+            if (criteria.getShowHeaderAffiliations() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowHeaderAffiliations(), TenantSettings_.showHeaderAffiliations));
+            }
+            if (criteria.getShowHeaderProjects() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderProjects(), TenantSettings_.showHeaderProjects));
+            }
+            if (criteria.getShowHeaderFamily() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderFamily(), TenantSettings_.showHeaderFamily));
+            }
+            if (criteria.getCreatedAt() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));
+            }
+            if (criteria.getUpdatedAt() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), TenantSettings_.updatedAt));
+            }
+            if (criteria.getTenantOrganizationId() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(
+                            criteria.getTenantOrganizationId(),
+                            root -> root.join(TenantSettings_.tenantOrganization, JoinType.LEFT).get(TenantOrganization_.id)
+                        )
+                    );
+            }
+        }
+        return specification;
+    }
+}

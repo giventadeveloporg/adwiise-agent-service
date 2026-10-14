@@ -192,7 +192,7 @@ For production, use **live mode** Stripe keys and ensure the encryption key is s
 
 ## Related Files
 
-- `src/main/java/com/eventsitemanager/service/payment/config/StripeConfigSetupRunner.java` - Java configuration runner
-- `src/main/java/com/eventsitemanager/service/payment/encryption/PaymentCredentialEncryptionService.java` - Encryption service
-- `src/main/java/com/eventsitemanager/domain/PaymentProviderConfig.java` - Database entity
-- `src/main/java/com/eventsitemanager/service/payment/adapter/StripePaymentAdapter.java` - Stripe payment adapter
+- `src/main/java/com/adwiiseagent/service/payment/config/StripeConfigSetupRunner.java` - Java configuration runner
+- `src/main/java/com/adwiiseagent/service/payment/encryption/PaymentCredentialEncryptionService.java` - Encryption service
+- `src/main/java/com/adwiiseagent/domain/PaymentProviderConfig.java` - Database entity
+- `src/main/java/com/adwiiseagent/service/payment/adapter/StripePaymentAdapter.java` - Stripe payment adapter

@@ -1,0 +1,1576 @@
+package com.adwiiseagent.domain;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+/**
+ * A TenantSettings.
+ */
+@Entity
+@Table(name = "tenant_settings")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
+public class TenantSettings implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tenantSettingsSeq")
+    @SequenceGenerator(name = "tenantSettingsSeq", sequenceName = "public.tenant_settings_id_seq", allocationSize = 1)
+    @Column(name = "id")
+    private Long id;
+
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "tenant_id", length = 255, nullable = false, unique = true)
+    private String tenantId;
+
+    @Column(name = "allow_user_registration")
+    private Boolean allowUserRegistration;
+
+    @Column(name = "require_admin_approval")
+    private Boolean requireAdminApproval;
+
+    @Column(name = "enable_whatsapp_integration")
+    private Boolean enableWhatsappIntegration;
+
+    @Column(name = "enable_email_marketing")
+    private Boolean enableEmailMarketing;
+
+    @Column(name = "is_membership_subscription_enabled")
+    private Boolean isMembershipSubscriptionEnabled;
+
+    @Size(max = 500)
+    @Column(name = "whatsapp_api_key", length = 500)
+    private String whatsappApiKey;
+
+    @Size(max = 2048)
+    @Column(name = "email_provider_config", length = 2048)
+    private String emailProviderConfig;
+
+    @Column(name = "max_events_per_month")
+    private Integer maxEventsPerMonth;
+
+    @Column(name = "max_attendees_per_event")
+    private Integer maxAttendeesPerEvent;
+
+    @Column(name = "enable_guest_registration")
+    private Boolean enableGuestRegistration;
+
+    @Column(name = "max_guests_per_attendee")
+    private Integer maxGuestsPerAttendee;
+
+    @Column(name = "default_event_capacity")
+    private Integer defaultEventCapacity;
+
+    @Column(name = "platform_fee_percentage", precision = 21, scale = 2)
+    private BigDecimal platformFeePercentage;
+
+    @Size(max = 8192)
+    @Column(name = "custom_css", length = 8192)
+    private String customCss;
+
+    @Size(max = 16384)
+    @Column(name = "custom_js", length = 16384)
+    private String customJs;
+
+    @Column(name = "show_events_section_in_home_page")
+    private Boolean showEventsSectionInHomePage;
+
+    @Column(name = "show_team_members_section_in_home_page")
+    private Boolean showTeamMembersSectionInHomePage;
+
+    @Column(name = "show_sponsors_section_in_home_page")
+    private Boolean showSponsorsSectionInHomePage;
+
+    @Size(max = 500)
+    @Column(name = "twilio_account_sid", length = 500)
+    private String twilioAccountSid;
+
+    @Size(max = 1048)
+    @Column(name = "twilio_auth_token", length = 1048)
+    private String twilioAuthToken;
+
+    @Size(max = 50)
+    @Column(name = "twilio_whatsapp_from", length = 50)
+    private String twilioWhatsappFrom;
+
+    @Size(max = 1048)
+    @Column(name = "whatsapp_webhook_url", length = 1048)
+    private String whatsappWebhookUrl;
+
+    @Size(max = 1048)
+    @Column(name = "whatsapp_webhook_token", length = 1048)
+    private String whatsappWebhookToken;
+
+    @Size(max = 2048)
+    @Column(name = "email_footer_html_url", length = 2048)
+    private String emailFooterHtmlUrl;
+
+    @Size(max = 2048)
+    @Column(name = "email_header_image_url", length = 2048)
+    private String emailHeaderImageUrl;
+
+    @Size(max = 2048)
+    @Column(name = "logo_image_url", length = 2048)
+    private String logoImageUrl;
+
+    @Size(max = 255)
+    @Column(name = "address_line_1", length = 255)
+    private String addressLine1;
+
+    @Size(max = 255)
+    @Column(name = "address_line_2", length = 255)
+    private String addressLine2;
+
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Size(max = 255)
+    @Column(name = "city", length = 255)
+    private String city;
+
+    @Size(max = 50)
+    @Column(name = "phone_number", length = 50)
+    private String phoneNumber;
+
+    @Size(max = 20)
+    @Column(name = "zip_code", length = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Size(max = 100)
+    @Column(name = "state_province", length = 100)
+    private String stateProvince;
+
+    @Size(max = 255)
+    @Column(name = "email", length = 255)
+    private String email;
+
+    @Size(max = 1024)
+    @Column(name = "facebook_url", length = 1024)
+    private String facebookUrl;
+
+    @Size(max = 1024)
+    @Column(name = "instagram_url", length = 1024)
+    private String instagramUrl;
+
+    @Size(max = 1024)
+    @Column(name = "twitter_url", length = 1024)
+    private String twitterUrl;
+
+    @Size(max = 1024)
+    @Column(name = "linkedin_url", length = 1024)
+    private String linkedinUrl;
+
+    @Size(max = 1024)
+    @Column(name = "youtube_url", length = 1024)
+    private String youtubeUrl;
+
+    @Size(max = 1024)
+    @Column(name = "tiktok_url", length = 1024)
+    private String tiktokUrl;
+
+    @NotNull
+    @Column(name = "homepage_cache_version", nullable = false)
+    private Long homepageCacheVersion = 0L;
+
+    @Column(name = "default_hero_image_urls_json", columnDefinition = "text")
+    private String defaultHeroImageUrlsJson;
+
+    @Size(max = 32)
+    @Column(name = "default_hero_display_mode", length = 32)
+    private String defaultHeroDisplayMode;
+
+    @Column(name = "default_hero_include_with_events")
+    private Boolean defaultHeroIncludeWithEvents;
+
+    @Column(name = "default_hero_max_display_count")
+    private Integer defaultHeroMaxDisplayCount;
+
+    @NotNull
+    @Column(name = "display_event_hero_images", nullable = false)
+    private Boolean displayEventHeroImages = Boolean.TRUE;
+
+    @NotNull
+    @Column(name = "enable_google_adsense", nullable = false)
+    private Boolean enableGoogleAdsense = Boolean.FALSE;
+
+    @Size(max = 32)
+    @Column(name = "google_adsense_publisher_id", length = 32)
+    private String googleAdsensePublisherId;
+
+    @Column(name = "google_adsense_placements_json", columnDefinition = "text")
+    private String googleAdsensePlacementsJson;
+
+    @Column(name = "show_public_profile_hero_section")
+    private Boolean showPublicProfileHeroSection;
+
+    @Column(name = "show_profile_writings_section")
+    private Boolean showProfileWritingsSection;
+
+    @Column(name = "show_profile_achievements_section")
+    private Boolean showProfileAchievementsSection;
+
+    @Column(name = "show_profile_affiliations_section")
+    private Boolean showProfileAffiliationsSection;
+
+    @Column(name = "show_profile_media_downloads_section")
+    private Boolean showProfileMediaDownloadsSection;
+
+    @Column(name = "show_profile_contact_section")
+    private Boolean showProfileContactSection;
+
+    @Column(name = "show_profile_projects_section")
+    private Boolean showProfileProjectsSection;
+
+    @Column(name = "show_profile_services_section")
+    private Boolean showProfileServicesSection;
+
+    @Column(name = "show_profile_family_section")
+    private Boolean showProfileFamilySection;
+
+    /** Header menu visibility (null = app default: ON for legacy items) */
+    @Column(name = "show_header_home")
+    private Boolean showHeaderHome;
+
+    @Column(name = "show_header_about")
+    private Boolean showHeaderAbout;
+
+    @Column(name = "show_header_events")
+    private Boolean showHeaderEvents;
+
+    @Column(name = "show_header_features")
+    private Boolean showHeaderFeatures;
+
+    @Column(name = "show_header_calendar")
+    private Boolean showHeaderCalendar;
+
+    @Column(name = "show_header_gallery")
+    private Boolean showHeaderGallery;
+
+    @Column(name = "show_header_contact")
+    private Boolean showHeaderContact;
+
+    /** Header menu: News / Perspectives (null = OFF) */
+    @Column(name = "show_header_news")
+    private Boolean showHeaderNews;
+
+    /** Header menu: Downloads (null = OFF) */
+    @Column(name = "show_header_downloads")
+    private Boolean showHeaderDownloads;
+
+    /** Header menu: Links (null = OFF) */
+    @Column(name = "show_header_links")
+    private Boolean showHeaderLinks;
+
+    /** Header menu: Services (null = OFF) */
+    @Column(name = "show_header_services")
+    private Boolean showHeaderServices;
+
+    /** Header menu: Achievements (null = OFF) */
+    @Column(name = "show_header_achievements")
+    private Boolean showHeaderAchievements;
+
+    /** Header menu: Affiliations (null = OFF) */
+    @Column(name = "show_header_affiliations")
+    private Boolean showHeaderAffiliations;
+
+    /** Header menu: Projects (null = OFF) */
+    @Column(name = "show_header_projects")
+    private Boolean showHeaderProjects;
+
+    /** Header menu: Family (null = OFF) */
+    @Column(name = "show_header_family")
+    private Boolean showHeaderFamily;
+
+    @Column(name = "enable_gas_station_module")
+    private Boolean enableGasStationModule;
+
+    @Size(max = 1024)
+    @Column(name = "gas_ai_engine_base_url", length = 1024)
+    private String gasAiEngineBaseUrl;
+
+    @Size(max = 512)
+    @Column(name = "gas_ai_engine_api_key_ref", length = 512)
+    private String gasAiEngineApiKeyRef;
+
+    @Size(max = 1048)
+    @Column(name = "gas_ai_engine_webhook_token", length = 1048)
+    private String gasAiEngineWebhookToken;
+
+    @Column(name = "gas_daily_brief_hour_local")
+    private Integer gasDailyBriefHourLocal;
+
+    @Column(name = "enable_retail_module")
+    private Boolean enableRetailModule;
+
+    @Size(max = 1024)
+    @Column(name = "retail_ai_engine_base_url", length = 1024)
+    private String retailAiEngineBaseUrl;
+
+    @Size(max = 512)
+    @Column(name = "retail_ai_engine_api_key_ref", length = 512)
+    private String retailAiEngineApiKeyRef;
+
+    @Size(max = 1048)
+    @Column(name = "retail_ai_engine_webhook_token", length = 1048)
+    private String retailAiEngineWebhookToken;
+
+    @Column(name = "retail_daily_brief_hour_local")
+    private Integer retailDailyBriefHourLocal;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    private ZonedDateTime createdAt;
+
+    @NotNull
+    @Column(name = "updated_at", nullable = false)
+    private ZonedDateTime updatedAt;
+
+    @JsonIgnoreProperties(value = { "tenantSettings" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_organization_id", referencedColumnName = "id")
+    private TenantOrganization tenantOrganization;
+
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public TenantSettings id(Long id) {
+        this.setId(id);
+        return this;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTenantId() {
+        return this.tenantId;
+    }
+
+    public TenantSettings tenantId(String tenantId) {
+        this.setTenantId(tenantId);
+        return this;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public Boolean getAllowUserRegistration() {
+        return this.allowUserRegistration;
+    }
+
+    public TenantSettings allowUserRegistration(Boolean allowUserRegistration) {
+        this.setAllowUserRegistration(allowUserRegistration);
+        return this;
+    }
+
+    public void setAllowUserRegistration(Boolean allowUserRegistration) {
+        this.allowUserRegistration = allowUserRegistration;
+    }
+
+    public Boolean getRequireAdminApproval() {
+        return this.requireAdminApproval;
+    }
+
+    public TenantSettings requireAdminApproval(Boolean requireAdminApproval) {
+        this.setRequireAdminApproval(requireAdminApproval);
+        return this;
+    }
+
+    public void setRequireAdminApproval(Boolean requireAdminApproval) {
+        this.requireAdminApproval = requireAdminApproval;
+    }
+
+    public Boolean getEnableWhatsappIntegration() {
+        return this.enableWhatsappIntegration;
+    }
+
+    public TenantSettings enableWhatsappIntegration(Boolean enableWhatsappIntegration) {
+        this.setEnableWhatsappIntegration(enableWhatsappIntegration);
+        return this;
+    }
+
+    public void setEnableWhatsappIntegration(Boolean enableWhatsappIntegration) {
+        this.enableWhatsappIntegration = enableWhatsappIntegration;
+    }
+
+    public Boolean getEnableEmailMarketing() {
+        return this.enableEmailMarketing;
+    }
+
+    public TenantSettings enableEmailMarketing(Boolean enableEmailMarketing) {
+        this.setEnableEmailMarketing(enableEmailMarketing);
+        return this;
+    }
+
+    public void setEnableEmailMarketing(Boolean enableEmailMarketing) {
+        this.enableEmailMarketing = enableEmailMarketing;
+    }
+
+    public Boolean getIsMembershipSubscriptionEnabled() {
+        return this.isMembershipSubscriptionEnabled;
+    }
+
+    public TenantSettings isMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.setIsMembershipSubscriptionEnabled(isMembershipSubscriptionEnabled);
+        return this;
+    }
+
+    public void setIsMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.isMembershipSubscriptionEnabled = isMembershipSubscriptionEnabled;
+    }
+
+    public String getWhatsappApiKey() {
+        return this.whatsappApiKey;
+    }
+
+    public TenantSettings whatsappApiKey(String whatsappApiKey) {
+        this.setWhatsappApiKey(whatsappApiKey);
+        return this;
+    }
+
+    public void setWhatsappApiKey(String whatsappApiKey) {
+        this.whatsappApiKey = whatsappApiKey;
+    }
+
+    public String getEmailProviderConfig() {
+        return this.emailProviderConfig;
+    }
+
+    public TenantSettings emailProviderConfig(String emailProviderConfig) {
+        this.setEmailProviderConfig(emailProviderConfig);
+        return this;
+    }
+
+    public void setEmailProviderConfig(String emailProviderConfig) {
+        this.emailProviderConfig = emailProviderConfig;
+    }
+
+    public Integer getMaxEventsPerMonth() {
+        return this.maxEventsPerMonth;
+    }
+
+    public TenantSettings maxEventsPerMonth(Integer maxEventsPerMonth) {
+        this.setMaxEventsPerMonth(maxEventsPerMonth);
+        return this;
+    }
+
+    public void setMaxEventsPerMonth(Integer maxEventsPerMonth) {
+        this.maxEventsPerMonth = maxEventsPerMonth;
+    }
+
+    public Integer getMaxAttendeesPerEvent() {
+        return this.maxAttendeesPerEvent;
+    }
+
+    public TenantSettings maxAttendeesPerEvent(Integer maxAttendeesPerEvent) {
+        this.setMaxAttendeesPerEvent(maxAttendeesPerEvent);
+        return this;
+    }
+
+    public void setMaxAttendeesPerEvent(Integer maxAttendeesPerEvent) {
+        this.maxAttendeesPerEvent = maxAttendeesPerEvent;
+    }
+
+    public Boolean getEnableGuestRegistration() {
+        return this.enableGuestRegistration;
+    }
+
+    public TenantSettings enableGuestRegistration(Boolean enableGuestRegistration) {
+        this.setEnableGuestRegistration(enableGuestRegistration);
+        return this;
+    }
+
+    public void setEnableGuestRegistration(Boolean enableGuestRegistration) {
+        this.enableGuestRegistration = enableGuestRegistration;
+    }
+
+    public Integer getMaxGuestsPerAttendee() {
+        return this.maxGuestsPerAttendee;
+    }
+
+    public TenantSettings maxGuestsPerAttendee(Integer maxGuestsPerAttendee) {
+        this.setMaxGuestsPerAttendee(maxGuestsPerAttendee);
+        return this;
+    }
+
+    public void setMaxGuestsPerAttendee(Integer maxGuestsPerAttendee) {
+        this.maxGuestsPerAttendee = maxGuestsPerAttendee;
+    }
+
+    public Integer getDefaultEventCapacity() {
+        return this.defaultEventCapacity;
+    }
+
+    public TenantSettings defaultEventCapacity(Integer defaultEventCapacity) {
+        this.setDefaultEventCapacity(defaultEventCapacity);
+        return this;
+    }
+
+    public void setDefaultEventCapacity(Integer defaultEventCapacity) {
+        this.defaultEventCapacity = defaultEventCapacity;
+    }
+
+    public BigDecimal getPlatformFeePercentage() {
+        return this.platformFeePercentage;
+    }
+
+    public TenantSettings platformFeePercentage(BigDecimal platformFeePercentage) {
+        this.setPlatformFeePercentage(platformFeePercentage);
+        return this;
+    }
+
+    public void setPlatformFeePercentage(BigDecimal platformFeePercentage) {
+        this.platformFeePercentage = platformFeePercentage;
+    }
+
+    public String getCustomCss() {
+        return this.customCss;
+    }
+
+    public TenantSettings customCss(String customCss) {
+        this.setCustomCss(customCss);
+        return this;
+    }
+
+    public void setCustomCss(String customCss) {
+        this.customCss = customCss;
+    }
+
+    public String getCustomJs() {
+        return this.customJs;
+    }
+
+    public TenantSettings customJs(String customJs) {
+        this.setCustomJs(customJs);
+        return this;
+    }
+
+    public void setCustomJs(String customJs) {
+        this.customJs = customJs;
+    }
+
+    public Boolean getShowEventsSectionInHomePage() {
+        return this.showEventsSectionInHomePage;
+    }
+
+    public TenantSettings showEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.setShowEventsSectionInHomePage(showEventsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.showEventsSectionInHomePage = showEventsSectionInHomePage;
+    }
+
+    public Boolean getShowTeamMembersSectionInHomePage() {
+        return this.showTeamMembersSectionInHomePage;
+    }
+
+    public TenantSettings showTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.setShowTeamMembersSectionInHomePage(showTeamMembersSectionInHomePage);
+        return this;
+    }
+
+    public void setShowTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.showTeamMembersSectionInHomePage = showTeamMembersSectionInHomePage;
+    }
+
+    public Boolean getShowSponsorsSectionInHomePage() {
+        return this.showSponsorsSectionInHomePage;
+    }
+
+    public TenantSettings showSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.setShowSponsorsSectionInHomePage(showSponsorsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
+    }
+
+    public Boolean getShowPublicProfileHeroSection() {
+        return this.showPublicProfileHeroSection;
+    }
+
+    public TenantSettings showPublicProfileHeroSection(Boolean showPublicProfileHeroSection) {
+        this.setShowPublicProfileHeroSection(showPublicProfileHeroSection);
+        return this;
+    }
+
+    public void setShowPublicProfileHeroSection(Boolean showPublicProfileHeroSection) {
+        this.showPublicProfileHeroSection = showPublicProfileHeroSection;
+    }
+
+    public Boolean getShowProfileWritingsSection() {
+        return this.showProfileWritingsSection;
+    }
+
+    public TenantSettings showProfileWritingsSection(Boolean showProfileWritingsSection) {
+        this.setShowProfileWritingsSection(showProfileWritingsSection);
+        return this;
+    }
+
+    public void setShowProfileWritingsSection(Boolean showProfileWritingsSection) {
+        this.showProfileWritingsSection = showProfileWritingsSection;
+    }
+
+    public Boolean getShowProfileAchievementsSection() {
+        return this.showProfileAchievementsSection;
+    }
+
+    public TenantSettings showProfileAchievementsSection(Boolean showProfileAchievementsSection) {
+        this.setShowProfileAchievementsSection(showProfileAchievementsSection);
+        return this;
+    }
+
+    public void setShowProfileAchievementsSection(Boolean showProfileAchievementsSection) {
+        this.showProfileAchievementsSection = showProfileAchievementsSection;
+    }
+
+    public Boolean getShowProfileAffiliationsSection() {
+        return this.showProfileAffiliationsSection;
+    }
+
+    public TenantSettings showProfileAffiliationsSection(Boolean showProfileAffiliationsSection) {
+        this.setShowProfileAffiliationsSection(showProfileAffiliationsSection);
+        return this;
+    }
+
+    public void setShowProfileAffiliationsSection(Boolean showProfileAffiliationsSection) {
+        this.showProfileAffiliationsSection = showProfileAffiliationsSection;
+    }
+
+    public Boolean getShowProfileMediaDownloadsSection() {
+        return this.showProfileMediaDownloadsSection;
+    }
+
+    public TenantSettings showProfileMediaDownloadsSection(Boolean showProfileMediaDownloadsSection) {
+        this.setShowProfileMediaDownloadsSection(showProfileMediaDownloadsSection);
+        return this;
+    }
+
+    public void setShowProfileMediaDownloadsSection(Boolean showProfileMediaDownloadsSection) {
+        this.showProfileMediaDownloadsSection = showProfileMediaDownloadsSection;
+    }
+
+    public Boolean getShowProfileContactSection() {
+        return this.showProfileContactSection;
+    }
+
+    public TenantSettings showProfileContactSection(Boolean showProfileContactSection) {
+        this.setShowProfileContactSection(showProfileContactSection);
+        return this;
+    }
+
+    public void setShowProfileContactSection(Boolean showProfileContactSection) {
+        this.showProfileContactSection = showProfileContactSection;
+    }
+
+    public Boolean getShowProfileProjectsSection() {
+        return this.showProfileProjectsSection;
+    }
+
+    public TenantSettings showProfileProjectsSection(Boolean showProfileProjectsSection) {
+        this.setShowProfileProjectsSection(showProfileProjectsSection);
+        return this;
+    }
+
+    public void setShowProfileProjectsSection(Boolean showProfileProjectsSection) {
+        this.showProfileProjectsSection = showProfileProjectsSection;
+    }
+
+    public Boolean getShowProfileServicesSection() {
+        return this.showProfileServicesSection;
+    }
+
+    public TenantSettings showProfileServicesSection(Boolean showProfileServicesSection) {
+        this.setShowProfileServicesSection(showProfileServicesSection);
+        return this;
+    }
+
+    public void setShowProfileServicesSection(Boolean showProfileServicesSection) {
+        this.showProfileServicesSection = showProfileServicesSection;
+    }
+
+    public Boolean getShowProfileFamilySection() {
+        return this.showProfileFamilySection;
+    }
+
+    public TenantSettings showProfileFamilySection(Boolean showProfileFamilySection) {
+        this.setShowProfileFamilySection(showProfileFamilySection);
+        return this;
+    }
+
+    public void setShowProfileFamilySection(Boolean showProfileFamilySection) {
+        this.showProfileFamilySection = showProfileFamilySection;
+    }
+
+    public Boolean getShowHeaderHome() {
+        return this.showHeaderHome;
+    }
+
+    public TenantSettings showHeaderHome(Boolean showHeaderHome) {
+        this.setShowHeaderHome(showHeaderHome);
+        return this;
+    }
+
+    public void setShowHeaderHome(Boolean showHeaderHome) {
+        this.showHeaderHome = showHeaderHome;
+    }
+
+    public Boolean getShowHeaderAbout() {
+        return this.showHeaderAbout;
+    }
+
+    public TenantSettings showHeaderAbout(Boolean showHeaderAbout) {
+        this.setShowHeaderAbout(showHeaderAbout);
+        return this;
+    }
+
+    public void setShowHeaderAbout(Boolean showHeaderAbout) {
+        this.showHeaderAbout = showHeaderAbout;
+    }
+
+    public Boolean getShowHeaderEvents() {
+        return this.showHeaderEvents;
+    }
+
+    public TenantSettings showHeaderEvents(Boolean showHeaderEvents) {
+        this.setShowHeaderEvents(showHeaderEvents);
+        return this;
+    }
+
+    public void setShowHeaderEvents(Boolean showHeaderEvents) {
+        this.showHeaderEvents = showHeaderEvents;
+    }
+
+    public Boolean getShowHeaderFeatures() {
+        return this.showHeaderFeatures;
+    }
+
+    public TenantSettings showHeaderFeatures(Boolean showHeaderFeatures) {
+        this.setShowHeaderFeatures(showHeaderFeatures);
+        return this;
+    }
+
+    public void setShowHeaderFeatures(Boolean showHeaderFeatures) {
+        this.showHeaderFeatures = showHeaderFeatures;
+    }
+
+    public Boolean getShowHeaderCalendar() {
+        return this.showHeaderCalendar;
+    }
+
+    public TenantSettings showHeaderCalendar(Boolean showHeaderCalendar) {
+        this.setShowHeaderCalendar(showHeaderCalendar);
+        return this;
+    }
+
+    public void setShowHeaderCalendar(Boolean showHeaderCalendar) {
+        this.showHeaderCalendar = showHeaderCalendar;
+    }
+
+    public Boolean getShowHeaderGallery() {
+        return this.showHeaderGallery;
+    }
+
+    public TenantSettings showHeaderGallery(Boolean showHeaderGallery) {
+        this.setShowHeaderGallery(showHeaderGallery);
+        return this;
+    }
+
+    public void setShowHeaderGallery(Boolean showHeaderGallery) {
+        this.showHeaderGallery = showHeaderGallery;
+    }
+
+    public Boolean getShowHeaderContact() {
+        return this.showHeaderContact;
+    }
+
+    public TenantSettings showHeaderContact(Boolean showHeaderContact) {
+        this.setShowHeaderContact(showHeaderContact);
+        return this;
+    }
+
+    public void setShowHeaderContact(Boolean showHeaderContact) {
+        this.showHeaderContact = showHeaderContact;
+    }
+
+    public Boolean getShowHeaderNews() {
+        return this.showHeaderNews;
+    }
+
+    public TenantSettings showHeaderNews(Boolean showHeaderNews) {
+        this.setShowHeaderNews(showHeaderNews);
+        return this;
+    }
+
+    public void setShowHeaderNews(Boolean showHeaderNews) {
+        this.showHeaderNews = showHeaderNews;
+    }
+
+    public Boolean getShowHeaderDownloads() {
+        return this.showHeaderDownloads;
+    }
+
+    public TenantSettings showHeaderDownloads(Boolean showHeaderDownloads) {
+        this.setShowHeaderDownloads(showHeaderDownloads);
+        return this;
+    }
+
+    public void setShowHeaderDownloads(Boolean showHeaderDownloads) {
+        this.showHeaderDownloads = showHeaderDownloads;
+    }
+
+    public Boolean getShowHeaderLinks() {
+        return this.showHeaderLinks;
+    }
+
+    public TenantSettings showHeaderLinks(Boolean showHeaderLinks) {
+        this.setShowHeaderLinks(showHeaderLinks);
+        return this;
+    }
+
+    public void setShowHeaderLinks(Boolean showHeaderLinks) {
+        this.showHeaderLinks = showHeaderLinks;
+    }
+
+    public Boolean getShowHeaderServices() {
+        return this.showHeaderServices;
+    }
+
+    public TenantSettings showHeaderServices(Boolean showHeaderServices) {
+        this.setShowHeaderServices(showHeaderServices);
+        return this;
+    }
+
+    public void setShowHeaderServices(Boolean showHeaderServices) {
+        this.showHeaderServices = showHeaderServices;
+    }
+
+    public Boolean getShowHeaderAchievements() {
+        return this.showHeaderAchievements;
+    }
+
+    public TenantSettings showHeaderAchievements(Boolean showHeaderAchievements) {
+        this.setShowHeaderAchievements(showHeaderAchievements);
+        return this;
+    }
+
+    public void setShowHeaderAchievements(Boolean showHeaderAchievements) {
+        this.showHeaderAchievements = showHeaderAchievements;
+    }
+
+    public Boolean getShowHeaderAffiliations() {
+        return this.showHeaderAffiliations;
+    }
+
+    public TenantSettings showHeaderAffiliations(Boolean showHeaderAffiliations) {
+        this.setShowHeaderAffiliations(showHeaderAffiliations);
+        return this;
+    }
+
+    public void setShowHeaderAffiliations(Boolean showHeaderAffiliations) {
+        this.showHeaderAffiliations = showHeaderAffiliations;
+    }
+
+    public Boolean getShowHeaderProjects() {
+        return this.showHeaderProjects;
+    }
+
+    public TenantSettings showHeaderProjects(Boolean showHeaderProjects) {
+        this.setShowHeaderProjects(showHeaderProjects);
+        return this;
+    }
+
+    public void setShowHeaderProjects(Boolean showHeaderProjects) {
+        this.showHeaderProjects = showHeaderProjects;
+    }
+
+    public Boolean getShowHeaderFamily() {
+        return this.showHeaderFamily;
+    }
+
+    public TenantSettings showHeaderFamily(Boolean showHeaderFamily) {
+        this.setShowHeaderFamily(showHeaderFamily);
+        return this;
+    }
+
+    public void setShowHeaderFamily(Boolean showHeaderFamily) {
+        this.showHeaderFamily = showHeaderFamily;
+    }
+
+    public Boolean getEnableGasStationModule() {
+        return this.enableGasStationModule;
+    }
+
+    public TenantSettings enableGasStationModule(Boolean enableGasStationModule) {
+        this.setEnableGasStationModule(enableGasStationModule);
+        return this;
+    }
+
+    public void setEnableGasStationModule(Boolean enableGasStationModule) {
+        this.enableGasStationModule = enableGasStationModule;
+    }
+
+    public String getGasAiEngineBaseUrl() {
+        return this.gasAiEngineBaseUrl;
+    }
+
+    public TenantSettings gasAiEngineBaseUrl(String gasAiEngineBaseUrl) {
+        this.setGasAiEngineBaseUrl(gasAiEngineBaseUrl);
+        return this;
+    }
+
+    public void setGasAiEngineBaseUrl(String gasAiEngineBaseUrl) {
+        this.gasAiEngineBaseUrl = gasAiEngineBaseUrl;
+    }
+
+    public String getGasAiEngineApiKeyRef() {
+        return this.gasAiEngineApiKeyRef;
+    }
+
+    public TenantSettings gasAiEngineApiKeyRef(String gasAiEngineApiKeyRef) {
+        this.setGasAiEngineApiKeyRef(gasAiEngineApiKeyRef);
+        return this;
+    }
+
+    public void setGasAiEngineApiKeyRef(String gasAiEngineApiKeyRef) {
+        this.gasAiEngineApiKeyRef = gasAiEngineApiKeyRef;
+    }
+
+    public String getGasAiEngineWebhookToken() {
+        return this.gasAiEngineWebhookToken;
+    }
+
+    public TenantSettings gasAiEngineWebhookToken(String gasAiEngineWebhookToken) {
+        this.setGasAiEngineWebhookToken(gasAiEngineWebhookToken);
+        return this;
+    }
+
+    public void setGasAiEngineWebhookToken(String gasAiEngineWebhookToken) {
+        this.gasAiEngineWebhookToken = gasAiEngineWebhookToken;
+    }
+
+    public Integer getGasDailyBriefHourLocal() {
+        return this.gasDailyBriefHourLocal;
+    }
+
+    public TenantSettings gasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
+        this.setGasDailyBriefHourLocal(gasDailyBriefHourLocal);
+        return this;
+    }
+
+    public void setGasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
+        this.gasDailyBriefHourLocal = gasDailyBriefHourLocal;
+    }
+
+    public Boolean getEnableRetailModule() {
+        return this.enableRetailModule;
+    }
+
+    public void setEnableRetailModule(Boolean enableRetailModule) {
+        this.enableRetailModule = enableRetailModule;
+    }
+
+    public String getRetailAiEngineBaseUrl() {
+        return this.retailAiEngineBaseUrl;
+    }
+
+    public void setRetailAiEngineBaseUrl(String retailAiEngineBaseUrl) {
+        this.retailAiEngineBaseUrl = retailAiEngineBaseUrl;
+    }
+
+    public String getRetailAiEngineApiKeyRef() {
+        return this.retailAiEngineApiKeyRef;
+    }
+
+    public void setRetailAiEngineApiKeyRef(String retailAiEngineApiKeyRef) {
+        this.retailAiEngineApiKeyRef = retailAiEngineApiKeyRef;
+    }
+
+    public String getRetailAiEngineWebhookToken() {
+        return this.retailAiEngineWebhookToken;
+    }
+
+    public void setRetailAiEngineWebhookToken(String retailAiEngineWebhookToken) {
+        this.retailAiEngineWebhookToken = retailAiEngineWebhookToken;
+    }
+
+    public Integer getRetailDailyBriefHourLocal() {
+        return this.retailDailyBriefHourLocal;
+    }
+
+    public void setRetailDailyBriefHourLocal(Integer retailDailyBriefHourLocal) {
+        this.retailDailyBriefHourLocal = retailDailyBriefHourLocal;
+    }
+
+    public ZonedDateTime getCreatedAt() {
+        return this.createdAt;
+    }
+
+    public TenantSettings createdAt(ZonedDateTime createdAt) {
+        this.setCreatedAt(createdAt);
+        return this;
+    }
+
+    public void setCreatedAt(ZonedDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public ZonedDateTime getUpdatedAt() {
+        return this.updatedAt;
+    }
+
+    public TenantSettings updatedAt(ZonedDateTime updatedAt) {
+        this.setUpdatedAt(updatedAt);
+        return this;
+    }
+
+    public void setUpdatedAt(ZonedDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public TenantOrganization getTenantOrganization() {
+        return this.tenantOrganization;
+    }
+
+    public void setTenantOrganization(TenantOrganization tenantOrganization) {
+        this.tenantOrganization = tenantOrganization;
+    }
+
+    public TenantSettings tenantOrganization(TenantOrganization tenantOrganization) {
+        this.setTenantOrganization(tenantOrganization);
+        return this;
+    }
+
+    public String getTwilioAccountSid() {
+        return this.twilioAccountSid;
+    }
+
+    public TenantSettings twilioAccountSid(String twilioAccountSid) {
+        this.setTwilioAccountSid(twilioAccountSid);
+        return this;
+    }
+
+    public void setTwilioAccountSid(String twilioAccountSid) {
+        this.twilioAccountSid = twilioAccountSid;
+    }
+
+    public String getTwilioAuthToken() {
+        return this.twilioAuthToken;
+    }
+
+    public TenantSettings twilioAuthToken(String twilioAuthToken) {
+        this.setTwilioAuthToken(twilioAuthToken);
+        return this;
+    }
+
+    public void setTwilioAuthToken(String twilioAuthToken) {
+        this.twilioAuthToken = twilioAuthToken;
+    }
+
+    public String getTwilioWhatsappFrom() {
+        return this.twilioWhatsappFrom;
+    }
+
+    public TenantSettings twilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.setTwilioWhatsappFrom(twilioWhatsappFrom);
+        return this;
+    }
+
+    public void setTwilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.twilioWhatsappFrom = twilioWhatsappFrom;
+    }
+
+    public String getWhatsappWebhookUrl() {
+        return this.whatsappWebhookUrl;
+    }
+
+    public TenantSettings whatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.setWhatsappWebhookUrl(whatsappWebhookUrl);
+        return this;
+    }
+
+    public void setWhatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.whatsappWebhookUrl = whatsappWebhookUrl;
+    }
+
+    public String getWhatsappWebhookToken() {
+        return this.whatsappWebhookToken;
+    }
+
+    public TenantSettings whatsappWebhookToken(String whatsappWebhookToken) {
+        this.setWhatsappWebhookToken(whatsappWebhookToken);
+        return this;
+    }
+
+    public void setWhatsappWebhookToken(String whatsappWebhookToken) {
+        this.whatsappWebhookToken = whatsappWebhookToken;
+    }
+
+    public String getEmailFooterHtmlUrl() {
+        return this.emailFooterHtmlUrl;
+    }
+
+    public TenantSettings emailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.setEmailFooterHtmlUrl(emailFooterHtmlUrl);
+        return this;
+    }
+
+    public void setEmailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.emailFooterHtmlUrl = emailFooterHtmlUrl;
+    }
+
+    public String getEmailHeaderImageUrl() {
+        return this.emailHeaderImageUrl;
+    }
+
+    public TenantSettings emailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.setEmailHeaderImageUrl(emailHeaderImageUrl);
+        return this;
+    }
+
+    public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
+    public String getLogoImageUrl() {
+        return this.logoImageUrl;
+    }
+
+    public TenantSettings logoImageUrl(String logoImageUrl) {
+        this.setLogoImageUrl(logoImageUrl);
+        return this;
+    }
+
+    public void setLogoImageUrl(String logoImageUrl) {
+        this.logoImageUrl = logoImageUrl;
+    }
+
+    public String getAddressLine1() {
+        return this.addressLine1;
+    }
+
+    public TenantSettings addressLine1(String addressLine1) {
+        this.setAddressLine1(addressLine1);
+        return this;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    public String getAddressLine2() {
+        return this.addressLine2;
+    }
+
+    public TenantSettings addressLine2(String addressLine2) {
+        this.setAddressLine2(addressLine2);
+        return this;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public TenantSettings description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCity() {
+        return this.city;
+    }
+
+    public TenantSettings city(String city) {
+        this.setCity(city);
+        return this;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
+    public TenantSettings phoneNumber(String phoneNumber) {
+        this.setPhoneNumber(phoneNumber);
+        return this;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getZipCode() {
+        return this.zipCode;
+    }
+
+    public TenantSettings zipCode(String zipCode) {
+        this.setZipCode(zipCode);
+        return this;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public TenantSettings country(String country) {
+        this.setCountry(country);
+        return this;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getStateProvince() {
+        return this.stateProvince;
+    }
+
+    public TenantSettings stateProvince(String stateProvince) {
+        this.setStateProvince(stateProvince);
+        return this;
+    }
+
+    public void setStateProvince(String stateProvince) {
+        this.stateProvince = stateProvince;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public TenantSettings email(String email) {
+        this.setEmail(email);
+        return this;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFacebookUrl() {
+        return this.facebookUrl;
+    }
+
+    public TenantSettings facebookUrl(String facebookUrl) {
+        this.setFacebookUrl(facebookUrl);
+        return this;
+    }
+
+    public void setFacebookUrl(String facebookUrl) {
+        this.facebookUrl = facebookUrl;
+    }
+
+    public String getInstagramUrl() {
+        return this.instagramUrl;
+    }
+
+    public TenantSettings instagramUrl(String instagramUrl) {
+        this.setInstagramUrl(instagramUrl);
+        return this;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public String getTwitterUrl() {
+        return this.twitterUrl;
+    }
+
+    public TenantSettings twitterUrl(String twitterUrl) {
+        this.setTwitterUrl(twitterUrl);
+        return this;
+    }
+
+    public void setTwitterUrl(String twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
+    public String getLinkedinUrl() {
+        return this.linkedinUrl;
+    }
+
+    public TenantSettings linkedinUrl(String linkedinUrl) {
+        this.setLinkedinUrl(linkedinUrl);
+        return this;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public String getYoutubeUrl() {
+        return this.youtubeUrl;
+    }
+
+    public TenantSettings youtubeUrl(String youtubeUrl) {
+        this.setYoutubeUrl(youtubeUrl);
+        return this;
+    }
+
+    public void setYoutubeUrl(String youtubeUrl) {
+        this.youtubeUrl = youtubeUrl;
+    }
+
+    public String getTiktokUrl() {
+        return this.tiktokUrl;
+    }
+
+    public TenantSettings tiktokUrl(String tiktokUrl) {
+        this.setTiktokUrl(tiktokUrl);
+        return this;
+    }
+
+    public void setTiktokUrl(String tiktokUrl) {
+        this.tiktokUrl = tiktokUrl;
+    }
+
+    public Long getHomepageCacheVersion() {
+        return this.homepageCacheVersion;
+    }
+
+    public TenantSettings homepageCacheVersion(Long homepageCacheVersion) {
+        this.setHomepageCacheVersion(homepageCacheVersion);
+        return this;
+    }
+
+    public void setHomepageCacheVersion(Long homepageCacheVersion) {
+        this.homepageCacheVersion = homepageCacheVersion;
+    }
+
+    public String getDefaultHeroImageUrlsJson() {
+        return this.defaultHeroImageUrlsJson;
+    }
+
+    public TenantSettings defaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.setDefaultHeroImageUrlsJson(defaultHeroImageUrlsJson);
+        return this;
+    }
+
+    public void setDefaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.defaultHeroImageUrlsJson = defaultHeroImageUrlsJson;
+    }
+
+    public String getDefaultHeroDisplayMode() {
+        return this.defaultHeroDisplayMode;
+    }
+
+    public TenantSettings defaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.setDefaultHeroDisplayMode(defaultHeroDisplayMode);
+        return this;
+    }
+
+    public void setDefaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.defaultHeroDisplayMode = defaultHeroDisplayMode;
+    }
+
+    public Boolean getDefaultHeroIncludeWithEvents() {
+        return this.defaultHeroIncludeWithEvents;
+    }
+
+    public TenantSettings defaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.setDefaultHeroIncludeWithEvents(defaultHeroIncludeWithEvents);
+        return this;
+    }
+
+    public void setDefaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.defaultHeroIncludeWithEvents = defaultHeroIncludeWithEvents;
+    }
+
+    public Integer getDefaultHeroMaxDisplayCount() {
+        return this.defaultHeroMaxDisplayCount;
+    }
+
+    public TenantSettings defaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.setDefaultHeroMaxDisplayCount(defaultHeroMaxDisplayCount);
+        return this;
+    }
+
+    public void setDefaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
+    }
+
+    public Boolean getDisplayEventHeroImages() {
+        return this.displayEventHeroImages;
+    }
+
+    public TenantSettings displayEventHeroImages(Boolean displayEventHeroImages) {
+        this.setDisplayEventHeroImages(displayEventHeroImages);
+        return this;
+    }
+
+    public void setDisplayEventHeroImages(Boolean displayEventHeroImages) {
+        this.displayEventHeroImages = displayEventHeroImages;
+    }
+
+    public Boolean getEnableGoogleAdsense() {
+        return this.enableGoogleAdsense;
+    }
+
+    public TenantSettings enableGoogleAdsense(Boolean enableGoogleAdsense) {
+        this.setEnableGoogleAdsense(enableGoogleAdsense);
+        return this;
+    }
+
+    public void setEnableGoogleAdsense(Boolean enableGoogleAdsense) {
+        this.enableGoogleAdsense = enableGoogleAdsense;
+    }
+
+    public String getGoogleAdsensePublisherId() {
+        return this.googleAdsensePublisherId;
+    }
+
+    public TenantSettings googleAdsensePublisherId(String googleAdsensePublisherId) {
+        this.setGoogleAdsensePublisherId(googleAdsensePublisherId);
+        return this;
+    }
+
+    public void setGoogleAdsensePublisherId(String googleAdsensePublisherId) {
+        this.googleAdsensePublisherId = googleAdsensePublisherId;
+    }
+
+    public String getGoogleAdsensePlacementsJson() {
+        return this.googleAdsensePlacementsJson;
+    }
+
+    public TenantSettings googleAdsensePlacementsJson(String googleAdsensePlacementsJson) {
+        this.setGoogleAdsensePlacementsJson(googleAdsensePlacementsJson);
+        return this;
+    }
+
+    public void setGoogleAdsensePlacementsJson(String googleAdsensePlacementsJson) {
+        this.googleAdsensePlacementsJson = googleAdsensePlacementsJson;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TenantSettings)) {
+            return false;
+        }
+        return getId() != null && getId().equals(((TenantSettings) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
+    }
+
+    // prettier-ignore
+    @Override
+    public String toString() {
+        return "TenantSettings{" +
+                "id=" + getId() +
+                ", tenantId='" + getTenantId() + "'" +
+                ", allowUserRegistration='" + getAllowUserRegistration() + "'" +
+                ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
+                ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
+                ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
+                ", isMembershipSubscriptionEnabled='" + getIsMembershipSubscriptionEnabled() + "'" +
+                ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
+                ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
+                ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
+                ", maxAttendeesPerEvent=" + getMaxAttendeesPerEvent() +
+                ", enableGuestRegistration='" + getEnableGuestRegistration() + "'" +
+                ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
+                ", defaultEventCapacity=" + getDefaultEventCapacity() +
+                ", platformFeePercentage=" + getPlatformFeePercentage() +
+                ", customCss='" + getCustomCss() + "'" +
+                ", customJs='" + getCustomJs() + "'" +
+                ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
+                ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
+                ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
+                ", twilioAccountSid='" + getTwilioAccountSid() + "'" +
+                ", twilioAuthToken='" + getTwilioAuthToken() + "'" +
+                ", twilioWhatsappFrom='" + getTwilioWhatsappFrom() + "'" +
+                ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
+                ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
+                ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
+                ", emailHeaderImageUrl='" + getEmailHeaderImageUrl() + "'" +
+                ", logoImageUrl='" + getLogoImageUrl() + "'" +
+                ", addressLine1='" + getAddressLine1() + "'" +
+                ", addressLine2='" + getAddressLine2() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", city='" + getCity() + "'" +
+                ", phoneNumber='" + getPhoneNumber() + "'" +
+                ", zipCode='" + getZipCode() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", stateProvince='" + getStateProvince() + "'" +
+                ", email='" + getEmail() + "'" +
+                ", facebookUrl='" + getFacebookUrl() + "'" +
+                ", instagramUrl='" + getInstagramUrl() + "'" +
+                ", twitterUrl='" + getTwitterUrl() + "'" +
+                ", linkedinUrl='" + getLinkedinUrl() + "'" +
+                ", youtubeUrl='" + getYoutubeUrl() + "'" +
+                ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", homepageCacheVersion=" + getHomepageCacheVersion() +
+                ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
+                ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
+                ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
+                ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
+                ", displayEventHeroImages='" + getDisplayEventHeroImages() + "'" +
+                ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
+                ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
+                ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +
+                ", showHeaderHome='" + getShowHeaderHome() + "'" +
+                ", showHeaderAbout='" + getShowHeaderAbout() + "'" +
+                ", showHeaderEvents='" + getShowHeaderEvents() + "'" +
+                ", showHeaderFeatures='" + getShowHeaderFeatures() + "'" +
+                ", showHeaderCalendar='" + getShowHeaderCalendar() + "'" +
+                ", showHeaderGallery='" + getShowHeaderGallery() + "'" +
+                ", showHeaderContact='" + getShowHeaderContact() + "'" +
+                ", showHeaderNews='" + getShowHeaderNews() + "'" +
+                ", showHeaderDownloads='" + getShowHeaderDownloads() + "'" +
+                ", showHeaderLinks='" + getShowHeaderLinks() + "'" +
+                ", showHeaderServices='" + getShowHeaderServices() + "'" +
+                ", showHeaderAchievements='" + getShowHeaderAchievements() + "'" +
+                ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
+                ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
+                ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                "}";
+    }
+}

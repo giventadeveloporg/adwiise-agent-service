@@ -1,2 +1,2 @@
-org.springframework.test.context.ContextCustomizerFactory = com.eventsitemanager.\
+org.springframework.test.context.ContextCustomizerFactory = com.adwiiseagent.\
     config.SqlTestContainersSpringContextCustomizerFactory

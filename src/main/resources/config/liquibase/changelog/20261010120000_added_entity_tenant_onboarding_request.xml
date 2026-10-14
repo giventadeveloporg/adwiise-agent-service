@@ -6,7 +6,7 @@
 
     <!--
         New Customer Onboarding: platform-level request table (no tenant FK).
-        Mirrored in event-site-manager-database:
+        Mirrored in adwiise-agent-database-repo:
           SQLS/Current_Sqls/Event_Site_Manager_Latest_Schema.sql
           SQLS/migrations/20261010120000_tenant_onboarding_request.sql
     -->
