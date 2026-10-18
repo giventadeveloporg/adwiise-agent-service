@@ -160,5 +160,7 @@
     <include file="config/liquibase/changelog/20261010120000_added_entity_tenant_onboarding_request.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261011140000_platform_tenant_billing.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261014180000_tenant_settings_repository_url.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261017120000_added_entity_tenant_tournament.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261017140000_tenant_tournament_short_label.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

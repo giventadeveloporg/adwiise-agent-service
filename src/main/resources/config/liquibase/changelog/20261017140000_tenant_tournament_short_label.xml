@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261017140000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_tournament"/>
+            <not>
+                <columnExists tableName="tenant_tournament" columnName="short_label"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            ALTER TABLE public.tenant_tournament ADD COLUMN short_label character varying(40);
+
+            UPDATE public.tenant_tournament
+            SET short_label = LEFT(btrim(title), 40)
+            WHERE short_label IS NULL OR btrim(short_label) = '';
+
+            UPDATE public.tenant_tournament
+            SET short_label = 'Capital Cup'
+            WHERE slug = 'capital-cup-2026';
+
+            UPDATE public.tenant_tournament
+            SET short_label = 'Capital Cup 2025'
+            WHERE slug = 'capital-cup-2025';
+
+            ALTER TABLE public.tenant_tournament ALTER COLUMN short_label SET NOT NULL;
+            ALTER TABLE public.tenant_tournament ALTER COLUMN edition_year DROP NOT NULL;
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_tenant_tournament__tenant_short_label
+                ON public.tenant_tournament (tenant_id, short_label);
+
+            COMMENT ON COLUMN public.tenant_tournament.short_label IS 'Unique menu label shown in the public header when this tournament is selected.';
+            COMMENT ON COLUMN public.tenant_tournament.edition_year IS 'Optional year. Not used in the header label.';
+            COMMENT ON TABLE public.tenant_tournament IS 'Tenant-hosted tournaments. The header shows the short label of the tournament marked show_in_header.';
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

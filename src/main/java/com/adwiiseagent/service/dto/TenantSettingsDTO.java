@@ -263,6 +263,9 @@ public class TenantSettingsDTO implements Serializable {
     /** Header menu: Family (null = OFF) */
     private Boolean showHeaderFamily;
 
+    /** Header menu: featured tournament edition (null = OFF). Sports tenants. */
+    private Boolean showHeaderTournament;
+
     private Boolean enableGasStationModule;
 
     @Size(max = 1024)
@@ -962,6 +965,14 @@ public class TenantSettingsDTO implements Serializable {
         this.showHeaderFamily = showHeaderFamily;
     }
 
+    public Boolean getShowHeaderTournament() {
+        return showHeaderTournament;
+    }
+
+    public void setShowHeaderTournament(Boolean showHeaderTournament) {
+        this.showHeaderTournament = showHeaderTournament;
+    }
+
     public Boolean getEnableGasStationModule() {
         return enableGasStationModule;
     }
@@ -1167,6 +1178,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
                 ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
                 ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
+                ", showHeaderTournament='" + getShowHeaderTournament() + "'" +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +

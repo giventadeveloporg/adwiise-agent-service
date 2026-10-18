@@ -248,6 +248,17 @@ public interface S3Service {
     String generateTenantDefaultHeroImagePath(String tenantId, String originalFilename);
 
     /**
+     * Generate S3 path for a tenant tournament image.
+     * Path format: {profile}/media/tenantId/{tenantId}/tournaments/{kind}/{filename}_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param kind Image kind: hero, fixtures, or chief-guest
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateTenantTournamentImagePath(String tenantId, String kind, String originalFilename);
+
+    /**
      * Generate S3 path for focus group cover images.
      * Path format: {profile}/media/tenantId/{tenantId}/focus-groups/focus-group-id/{focusGroupId}/cover_image_{timestamp}_{uuid}.{ext}
      *

@@ -627,6 +627,30 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
+    public String generateTenantTournamentImagePath(String tenantId, String kind, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        if (extension == null || extension.isEmpty()) {
+            extension = ".jpg";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+        String baseName = sanitizeFilename(getBaseFileName(originalFilename));
+        String safeKind = kind == null ? "image" : kind.replaceAll("[^a-z0-9-]", "");
+
+        return String.format(
+            "%s/media/tenantId/%s/tournaments/%s/%s_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            safeKind,
+            baseName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
     public String generateFocusGroupCoverImagePath(String tenantId, Long focusGroupId, String originalFilename) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);

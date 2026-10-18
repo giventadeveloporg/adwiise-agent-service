@@ -299,6 +299,10 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_header_family")
     private Boolean showHeaderFamily;
 
+    /** Header menu: featured tournament edition (null = OFF). Sports tenants. */
+    @Column(name = "show_header_tournament")
+    private Boolean showHeaderTournament;
+
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
 
@@ -920,6 +924,19 @@ public class TenantSettings implements Serializable {
 
     public void setShowHeaderFamily(Boolean showHeaderFamily) {
         this.showHeaderFamily = showHeaderFamily;
+    }
+
+    public Boolean getShowHeaderTournament() {
+        return this.showHeaderTournament;
+    }
+
+    public TenantSettings showHeaderTournament(Boolean showHeaderTournament) {
+        this.setShowHeaderTournament(showHeaderTournament);
+        return this;
+    }
+
+    public void setShowHeaderTournament(Boolean showHeaderTournament) {
+        this.showHeaderTournament = showHeaderTournament;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1588,6 +1605,7 @@ public class TenantSettings implements Serializable {
                 ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
                 ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
                 ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
+                ", showHeaderTournament='" + getShowHeaderTournament() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";

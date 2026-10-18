@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Tenant-hosted tournament editions (sports sites). One row per edition.
+        Mirrored in adwiise-agent-database-repo:
+          SQLS/migrations/20261017120000_tenant_tournament.sql
+          SQLS/Current_Sqls/adwiise_agent_Latest_Schema.sql
+    -->
+
+    <changeSet id="20261017120000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="tenant_settings" columnName="show_header_tournament"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            ALTER TABLE public.tenant_settings
+                ADD COLUMN IF NOT EXISTS show_header_tournament boolean;
+            COMMENT ON COLUMN public.tenant_settings.show_header_tournament IS
+                'When true, public header may show the featured published tournament. Null uses app default OFF. Sports tenants only.';
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261017120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="tenant_tournament_id_seq"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            CREATE SEQUENCE IF NOT EXISTS public.tenant_tournament_id_seq
+                INCREMENT BY 1
+                NO MINVALUE
+                NO MAXVALUE
+                START WITH 1
+                CACHE 1;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261017120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_tournament"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            CREATE TABLE IF NOT EXISTS public.tenant_tournament (
+                id bigint DEFAULT nextval('public.tenant_tournament_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255) NOT NULL,
+                title character varying(255) NOT NULL,
+                edition_year integer NOT NULL,
+                slug character varying(100) NOT NULL,
+                show_in_header boolean DEFAULT false NOT NULL,
+                status character varying(30) DEFAULT 'UPCOMING' NOT NULL,
+                start_date date,
+                end_date date,
+                is_published boolean DEFAULT false NOT NULL,
+                welcome_text text,
+                about_text text,
+                details_text text,
+                age_group_label character varying(64),
+                chief_guest_name character varying(255),
+                chief_guest_image_url character varying(1024),
+                hero_image_url character varying(1024),
+                fixtures_image_url character varying(1024),
+                registration_email character varying(255),
+                external_results_url character varying(1024),
+                external_results_label character varying(128),
+                legacy_page_url character varying(1024),
+                winner_name character varying(255),
+                runner_up_name character varying(255),
+                third_place_name character varying(255),
+                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                CONSTRAINT tenant_tournament_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_tenant_tournament__tenant_slug UNIQUE (tenant_id, slug),
+                CONSTRAINT chk_tenant_tournament__status CHECK (status IN ('UPCOMING', 'IN_PROGRESS', 'COMPLETED')),
+                CONSTRAINT chk_tenant_tournament__edition_year CHECK (edition_year >= 1990 AND edition_year <= 2100),
+                CONSTRAINT fk_tenant_tournament__tenant_id FOREIGN KEY (tenant_id)
+                    REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+
+            ALTER SEQUENCE public.tenant_tournament_id_seq OWNED BY public.tenant_tournament.id;
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_tenant_tournament__one_header
+                ON public.tenant_tournament (tenant_id)
+                WHERE show_in_header = true;
+
+            CREATE INDEX IF NOT EXISTS idx_tenant_tournament_tenant_id
+                ON public.tenant_tournament (tenant_id);
+            CREATE INDEX IF NOT EXISTS idx_tenant_tournament_published
+                ON public.tenant_tournament (tenant_id, is_published);
+
+            COMMENT ON TABLE public.tenant_tournament IS 'Tenant-hosted tournament editions (one row per year/brand), separate from event competitions.';
+            COMMENT ON COLUMN public.tenant_tournament.show_in_header IS 'At most one published edition per tenant is featured in the public header. Enforced by a partial unique index and the service.';
+            COMMENT ON COLUMN public.tenant_tournament.external_results_url IS 'External schedule/results URL (for example Tournify). Opened in a new window and embedded on the public page.';
+
+            DROP TRIGGER IF EXISTS trg_tenant_tournament_updated_at ON public.tenant_tournament;
+            CREATE TRIGGER trg_tenant_tournament_updated_at
+                BEFORE UPDATE ON public.tenant_tournament
+                FOR EACH ROW
+                EXECUTE FUNCTION public.update_updated_at_column();
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261017120000-4" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_tournament"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM public.tenant_tournament WHERE slug IN ('capital-cup-2026', 'capital-cup-2025')
+            </sqlCheck>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            INSERT INTO public.tenant_tournament (
+                tenant_id, title, edition_year, slug, show_in_header, status, start_date, is_published,
+                welcome_text, about_text, details_text, age_group_label, chief_guest_name, chief_guest_image_url,
+                hero_image_url, fixtures_image_url, registration_email
+            )
+            SELECT
+                o.tenant_id,
+                'Capital Cup',
+                2026,
+                'capital-cup-2026',
+                true,
+                'COMPLETED',
+                DATE '2026-05-23',
+                true,
+                'Welcome to the Capital Cup 2026! Maryland Strikers Sports Club is proud to host the 40+ Soccer Tournament, bringing together soccer enthusiasts from across the region for an exciting display of sportsmanship and talent.',
+                'The Capital Cup 2026 is designed for players aged 40 and above, celebrating the passion and skill of veteran soccer players. This tournament promises competitive matches, great camaraderie, and unforgettable moments on the field.',
+                'Join us for an action-packed tournament featuring teams from various clubs and regions. Stay tuned for more details about fixtures, venues, and schedules.',
+                '40+',
+                'I. M. Vijayan',
+                '/images/md_strikers_media/gallery/IM_Vijayan-Image-2.jpg',
+                '/images/md_strikers_media/gallery/Capital_Cup_Hero_Image.jpg',
+                '/images/md_strikers_media/capital_2026_match_fixtures_wide.png',
+                'mdstrikersinc@gmail.com'
+            FROM public.tenant_organization o
+            WHERE o.site_type = 'SPORTS_TEAM'
+              AND (
+                    o.organization_name ILIKE '%striker%'
+                    OR o.tenant_id ILIKE '%striker%'
+                  )
+              AND NOT EXISTS (
+                    SELECT 1 FROM public.tenant_tournament t
+                    WHERE t.tenant_id = o.tenant_id AND t.slug = 'capital-cup-2026'
+                  );
+
+            INSERT INTO public.tenant_tournament (
+                tenant_id, title, edition_year, slug, show_in_header, status, is_published,
+                external_results_url, external_results_label, legacy_page_url, welcome_text
+            )
+            SELECT
+                o.tenant_id,
+                'Capital Cup',
+                2025,
+                'capital-cup-2025',
+                false,
+                'COMPLETED',
+                true,
+                'https://www.tournifyapp.com/live/capitalcup/schedule',
+                'Open schedule in new tab',
+                'https://www.mdstrikers.com/capitalcup2025.html',
+                'Live schedule, fixtures, standings, and match results for Capital Cup 2025 are powered by Tournify.'
+            FROM public.tenant_organization o
+            WHERE o.site_type = 'SPORTS_TEAM'
+              AND (
+                    o.organization_name ILIKE '%striker%'
+                    OR o.tenant_id ILIKE '%striker%'
+                  )
+              AND NOT EXISTS (
+                    SELECT 1 FROM public.tenant_tournament t
+                    WHERE t.tenant_id = o.tenant_id AND t.slug = 'capital-cup-2025'
+                  );
+
+            UPDATE public.tenant_settings ts
+            SET show_header_tournament = true,
+                updated_at = now()
+            FROM public.tenant_organization o
+            WHERE ts.tenant_id = o.tenant_id
+              AND o.site_type = 'SPORTS_TEAM'
+              AND (
+                    o.organization_name ILIKE '%striker%'
+                    OR o.tenant_id ILIKE '%striker%'
+                  );
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>
