@@ -68,6 +68,16 @@ public class TeamMemberCriteria implements Serializable, Criteria {
 
     private StringFilter vocalRole;
 
+    private StringFilter nationality;
+
+    private LocalDateFilter dateOfBirth;
+
+    private StringFilter preferredFoot;
+
+    private IntegerFilter heightCm;
+
+    private StringFilter instagramUrl;
+
     private Boolean distinct;
 
     public TeamMemberCriteria() {}
@@ -99,6 +109,11 @@ public class TeamMemberCriteria implements Serializable, Criteria {
         this.lineupSubtitle = other.optionalLineupSubtitle().map(StringFilter::copy).orElse(null);
         this.instrument = other.optionalInstrument().map(StringFilter::copy).orElse(null);
         this.vocalRole = other.optionalVocalRole().map(StringFilter::copy).orElse(null);
+        this.nationality = other.optionalNationality().map(StringFilter::copy).orElse(null);
+        this.dateOfBirth = other.optionalDateOfBirth().map(LocalDateFilter::copy).orElse(null);
+        this.preferredFoot = other.optionalPreferredFoot().map(StringFilter::copy).orElse(null);
+        this.heightCm = other.optionalHeightCm().map(IntegerFilter::copy).orElse(null);
+        this.instagramUrl = other.optionalInstagramUrl().map(StringFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -601,6 +616,101 @@ public class TeamMemberCriteria implements Serializable, Criteria {
         this.vocalRole = vocalRole;
     }
 
+    public StringFilter getNationality() {
+        return nationality;
+    }
+
+    public Optional<StringFilter> optionalNationality() {
+        return Optional.ofNullable(nationality);
+    }
+
+    public StringFilter nationality() {
+        if (nationality == null) {
+            setNationality(new StringFilter());
+        }
+        return nationality;
+    }
+
+    public void setNationality(StringFilter nationality) {
+        this.nationality = nationality;
+    }
+
+    public LocalDateFilter getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public Optional<LocalDateFilter> optionalDateOfBirth() {
+        return Optional.ofNullable(dateOfBirth);
+    }
+
+    public LocalDateFilter dateOfBirth() {
+        if (dateOfBirth == null) {
+            setDateOfBirth(new LocalDateFilter());
+        }
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDateFilter dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public StringFilter getPreferredFoot() {
+        return preferredFoot;
+    }
+
+    public Optional<StringFilter> optionalPreferredFoot() {
+        return Optional.ofNullable(preferredFoot);
+    }
+
+    public StringFilter preferredFoot() {
+        if (preferredFoot == null) {
+            setPreferredFoot(new StringFilter());
+        }
+        return preferredFoot;
+    }
+
+    public void setPreferredFoot(StringFilter preferredFoot) {
+        this.preferredFoot = preferredFoot;
+    }
+
+    public IntegerFilter getHeightCm() {
+        return heightCm;
+    }
+
+    public Optional<IntegerFilter> optionalHeightCm() {
+        return Optional.ofNullable(heightCm);
+    }
+
+    public IntegerFilter heightCm() {
+        if (heightCm == null) {
+            setHeightCm(new IntegerFilter());
+        }
+        return heightCm;
+    }
+
+    public void setHeightCm(IntegerFilter heightCm) {
+        this.heightCm = heightCm;
+    }
+
+    public StringFilter getInstagramUrl() {
+        return instagramUrl;
+    }
+
+    public Optional<StringFilter> optionalInstagramUrl() {
+        return Optional.ofNullable(instagramUrl);
+    }
+
+    public StringFilter instagramUrl() {
+        if (instagramUrl == null) {
+            setInstagramUrl(new StringFilter());
+        }
+        return instagramUrl;
+    }
+
+    public void setInstagramUrl(StringFilter instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -656,6 +766,11 @@ public class TeamMemberCriteria implements Serializable, Criteria {
             Objects.equals(lineupSubtitle, that.lineupSubtitle) &&
             Objects.equals(instrument, that.instrument) &&
             Objects.equals(vocalRole, that.vocalRole) &&
+            Objects.equals(nationality, that.nationality) &&
+            Objects.equals(dateOfBirth, that.dateOfBirth) &&
+            Objects.equals(preferredFoot, that.preferredFoot) &&
+            Objects.equals(heightCm, that.heightCm) &&
+            Objects.equals(instagramUrl, that.instagramUrl) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -689,6 +804,11 @@ public class TeamMemberCriteria implements Serializable, Criteria {
             lineupSubtitle,
             instrument,
             vocalRole,
+            nationality,
+            dateOfBirth,
+            preferredFoot,
+            heightCm,
+            instagramUrl,
             distinct
         );
     }
@@ -723,6 +843,11 @@ public class TeamMemberCriteria implements Serializable, Criteria {
             optionalLineupSubtitle().map(f -> "lineupSubtitle=" + f + ", ").orElse("") +
             optionalInstrument().map(f -> "instrument=" + f + ", ").orElse("") +
             optionalVocalRole().map(f -> "vocalRole=" + f + ", ").orElse("") +
+            optionalNationality().map(f -> "nationality=" + f + ", ").orElse("") +
+            optionalDateOfBirth().map(f -> "dateOfBirth=" + f + ", ").orElse("") +
+            optionalPreferredFoot().map(f -> "preferredFoot=" + f + ", ").orElse("") +
+            optionalHeightCm().map(f -> "heightCm=" + f + ", ").orElse("") +
+            optionalInstagramUrl().map(f -> "instagramUrl=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

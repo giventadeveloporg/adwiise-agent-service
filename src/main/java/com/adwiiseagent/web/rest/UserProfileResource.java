@@ -272,13 +272,12 @@ public class UserProfileResource {
     @GetMapping("/unsubscribe-email")
     public ResponseEntity<Map<String, Object>> unsubscribeEmail(@RequestParam String email, @RequestParam String token) {
         Map<String, Object> response = new HashMap<>();
-        Optional<UserProfileDTO> userOpt = userProfileService.findByEmail(email);
-        if (userOpt.isEmpty()) {
+        List<UserProfileDTO> users = userProfileService.findAllByEmail(email);
+        if (users.isEmpty()) {
             response.put("success", false);
             response.put("message", "Email not found.");
             return ResponseEntity.badRequest().body(response);
         }
-        UserProfileDTO user = userOpt.orElseThrow();
         try {
             Jwt jwt = jwtDecoder.decode(token);
             String subject = jwt.getSubject();
@@ -287,14 +286,17 @@ public class UserProfileResource {
                 response.put("message", "Invalid token for this email.");
                 return ResponseEntity.badRequest().body(response);
             }
-            if (Boolean.TRUE.equals(user.getIsEmailSubscriptionTokenUsed())) {
+            boolean already = users.stream().allMatch(user -> Boolean.TRUE.equals(user.getIsEmailSubscriptionTokenUsed()));
+            if (already) {
                 response.put("success", true);
                 response.put("message", "You have already unsubscribed.");
                 return ResponseEntity.ok(response);
             }
-            user.setIsEmailSubscribed(false);
-            user.setIsEmailSubscriptionTokenUsed(true);
-            userProfileService.save(user);
+            for (UserProfileDTO user : users) {
+                user.setIsEmailSubscribed(false);
+                user.setIsEmailSubscriptionTokenUsed(true);
+                userProfileService.save(user);
+            }
             response.put("success", true);
             response.put("message", "You have been unsubscribed from emails.");
             return ResponseEntity.ok(response);
@@ -311,21 +313,22 @@ public class UserProfileResource {
     @GetMapping("/resubscribe-email")
     public ResponseEntity<Map<String, Object>> resubscribeEmail(@RequestParam String email, @RequestParam String tenantId) {
         Map<String, Object> response = new HashMap<>();
-        Optional<UserProfileDTO> userProfileDTO = userProfileService.findByEmailAndTenantId(email, tenantId);
-        if (userProfileDTO.isEmpty()) {
+        List<UserProfileDTO> users = userProfileService.findAllByEmailAndTenantId(email, tenantId);
+        if (users.isEmpty()) {
             response.put("success", false);
             response.put("message", "Email not found.");
             return ResponseEntity.badRequest().body(response);
         }
-        UserProfileDTO user = userProfileDTO.orElseThrow();
         try {
-            JwtClaimsSet claims = JwtClaimsSet.builder().subject(user.getEmail()).build();
+            JwtClaimsSet claims = JwtClaimsSet.builder().subject(email).build();
             JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();
             String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
-            user.setEmailSubscriptionToken(token);
-            user.setIsEmailSubscribed(true);
-            user.setIsEmailSubscriptionTokenUsed(false);
-            userProfileService.save(user);
+            for (UserProfileDTO user : users) {
+                user.setEmailSubscriptionToken(token);
+                user.setIsEmailSubscribed(true);
+                user.setIsEmailSubscriptionTokenUsed(false);
+                userProfileService.save(user);
+            }
             response.put("success", true);
             response.put("message", "You have been re-subscribed to emails.");
             return ResponseEntity.ok(response);

@@ -90,7 +90,14 @@ public class TeamMemberQueryService extends QueryService<TeamMember> {
                         ? buildStringSpecification(criteria.getLineupSubtitle(), TeamMember_.lineupSubtitle)
                         : null,
                     criteria.getInstrument() != null ? buildStringSpecification(criteria.getInstrument(), TeamMember_.instrument) : null,
-                    criteria.getVocalRole() != null ? buildStringSpecification(criteria.getVocalRole(), TeamMember_.vocalRole) : null
+                    criteria.getVocalRole() != null ? buildStringSpecification(criteria.getVocalRole(), TeamMember_.vocalRole) : null,
+                    criteria.getNationality() != null ? buildStringSpecification(criteria.getNationality(), TeamMember_.nationality) : null,
+                    criteria.getDateOfBirth() != null ? buildRangeSpecification(criteria.getDateOfBirth(), TeamMember_.dateOfBirth) : null,
+                    criteria.getPreferredFoot() != null
+                        ? buildStringSpecification(criteria.getPreferredFoot(), TeamMember_.preferredFoot)
+                        : null,
+                    criteria.getHeightCm() != null ? buildRangeSpecification(criteria.getHeightCm(), TeamMember_.heightCm) : null,
+                    criteria.getInstagramUrl() != null ? buildStringSpecification(criteria.getInstagramUrl(), TeamMember_.instagramUrl) : null
                 );
         }
         return specification;

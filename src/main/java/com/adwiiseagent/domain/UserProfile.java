@@ -13,10 +13,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * A UserProfile with Clerk authentication integration support.
  */
 @Entity
-@Table(
-    name = "user_profile",
-    uniqueConstraints = { @UniqueConstraint(name = "uq_user_profile_email_tenant", columnNames = { "email", "tenant_id" }) }
-)
+@Table(name = "user_profile")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class UserProfile implements Serializable {

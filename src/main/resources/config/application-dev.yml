@@ -180,6 +180,8 @@ clerk:
   secret-key: ${CLERK_SECRET_KEY}
   webhook-secret: ${CLERK_WEBHOOK_SECRET}
   frontend-api: ${CLERK_FRONTEND_API:https://humble-monkey-3.clerk.accounts.dev}
+  identity:
+    separate-pool: true
 
 # OAuth Configuration
 # NOTE: Direct Google OAuth is DISABLED - we use Clerk SDK on frontend

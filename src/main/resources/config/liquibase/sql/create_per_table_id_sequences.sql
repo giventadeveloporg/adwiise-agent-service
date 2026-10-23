@@ -278,6 +278,13 @@ CREATE SEQUENCE IF NOT EXISTS public.team_members_id_seq
     START WITH 1
     CACHE 1;
 
+CREATE SEQUENCE IF NOT EXISTS public.team_member_achievement_id_seq
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    START WITH 1
+    CACHE 1;
+
 CREATE SEQUENCE IF NOT EXISTS public.communication_campaign_id_seq
     INCREMENT BY 1
     NO MINVALUE

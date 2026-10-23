@@ -89,8 +89,7 @@ public class TenantServiceImpl implements TenantService {
     public boolean userBelongsToTenant(String userEmail, String tenantId) {
         log.debug("Checking if user {} belongs to tenant {}", userEmail, tenantId);
 
-        Optional<UserProfile> userProfile = userProfileRepository.findByEmailAndTenantId(userEmail, tenantId);
-        boolean belongs = userProfile.isPresent();
+        boolean belongs = !userProfileRepository.findAllByEmailAndTenantIdOrderByIdAsc(userEmail, tenantId).isEmpty();
 
         log.debug("User {} {} to tenant {}", userEmail, belongs ? "belongs" : "does not belong", tenantId);
         return belongs;
@@ -106,7 +105,10 @@ public class TenantServiceImpl implements TenantService {
         }
 
         // Check if user already exists in this tenant
-        Optional<UserProfile> existing = userProfileRepository.findByEmailAndTenantId(userEmail, tenantId);
+        Optional<UserProfile> existing = userProfileRepository
+            .findAllByEmailAndTenantIdOrderByIdAsc(userEmail, tenantId)
+            .stream()
+            .findFirst();
         if (existing.isPresent()) {
             log.info("User already exists in tenant, returning existing profile");
             return existing;
@@ -122,7 +124,10 @@ public class TenantServiceImpl implements TenantService {
     public boolean removeUserFromTenant(String userEmail, String tenantId) {
         log.info("Removing user {} from tenant {}", userEmail, tenantId);
 
-        Optional<UserProfile> userProfile = userProfileRepository.findByEmailAndTenantId(userEmail, tenantId);
+        Optional<UserProfile> userProfile = userProfileRepository
+            .findAllByEmailAndTenantIdOrderByIdAsc(userEmail, tenantId)
+            .stream()
+            .findFirst();
 
         if (userProfile.isEmpty()) {
             log.warn("User profile not found for email {} and tenant {}", userEmail, tenantId);

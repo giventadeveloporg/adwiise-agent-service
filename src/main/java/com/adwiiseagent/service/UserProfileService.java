@@ -75,10 +75,14 @@ public interface UserProfileService {
 
     Optional<UserProfileDTO> findByEmail(String email);
 
+    List<UserProfileDTO> findAllByEmail(String email);
+
     List<UserProfileDTO> saveBulkUploadUsers(List<UserProfileDTO> users);
 
-    // New: Find by email and tenantId
+    // New: Find by email and tenantId. When several rows share an email, this is the lowest id.
     Optional<UserProfileDTO> findByEmailAndTenantId(String email, String tenantId);
+
+    List<UserProfileDTO> findAllByEmailAndTenantId(String email, String tenantId);
 
     // New: Get unsubscribe token by email and tenantId (returns null if not found)
     String getUnsubscribeTokenByEmailAndTenantId(String email, String tenantId);

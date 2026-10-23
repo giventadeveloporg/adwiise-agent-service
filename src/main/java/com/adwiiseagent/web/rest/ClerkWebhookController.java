@@ -2,7 +2,7 @@ package com.adwiiseagent.web.rest;
 
 import com.adwiiseagent.domain.ClerkUserTenant;
 import com.adwiiseagent.domain.UserProfile;
-import com.adwiiseagent.repository.UserProfileRepository;
+import com.adwiiseagent.service.ClerkProfileIdentityService;
 import com.adwiiseagent.service.ClerkUserTenantService;
 import com.adwiiseagent.service.WebhookEventHandlerService;
 import com.adwiiseagent.service.WebhookSignatureService;
@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public class ClerkWebhookController {
 
     private final WebhookSignatureService webhookSignatureService;
     private final WebhookEventHandlerService webhookEventHandlerService;
-    private final UserProfileRepository userProfileRepository;
+    private final ClerkProfileIdentityService clerkProfileIdentityService;
     private final ClerkUserTenantService clerkUserTenantService;
     private final ObjectMapper objectMapper;
     private final InboundWebhookGuard inboundWebhookGuard;
@@ -45,14 +44,14 @@ public class ClerkWebhookController {
     public ClerkWebhookController(
         WebhookSignatureService webhookSignatureService,
         WebhookEventHandlerService webhookEventHandlerService,
-        UserProfileRepository userProfileRepository,
+        ClerkProfileIdentityService clerkProfileIdentityService,
         ClerkUserTenantService clerkUserTenantService,
         ObjectMapper objectMapper,
         InboundWebhookGuard inboundWebhookGuard
     ) {
         this.webhookSignatureService = webhookSignatureService;
         this.webhookEventHandlerService = webhookEventHandlerService;
-        this.userProfileRepository = userProfileRepository;
+        this.clerkProfileIdentityService = clerkProfileIdentityService;
         this.clerkUserTenantService = clerkUserTenantService;
         this.objectMapper = objectMapper;
         this.inboundWebhookGuard = inboundWebhookGuard;
@@ -189,58 +188,8 @@ public class ClerkWebhookController {
     private UserProfile getOrCreateUserProfile(String clerkUserId, String email, String firstName, String lastName, String tenantId) {
         log.debug("Getting or creating UserProfile for Clerk user ID: {} with tenantId: {}", clerkUserId, tenantId);
 
-        return userProfileRepository
-            .findByClerkUserId(clerkUserId)
-            .map(userProfile -> {
-                log.debug("Found existing UserProfile: {}", userProfile.getId());
-
-                // Update last sign-in timestamp
-                userProfile.setLastSignInAt(ZonedDateTime.now());
-                userProfile.setUpdatedAt(ZonedDateTime.now());
-
-                // Update basic info if changed
-                if (email != null && !email.equals(userProfile.getEmail())) {
-                    log.info("Updating email for user {} from {} to {}", userProfile.getId(), userProfile.getEmail(), email);
-                    userProfile.setEmail(UserProfile.normalizeEmail(email));
-                }
-                if (firstName != null && !firstName.equals(userProfile.getFirstName())) {
-                    userProfile.setFirstName(firstName);
-                }
-                if (lastName != null && !lastName.equals(userProfile.getLastName())) {
-                    userProfile.setLastName(lastName);
-                }
-
-                // Update tenantId if it's null (for legacy profiles)
-                if (userProfile.getTenantId() == null && tenantId != null) {
-                    log.info("Updating tenantId for user {} from NULL to {}", userProfile.getId(), tenantId);
-                    userProfile.setTenantId(tenantId);
-                }
-
-                return userProfileRepository.save(userProfile);
-            })
-            .orElseGet(() -> {
-                log.info("Creating new UserProfile for Clerk user ID: {} with tenantId: {}", clerkUserId, tenantId);
-
-                UserProfile newUser = new UserProfile();
-                // CRITICAL: Use clerkUserId as userId so frontend lookups work
-                newUser.setUserId(clerkUserId);
-                newUser.setClerkUserId(clerkUserId);
-                newUser.setEmail(UserProfile.normalizeEmail(email));
-                newUser.setFirstName(firstName);
-                newUser.setLastName(lastName);
-                // CRITICAL: Set tenantId for multi-tenant support
-                newUser.setTenantId(tenantId);
-                newUser.setAuthProvider("clerk");
-                newUser.setEmailVerified(true); // Clerk OAuth users are email verified
-                newUser.setUserStatus("active");
-                newUser.setUserRole("member");
-                newUser.setCreatedAt(ZonedDateTime.now());
-                newUser.setUpdatedAt(ZonedDateTime.now());
-                newUser.setLastSignInAt(ZonedDateTime.now());
-
-                log.info("Creating UserProfile with userId={}, tenantId={} for consistent lookups", clerkUserId, tenantId);
-
-                return userProfileRepository.save(newUser);
-            });
+        return clerkProfileIdentityService
+            .resolve(clerkUserId, tenantId, email, firstName, lastName, null, "clerk")
+            .profile();
     }
 }

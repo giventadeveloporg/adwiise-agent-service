@@ -6,7 +6,8 @@ import com.adwiiseagent.repository.UserProfileRepository;
 import com.adwiiseagent.security.TenantContext;
 import com.adwiiseagent.service.ClerkAuthService;
 import com.adwiiseagent.service.ClerkIntegrationService;
-import com.adwiiseagent.service.UserProfileService;
+import com.adwiiseagent.service.ClerkProfileIdentityService;
+import com.adwiiseagent.service.ClerkProfileIdentityService.ClerkProfileResolution;
 import com.adwiiseagent.service.dto.*;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -30,8 +31,8 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
     private static final Logger log = LoggerFactory.getLogger(ClerkAuthServiceImpl.class);
 
     private final ClerkIntegrationService clerkIntegrationService;
-    private final UserProfileService userProfileService;
     private final UserProfileRepository userProfileRepository;
+    private final ClerkProfileIdentityService clerkProfileIdentityService;
     private final JwtEncoder jwtEncoder;
 
     @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds:86400}")
@@ -39,13 +40,13 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
     public ClerkAuthServiceImpl(
         ClerkIntegrationService clerkIntegrationService,
-        UserProfileService userProfileService,
         UserProfileRepository userProfileRepository,
+        ClerkProfileIdentityService clerkProfileIdentityService,
         JwtEncoder jwtEncoder
     ) {
         this.clerkIntegrationService = clerkIntegrationService;
-        this.userProfileService = userProfileService;
         this.userProfileRepository = userProfileRepository;
+        this.clerkProfileIdentityService = clerkProfileIdentityService;
         this.jwtEncoder = jwtEncoder;
     }
 
@@ -53,10 +54,15 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
     public SignUpResponse signUp(SignUpRequest request) {
         log.info("Processing sign-up request for email: {} and tenant: {}", request.getEmail(), request.getTenantId());
 
-        // Check if user already exists with this email and tenant combination
-        Optional<UserProfile> existingUser = userProfileRepository.findByEmailAndTenantId(request.getEmail(), request.getTenantId());
-        if (existingUser.isPresent()) {
-            throw new RuntimeException("User already exists with email " + request.getEmail() + " for tenant " + request.getTenantId());
+        // Production keeps one row per email per tenant. The dev pool may insert a second row for a different Clerk user id.
+        if (!clerkProfileIdentityService.isSeparatePool()) {
+            List<UserProfile> existingUser = userProfileRepository.findAllByEmailAndTenantIdOrderByIdAsc(
+                request.getEmail(),
+                request.getTenantId()
+            );
+            if (!existingUser.isEmpty()) {
+                throw new RuntimeException("User already exists with email " + request.getEmail() + " for tenant " + request.getTenantId());
+            }
         }
 
         try {
@@ -72,30 +78,29 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
             String clerkUserId = (String) clerkUser.get("id");
             log.info("User created in Clerk with ID: {}", clerkUserId);
 
-            // Create user profile in database
-            UserProfileDTO userProfileDTO = new UserProfileDTO();
-            userProfileDTO.setUserId(clerkUserId);
-            userProfileDTO.setEmail(request.getEmail());
-            userProfileDTO.setFirstName(request.getFirstName());
-            userProfileDTO.setLastName(request.getLastName());
-            userProfileDTO.setTenantId(request.getTenantId());
-            userProfileDTO.setPhone(request.getPhone());
-            userProfileDTO.setUserStatus("ACTIVE");
-            userProfileDTO.setUserRole("USER");
-
-            ZonedDateTime now = ZonedDateTime.now();
-            userProfileDTO.setCreatedAt(now);
-            userProfileDTO.setUpdatedAt(now);
-
-            UserProfileDTO savedProfile = userProfileService.save(userProfileDTO);
-            log.info("User profile created in database with ID: {}", savedProfile.getId());
+            ClerkProfileResolution resolution = clerkProfileIdentityService.resolve(
+                clerkUserId,
+                request.getTenantId(),
+                request.getEmail(),
+                request.getFirstName(),
+                request.getLastName(),
+                null,
+                "email"
+            );
+            UserProfile savedEntity = resolution.profile();
+            if (request.getPhone() != null && !request.getPhone().isBlank()) {
+                savedEntity.setPhone(request.getPhone());
+                savedEntity = userProfileRepository.save(savedEntity);
+            }
+            ZonedDateTime now = savedEntity.getCreatedAt() != null ? savedEntity.getCreatedAt() : ZonedDateTime.now();
+            log.info("User profile resolved in database with ID: {}", savedEntity.getId());
 
             // Generate JWT token
             String jwtToken = generateJwtToken(clerkUserId, request.getEmail(), request.getTenantId());
 
             // Prepare response
             SignUpResponse response = new SignUpResponse();
-            response.setId(savedProfile.getId());
+            response.setId(savedEntity.getId());
             response.setClerkUserId(clerkUserId);
             response.setEmail(request.getEmail());
             response.setFirstName(request.getFirstName());
@@ -120,16 +125,30 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
         log.info("Processing sign-in request for email: {} and tenant: {}", request.getEmail(), request.getTenantId());
 
         try {
-            // Find user in database by email and tenant
-            UserProfile userProfile = userProfileRepository
-                .findByEmailAndTenantId(request.getEmail(), request.getTenantId())
-                .orElseThrow(() -> {
-                    log.warn("User not found for email: {} and tenant: {}", request.getEmail(), request.getTenantId());
-                    return new RuntimeException("Invalid email or password");
-                });
+            // Validate password with Clerk before choosing a profile row.
+            Optional<Map<String, Object>> authResult = clerkIntegrationService.authenticateUser(request.getEmail(), request.getPassword());
 
-            // CRITICAL SECURITY: Check if this is a social login user
-            // Social login users don't have passwords and should use /api/auth/sign-in/social endpoint
+            if (authResult.isEmpty()) {
+                log.warn("Invalid password attempt for email: {}", request.getEmail());
+                throw new RuntimeException("Invalid email or password");
+            }
+
+            String clerkUserId = (String) authResult.orElseThrow().get("id");
+            if (clerkUserId == null || clerkUserId.isBlank()) {
+                throw new RuntimeException("Invalid email or password");
+            }
+
+            ClerkProfileResolution resolution = clerkProfileIdentityService.resolve(
+                clerkUserId,
+                request.getTenantId(),
+                request.getEmail(),
+                (String) authResult.orElseThrow().get("first_name"),
+                (String) authResult.orElseThrow().get("last_name"),
+                null,
+                "email"
+            );
+            UserProfile userProfile = resolution.profile();
+
             if (
                 userProfile.getAuthProvider() != null &&
                 !"clerk".equals(userProfile.getAuthProvider()) &&
@@ -141,19 +160,6 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
                 );
             }
 
-            // CRITICAL SECURITY: Validate password with Clerk
-            // This is the authentication step - without this, anyone can login!
-            Optional<Map<String, Object>> authResult = clerkIntegrationService.authenticateUser(
-                userProfile.getEmail(),
-                request.getPassword()
-            );
-
-            if (authResult.isEmpty()) {
-                log.warn("Invalid password attempt for email: {}", request.getEmail());
-                throw new RuntimeException("Invalid email or password");
-            }
-
-            // Check if user is active
             if (!"ACTIVE".equals(userProfile.getUserStatus())) {
                 log.warn("Inactive user attempting login: {}", userProfile.getEmail());
                 throw new RuntimeException("Account is not active. Please contact support.");
@@ -488,44 +494,18 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
             String lastName = (String) clerkUser.getOrDefault("last_name", "");
             String profileImageUrl = (String) clerkUser.get("profile_image_url");
 
-            // Check if user exists in database
-            Optional<UserProfile> userProfileOpt = userProfileRepository.findByEmailAndTenantId(email, request.getTenantId());
-
-            boolean isNewUser = userProfileOpt.isEmpty();
-            UserProfile userProfile;
-
-            if (isNewUser) {
-                // Create new user profile
-                UserProfileDTO newUserProfile = new UserProfileDTO();
-                newUserProfile.setUserId(clerkUserId);
-                newUserProfile.setEmail(email);
-                newUserProfile.setFirstName(firstName);
-                newUserProfile.setLastName(lastName);
-                newUserProfile.setTenantId(request.getTenantId());
-                newUserProfile.setUserStatus("ACTIVE");
-                newUserProfile.setUserRole("USER");
-
-                ZonedDateTime now = ZonedDateTime.now();
-                newUserProfile.setCreatedAt(now);
-                newUserProfile.setUpdatedAt(now);
-
-                UserProfileDTO savedProfile = userProfileService.save(newUserProfile);
-                userProfile =
-                    userProfileRepository
-                        .findById(savedProfile.getId())
-                        .orElseThrow(() -> new RuntimeException("Failed to retrieve saved user profile"));
-                log.info("Created new user profile for social sign-in: {}", savedProfile.getId());
-            } else {
-                // Update existing user profile
-                userProfile = userProfileOpt.orElseThrow(() -> new RuntimeException("User profile not found"));
-                userProfile.setUserId(clerkUserId);
-                if (profileImageUrl != null) {
-                    userProfile.setProfileImageUrl(profileImageUrl);
-                }
-                userProfile.setUpdatedAt(ZonedDateTime.now());
-                userProfile = userProfileRepository.save(userProfile);
-                log.info("Updated existing user profile: {}", userProfile.getId());
-            }
+            ClerkProfileResolution resolution = clerkProfileIdentityService.resolve(
+                clerkUserId,
+                request.getTenantId(),
+                email,
+                firstName,
+                lastName,
+                profileImageUrl,
+                request.getProvider() != null ? request.getProvider() : "social"
+            );
+            boolean isNewUser = resolution.created();
+            UserProfile userProfile = resolution.profile();
+            log.info("Resolved user profile {} for social sign-in (created={})", userProfile.getId(), isNewUser);
 
             // Generate JWT token
             String jwtToken = generateJwtToken(clerkUserId, email, request.getTenantId());

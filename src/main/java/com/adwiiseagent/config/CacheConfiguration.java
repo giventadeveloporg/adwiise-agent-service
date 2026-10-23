@@ -82,6 +82,7 @@ public class CacheConfiguration {
             createCache(cm, com.adwiiseagent.domain.ExecutiveCommitteeTeamMember.class.getName());
             createCache(cm, com.adwiiseagent.domain.TeamGroup.class.getName());
             createCache(cm, com.adwiiseagent.domain.TeamMember.class.getName());
+            createCache(cm, com.adwiiseagent.domain.TeamMemberAchievement.class.getName());
             createCache(cm, com.adwiiseagent.domain.EventAgendaItem.class.getName());
             createCache(cm, com.adwiiseagent.domain.EventDetails.class.getName() + ".eventAgendaItems");
             // jhipster-needle-ehcache-add-entry

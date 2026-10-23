@@ -75,6 +75,87 @@ public class TeamMemberDTO implements Serializable {
     @Size(max = 128)
     private String vocalRole;
 
+    @Size(max = 100)
+    private String nationality;
+
+    private LocalDate dateOfBirth;
+
+    @Size(max = 16)
+    private String preferredFoot;
+
+    private Integer heightCm;
+
+    @Size(max = 500)
+    private String instagramUrl;
+
+    @Size(max = 100)
+    private String preferredName;
+
+    @Size(max = 255)
+    private String spokenLanguages;
+
+    private Integer weightKg;
+
+    @Size(max = 32)
+    private String bodyBuild;
+
+    @Size(max = 255)
+    private String clubName;
+
+    @Size(max = 128)
+    private String leagueDivision;
+
+    @Size(max = 255)
+    private String secondaryPositions;
+
+    @Size(max = 32)
+    private String seasonLabel;
+
+    private Integer seasonAppearances;
+
+    private Integer seasonGoals;
+
+    private Integer seasonAssists;
+
+    private Integer seasonMinutes;
+
+    private Integer seasonWins;
+
+    private Integer seasonDraws;
+
+    private Integer seasonLosses;
+
+    private Double passAccuracyPct;
+
+    private Double shotAccuracyPct;
+
+    private Double topSpeedKmh;
+
+    private Integer careerAppearances;
+
+    private Integer careerGoals;
+
+    private Integer careerAssists;
+
+    private Double gpa;
+
+    @Size(max = 64)
+    private String academicScore;
+
+    @Size(max = 255)
+    private String coachName;
+
+    @Size(max = 255)
+    private String coachEmail;
+
+    @Size(max = 40)
+    private String coachPhone;
+
+    @Size(max = 8000)
+    private String recentMatches;
+
+    private String sportProfiles;
+
     public Long getId() {
         return id;
     }
@@ -283,6 +364,270 @@ public class TeamMemberDTO implements Serializable {
         this.vocalRole = vocalRole;
     }
 
+    public String getNationality() {
+        return nationality;
+    }
+
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getPreferredFoot() {
+        return preferredFoot;
+    }
+
+    public void setPreferredFoot(String preferredFoot) {
+        this.preferredFoot = preferredFoot;
+    }
+
+    public Integer getHeightCm() {
+        return heightCm;
+    }
+
+    public void setHeightCm(Integer heightCm) {
+        this.heightCm = heightCm;
+    }
+
+    public String getInstagramUrl() {
+        return instagramUrl;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public String getPreferredName() {
+        return preferredName;
+    }
+
+    public void setPreferredName(String preferredName) {
+        this.preferredName = preferredName;
+    }
+
+    public String getSpokenLanguages() {
+        return spokenLanguages;
+    }
+
+    public void setSpokenLanguages(String spokenLanguages) {
+        this.spokenLanguages = spokenLanguages;
+    }
+
+    public Integer getWeightKg() {
+        return weightKg;
+    }
+
+    public void setWeightKg(Integer weightKg) {
+        this.weightKg = weightKg;
+    }
+
+    public String getBodyBuild() {
+        return bodyBuild;
+    }
+
+    public void setBodyBuild(String bodyBuild) {
+        this.bodyBuild = bodyBuild;
+    }
+
+    public String getClubName() {
+        return clubName;
+    }
+
+    public void setClubName(String clubName) {
+        this.clubName = clubName;
+    }
+
+    public String getLeagueDivision() {
+        return leagueDivision;
+    }
+
+    public void setLeagueDivision(String leagueDivision) {
+        this.leagueDivision = leagueDivision;
+    }
+
+    public String getSecondaryPositions() {
+        return secondaryPositions;
+    }
+
+    public void setSecondaryPositions(String secondaryPositions) {
+        this.secondaryPositions = secondaryPositions;
+    }
+
+    public String getSeasonLabel() {
+        return seasonLabel;
+    }
+
+    public void setSeasonLabel(String seasonLabel) {
+        this.seasonLabel = seasonLabel;
+    }
+
+    public Integer getSeasonAppearances() {
+        return seasonAppearances;
+    }
+
+    public void setSeasonAppearances(Integer seasonAppearances) {
+        this.seasonAppearances = seasonAppearances;
+    }
+
+    public Integer getSeasonGoals() {
+        return seasonGoals;
+    }
+
+    public void setSeasonGoals(Integer seasonGoals) {
+        this.seasonGoals = seasonGoals;
+    }
+
+    public Integer getSeasonAssists() {
+        return seasonAssists;
+    }
+
+    public void setSeasonAssists(Integer seasonAssists) {
+        this.seasonAssists = seasonAssists;
+    }
+
+    public Integer getSeasonMinutes() {
+        return seasonMinutes;
+    }
+
+    public void setSeasonMinutes(Integer seasonMinutes) {
+        this.seasonMinutes = seasonMinutes;
+    }
+
+    public Integer getSeasonWins() {
+        return seasonWins;
+    }
+
+    public void setSeasonWins(Integer seasonWins) {
+        this.seasonWins = seasonWins;
+    }
+
+    public Integer getSeasonDraws() {
+        return seasonDraws;
+    }
+
+    public void setSeasonDraws(Integer seasonDraws) {
+        this.seasonDraws = seasonDraws;
+    }
+
+    public Integer getSeasonLosses() {
+        return seasonLosses;
+    }
+
+    public void setSeasonLosses(Integer seasonLosses) {
+        this.seasonLosses = seasonLosses;
+    }
+
+    public Double getPassAccuracyPct() {
+        return passAccuracyPct;
+    }
+
+    public void setPassAccuracyPct(Double passAccuracyPct) {
+        this.passAccuracyPct = passAccuracyPct;
+    }
+
+    public Double getShotAccuracyPct() {
+        return shotAccuracyPct;
+    }
+
+    public void setShotAccuracyPct(Double shotAccuracyPct) {
+        this.shotAccuracyPct = shotAccuracyPct;
+    }
+
+    public Double getTopSpeedKmh() {
+        return topSpeedKmh;
+    }
+
+    public void setTopSpeedKmh(Double topSpeedKmh) {
+        this.topSpeedKmh = topSpeedKmh;
+    }
+
+    public Integer getCareerAppearances() {
+        return careerAppearances;
+    }
+
+    public void setCareerAppearances(Integer careerAppearances) {
+        this.careerAppearances = careerAppearances;
+    }
+
+    public Integer getCareerGoals() {
+        return careerGoals;
+    }
+
+    public void setCareerGoals(Integer careerGoals) {
+        this.careerGoals = careerGoals;
+    }
+
+    public Integer getCareerAssists() {
+        return careerAssists;
+    }
+
+    public void setCareerAssists(Integer careerAssists) {
+        this.careerAssists = careerAssists;
+    }
+
+    public Double getGpa() {
+        return gpa;
+    }
+
+    public void setGpa(Double gpa) {
+        this.gpa = gpa;
+    }
+
+    public String getAcademicScore() {
+        return academicScore;
+    }
+
+    public void setAcademicScore(String academicScore) {
+        this.academicScore = academicScore;
+    }
+
+    public String getCoachName() {
+        return coachName;
+    }
+
+    public void setCoachName(String coachName) {
+        this.coachName = coachName;
+    }
+
+    public String getCoachEmail() {
+        return coachEmail;
+    }
+
+    public void setCoachEmail(String coachEmail) {
+        this.coachEmail = coachEmail;
+    }
+
+    public String getCoachPhone() {
+        return coachPhone;
+    }
+
+    public void setCoachPhone(String coachPhone) {
+        this.coachPhone = coachPhone;
+    }
+
+    public String getRecentMatches() {
+        return recentMatches;
+    }
+
+    public void setRecentMatches(String recentMatches) {
+        this.recentMatches = recentMatches;
+    }
+
+    public String getSportProfiles() {
+        return sportProfiles;
+    }
+
+    public void setSportProfiles(String sportProfiles) {
+        this.sportProfiles = sportProfiles;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -334,6 +679,37 @@ public class TeamMemberDTO implements Serializable {
             ", lineupSubtitle='" + getLineupSubtitle() + "'" +
             ", instrument='" + getInstrument() + "'" +
             ", vocalRole='" + getVocalRole() + "'" +
+            ", nationality='" + getNationality() + "'" +
+            ", dateOfBirth='" + getDateOfBirth() + "'" +
+            ", preferredFoot='" + getPreferredFoot() + "'" +
+            ", heightCm=" + getHeightCm() +
+            ", instagramUrl='" + getInstagramUrl() + "'" +
+            ", preferredName='" + getPreferredName() + "'" +
+            ", spokenLanguages='" + getSpokenLanguages() + "'" +
+            ", weightKg=" + getWeightKg() +
+            ", bodyBuild='" + getBodyBuild() + "'" +
+            ", clubName='" + getClubName() + "'" +
+            ", leagueDivision='" + getLeagueDivision() + "'" +
+            ", secondaryPositions='" + getSecondaryPositions() + "'" +
+            ", seasonLabel='" + getSeasonLabel() + "'" +
+            ", seasonAppearances=" + getSeasonAppearances() +
+            ", seasonGoals=" + getSeasonGoals() +
+            ", seasonAssists=" + getSeasonAssists() +
+            ", seasonMinutes=" + getSeasonMinutes() +
+            ", seasonWins=" + getSeasonWins() +
+            ", seasonDraws=" + getSeasonDraws() +
+            ", seasonLosses=" + getSeasonLosses() +
+            ", passAccuracyPct=" + getPassAccuracyPct() +
+            ", shotAccuracyPct=" + getShotAccuracyPct() +
+            ", topSpeedKmh=" + getTopSpeedKmh() +
+            ", careerAppearances=" + getCareerAppearances() +
+            ", careerGoals=" + getCareerGoals() +
+            ", careerAssists=" + getCareerAssists() +
+            ", gpa=" + getGpa() +
+            ", academicScore='" + getAcademicScore() + "'" +
+            ", coachName='" + getCoachName() + "'" +
+            ", coachEmail='" + getCoachEmail() + "'" +
+            ", coachPhone='" + getCoachPhone() + "'" +
             "}";
     }
 }

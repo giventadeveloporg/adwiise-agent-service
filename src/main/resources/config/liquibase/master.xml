@@ -120,6 +120,9 @@
     <include file="config/liquibase/changelog/20260522000001_added_entity_event_competition_tables.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260606120000_event_competition_enhancements_v21.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260523120000_added_entity_team_groups_and_team_members.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261019120000_team_member_profile_and_achievements.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021140000_team_member_player_profile.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261022100000_team_member_sport_profiles.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260915140000_added_entity_LastMatch.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260918120000_added_match_kind_to_last_matches.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260530120000_add_event_media_thumbnail_columns.xml" relativeToChangelogFile="false"/>

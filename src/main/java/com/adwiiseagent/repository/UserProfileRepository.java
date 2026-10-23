@@ -26,15 +26,20 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long>,
     // Multi-tenant: at most one profile per (user_id, tenant_id)
     Optional<UserProfile> findByUserIdAndTenantId(String userId, String tenantId);
 
-    Optional<UserProfile> findByEmail(String email);
+    /**
+     * Email is not unique. Callers that need one row must order by id and pick explicitly.
+     * Sign-in must use {@code findByUserIdAndTenantId} or {@code findByClerkUserIdAndTenantId} first.
+     */
+    List<UserProfile> findAllByEmailOrderByIdAsc(String email);
 
-    // New: Find by email and tenantId
-    Optional<UserProfile> findByEmailAndTenantId(String email, String tenantId);
+    List<UserProfile> findAllByEmailAndTenantIdOrderByIdAsc(String email, String tenantId);
 
     List<UserProfile> findByTenantIdAndUserRoleIn(String tenantId, java.util.Collection<String> userRoles);
 
     // New: Find all subscribed emails for a tenant
-    @Query("SELECT u.email FROM UserProfile u WHERE u.tenantId = :tenantId AND u.isEmailSubscribed = true AND u.email IS NOT NULL")
+    @Query(
+        "SELECT DISTINCT u.email FROM UserProfile u WHERE u.tenantId = :tenantId AND u.isEmailSubscribed = true AND u.email IS NOT NULL"
+    )
     List<String> findSubscribedEmailsByTenantId(@Param("tenantId") String tenantId);
 
     // New: Find subscribed users with pagination (includes all user data needed for

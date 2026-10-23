@@ -209,7 +209,24 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Cacheable(value = "userProfilesByEmail", key = "#email", unless = "#result == null")
     public Optional<UserProfileDTO> findByEmail(String email) {
         log.debug("Request to get UserProfile by email : {}", email);
-        return userProfileRepository.findByEmail(email).map(this::refreshEmailSubscriptionTokenIfNeeded).map(userProfileMapper::toDto);
+        return userProfileRepository
+            .findAllByEmailOrderByIdAsc(email)
+            .stream()
+            .findFirst()
+            .map(this::refreshEmailSubscriptionTokenIfNeeded)
+            .map(userProfileMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserProfileDTO> findAllByEmail(String email) {
+        log.debug("Request to get UserProfiles by email : {}", email);
+        return userProfileRepository
+            .findAllByEmailOrderByIdAsc(email)
+            .stream()
+            .map(this::refreshEmailSubscriptionTokenIfNeeded)
+            .map(userProfileMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -217,9 +234,23 @@ public class UserProfileServiceImpl implements UserProfileService {
     public Optional<UserProfileDTO> findByEmailAndTenantId(String email, String tenantId) {
         log.debug("Request to get UserProfile by email {} and tenantId {}", email, tenantId);
         return userProfileRepository
-            .findByEmailAndTenantId(email, tenantId)
+            .findAllByEmailAndTenantIdOrderByIdAsc(email, tenantId)
+            .stream()
+            .findFirst()
             .map(this::refreshEmailSubscriptionTokenIfNeeded)
             .map(userProfileMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserProfileDTO> findAllByEmailAndTenantId(String email, String tenantId) {
+        log.debug("Request to get UserProfiles by email {} and tenantId {}", email, tenantId);
+        return userProfileRepository
+            .findAllByEmailAndTenantIdOrderByIdAsc(email, tenantId)
+            .stream()
+            .map(this::refreshEmailSubscriptionTokenIfNeeded)
+            .map(userProfileMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -227,7 +258,9 @@ public class UserProfileServiceImpl implements UserProfileService {
     public String getUnsubscribeTokenByEmailAndTenantId(String email, String tenantId) {
         log.debug("Request to get unsubscribe token by email {} and tenantId {}", email, tenantId);
         return userProfileRepository
-            .findByEmailAndTenantId(email, tenantId)
+            .findAllByEmailAndTenantIdOrderByIdAsc(email, tenantId)
+            .stream()
+            .findFirst()
             .map(this::refreshEmailSubscriptionTokenIfNeeded)
             .map(UserProfile::getEmailSubscriptionToken)
             .orElse(null);
@@ -272,11 +305,9 @@ public class UserProfileServiceImpl implements UserProfileService {
                 if (userProfileDTO.getTenantId() == null || userProfileDTO.getTenantId().trim().isEmpty()) {
                     return false; // Skip users without tenant ID
                 }
-                Optional<UserProfile> existingUser = userProfileRepository.findByEmailAndTenantId(
-                    userProfileDTO.getEmail(),
-                    userProfileDTO.getTenantId()
-                );
-                return existingUser.isEmpty(); // Only include if email and tenant ID combination doesn't exist
+                return userProfileRepository
+                    .findAllByEmailAndTenantIdOrderByIdAsc(userProfileDTO.getEmail(), userProfileDTO.getTenantId())
+                    .isEmpty();
             })
             .collect(Collectors.toList());
 

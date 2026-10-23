@@ -138,3 +138,8 @@ aws:
     secret-key: ${AWS_SECRET_ACCESS_KEY}
     region: ${AWS_REGION:us-east-2}
     bucket-name: ${AWS_S3_BUCKET_NAME:eventapp-media-bucket}
+
+# Production Clerk application keeps one profile row per email per tenant.
+clerk:
+  identity:
+    separate-pool: false

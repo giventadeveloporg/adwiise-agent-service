@@ -400,10 +400,9 @@ public class QRCodeResource implements TicketEmailSender {
 
         // Check subscription - MUST use findByEmailAndTenantId to avoid NonUniqueResultException
         // In multi-tenant systems, the same email can exist across different tenants
-        boolean isSubscribed = userProfileService
-            .findByEmailAndTenantId(recipient, tenantId)
-            .map(u -> Boolean.TRUE.equals(u.getIsEmailSubscribed()))
-            .orElse(true); // Default to true if not found
+        List<UserProfileDTO> profiles = userProfileService.findAllByEmailAndTenantId(recipient, tenantId);
+        boolean isSubscribed =
+            profiles.isEmpty() || profiles.stream().anyMatch(u -> Boolean.TRUE.equals(u.getIsEmailSubscribed()));
         if (!isSubscribed) {
             return;
         }

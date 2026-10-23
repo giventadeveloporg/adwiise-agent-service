@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261021140000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="team_members"/>
+            <not>
+                <columnExists tableName="team_members" columnName="preferred_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="team_members">
+            <column name="preferred_name" type="varchar(100)"/>
+            <column name="spoken_languages" type="varchar(255)"/>
+            <column name="weight_kg" type="integer"/>
+            <column name="body_build" type="varchar(32)"/>
+            <column name="club_name" type="varchar(255)"/>
+            <column name="league_division" type="varchar(128)"/>
+            <column name="secondary_positions" type="varchar(255)"/>
+            <column name="season_label" type="varchar(32)"/>
+            <column name="season_appearances" type="integer"/>
+            <column name="season_goals" type="integer"/>
+            <column name="season_assists" type="integer"/>
+            <column name="season_minutes" type="integer"/>
+            <column name="season_wins" type="integer"/>
+            <column name="season_draws" type="integer"/>
+            <column name="season_losses" type="integer"/>
+            <column name="pass_accuracy_pct" type="double"/>
+            <column name="shot_accuracy_pct" type="double"/>
+            <column name="top_speed_kmh" type="double"/>
+            <column name="career_appearances" type="integer"/>
+            <column name="career_goals" type="integer"/>
+            <column name="career_assists" type="integer"/>
+            <column name="gpa" type="double"/>
+            <column name="academic_score" type="varchar(64)"/>
+            <column name="coach_name" type="varchar(255)"/>
+            <column name="coach_email" type="varchar(255)"/>
+            <column name="coach_phone" type="varchar(40)"/>
+            <column name="recent_matches" type="varchar(8000)"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

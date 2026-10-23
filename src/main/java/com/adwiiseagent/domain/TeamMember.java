@@ -111,6 +111,120 @@ public class TeamMember implements Serializable {
     @Column(name = "vocal_role", length = 128)
     private String vocalRole;
 
+    @Size(max = 100)
+    @Column(name = "nationality", length = 100)
+    private String nationality;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Size(max = 16)
+    @Column(name = "preferred_foot", length = 16)
+    private String preferredFoot;
+
+    @Column(name = "height_cm")
+    private Integer heightCm;
+
+    @Size(max = 500)
+    @Column(name = "instagram_url", length = 500)
+    private String instagramUrl;
+
+    @Size(max = 100)
+    @Column(name = "preferred_name", length = 100)
+    private String preferredName;
+
+    @Size(max = 255)
+    @Column(name = "spoken_languages", length = 255)
+    private String spokenLanguages;
+
+    @Column(name = "weight_kg")
+    private Integer weightKg;
+
+    @Size(max = 32)
+    @Column(name = "body_build", length = 32)
+    private String bodyBuild;
+
+    @Size(max = 255)
+    @Column(name = "club_name", length = 255)
+    private String clubName;
+
+    @Size(max = 128)
+    @Column(name = "league_division", length = 128)
+    private String leagueDivision;
+
+    @Size(max = 255)
+    @Column(name = "secondary_positions", length = 255)
+    private String secondaryPositions;
+
+    @Size(max = 32)
+    @Column(name = "season_label", length = 32)
+    private String seasonLabel;
+
+    @Column(name = "season_appearances")
+    private Integer seasonAppearances;
+
+    @Column(name = "season_goals")
+    private Integer seasonGoals;
+
+    @Column(name = "season_assists")
+    private Integer seasonAssists;
+
+    @Column(name = "season_minutes")
+    private Integer seasonMinutes;
+
+    @Column(name = "season_wins")
+    private Integer seasonWins;
+
+    @Column(name = "season_draws")
+    private Integer seasonDraws;
+
+    @Column(name = "season_losses")
+    private Integer seasonLosses;
+
+    @Column(name = "pass_accuracy_pct")
+    private Double passAccuracyPct;
+
+    @Column(name = "shot_accuracy_pct")
+    private Double shotAccuracyPct;
+
+    @Column(name = "top_speed_kmh")
+    private Double topSpeedKmh;
+
+    @Column(name = "career_appearances")
+    private Integer careerAppearances;
+
+    @Column(name = "career_goals")
+    private Integer careerGoals;
+
+    @Column(name = "career_assists")
+    private Integer careerAssists;
+
+    @Column(name = "gpa")
+    private Double gpa;
+
+    @Size(max = 64)
+    @Column(name = "academic_score", length = 64)
+    private String academicScore;
+
+    @Size(max = 255)
+    @Column(name = "coach_name", length = 255)
+    private String coachName;
+
+    @Size(max = 255)
+    @Column(name = "coach_email", length = 255)
+    private String coachEmail;
+
+    @Size(max = 40)
+    @Column(name = "coach_phone", length = 40)
+    private String coachPhone;
+
+    @Size(max = 8000)
+    @Column(name = "recent_matches", length = 8000)
+    private String recentMatches;
+
+    @Column(name = "sport_profiles", columnDefinition = "text")
+    private String sportProfiles;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -451,6 +565,435 @@ public class TeamMember implements Serializable {
         this.vocalRole = vocalRole;
     }
 
+    public String getNationality() {
+        return this.nationality;
+    }
+
+    public TeamMember nationality(String nationality) {
+        this.setNationality(nationality);
+        return this;
+    }
+
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return this.dateOfBirth;
+    }
+
+    public TeamMember dateOfBirth(LocalDate dateOfBirth) {
+        this.setDateOfBirth(dateOfBirth);
+        return this;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getPreferredFoot() {
+        return this.preferredFoot;
+    }
+
+    public TeamMember preferredFoot(String preferredFoot) {
+        this.setPreferredFoot(preferredFoot);
+        return this;
+    }
+
+    public void setPreferredFoot(String preferredFoot) {
+        this.preferredFoot = preferredFoot;
+    }
+
+    public Integer getHeightCm() {
+        return this.heightCm;
+    }
+
+    public TeamMember heightCm(Integer heightCm) {
+        this.setHeightCm(heightCm);
+        return this;
+    }
+
+    public void setHeightCm(Integer heightCm) {
+        this.heightCm = heightCm;
+    }
+
+    public String getInstagramUrl() {
+        return this.instagramUrl;
+    }
+
+    public TeamMember instagramUrl(String instagramUrl) {
+        this.setInstagramUrl(instagramUrl);
+        return this;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public String getPreferredName() {
+        return this.preferredName;
+    }
+
+    public TeamMember preferredName(String preferredName) {
+        this.setPreferredName(preferredName);
+        return this;
+    }
+
+    public void setPreferredName(String preferredName) {
+        this.preferredName = preferredName;
+    }
+
+    public String getSpokenLanguages() {
+        return this.spokenLanguages;
+    }
+
+    public TeamMember spokenLanguages(String spokenLanguages) {
+        this.setSpokenLanguages(spokenLanguages);
+        return this;
+    }
+
+    public void setSpokenLanguages(String spokenLanguages) {
+        this.spokenLanguages = spokenLanguages;
+    }
+
+    public Integer getWeightKg() {
+        return this.weightKg;
+    }
+
+    public TeamMember weightKg(Integer weightKg) {
+        this.setWeightKg(weightKg);
+        return this;
+    }
+
+    public void setWeightKg(Integer weightKg) {
+        this.weightKg = weightKg;
+    }
+
+    public String getBodyBuild() {
+        return this.bodyBuild;
+    }
+
+    public TeamMember bodyBuild(String bodyBuild) {
+        this.setBodyBuild(bodyBuild);
+        return this;
+    }
+
+    public void setBodyBuild(String bodyBuild) {
+        this.bodyBuild = bodyBuild;
+    }
+
+    public String getClubName() {
+        return this.clubName;
+    }
+
+    public TeamMember clubName(String clubName) {
+        this.setClubName(clubName);
+        return this;
+    }
+
+    public void setClubName(String clubName) {
+        this.clubName = clubName;
+    }
+
+    public String getLeagueDivision() {
+        return this.leagueDivision;
+    }
+
+    public TeamMember leagueDivision(String leagueDivision) {
+        this.setLeagueDivision(leagueDivision);
+        return this;
+    }
+
+    public void setLeagueDivision(String leagueDivision) {
+        this.leagueDivision = leagueDivision;
+    }
+
+    public String getSecondaryPositions() {
+        return this.secondaryPositions;
+    }
+
+    public TeamMember secondaryPositions(String secondaryPositions) {
+        this.setSecondaryPositions(secondaryPositions);
+        return this;
+    }
+
+    public void setSecondaryPositions(String secondaryPositions) {
+        this.secondaryPositions = secondaryPositions;
+    }
+
+    public String getSeasonLabel() {
+        return this.seasonLabel;
+    }
+
+    public TeamMember seasonLabel(String seasonLabel) {
+        this.setSeasonLabel(seasonLabel);
+        return this;
+    }
+
+    public void setSeasonLabel(String seasonLabel) {
+        this.seasonLabel = seasonLabel;
+    }
+
+    public Integer getSeasonAppearances() {
+        return this.seasonAppearances;
+    }
+
+    public TeamMember seasonAppearances(Integer seasonAppearances) {
+        this.setSeasonAppearances(seasonAppearances);
+        return this;
+    }
+
+    public void setSeasonAppearances(Integer seasonAppearances) {
+        this.seasonAppearances = seasonAppearances;
+    }
+
+    public Integer getSeasonGoals() {
+        return this.seasonGoals;
+    }
+
+    public TeamMember seasonGoals(Integer seasonGoals) {
+        this.setSeasonGoals(seasonGoals);
+        return this;
+    }
+
+    public void setSeasonGoals(Integer seasonGoals) {
+        this.seasonGoals = seasonGoals;
+    }
+
+    public Integer getSeasonAssists() {
+        return this.seasonAssists;
+    }
+
+    public TeamMember seasonAssists(Integer seasonAssists) {
+        this.setSeasonAssists(seasonAssists);
+        return this;
+    }
+
+    public void setSeasonAssists(Integer seasonAssists) {
+        this.seasonAssists = seasonAssists;
+    }
+
+    public Integer getSeasonMinutes() {
+        return this.seasonMinutes;
+    }
+
+    public TeamMember seasonMinutes(Integer seasonMinutes) {
+        this.setSeasonMinutes(seasonMinutes);
+        return this;
+    }
+
+    public void setSeasonMinutes(Integer seasonMinutes) {
+        this.seasonMinutes = seasonMinutes;
+    }
+
+    public Integer getSeasonWins() {
+        return this.seasonWins;
+    }
+
+    public TeamMember seasonWins(Integer seasonWins) {
+        this.setSeasonWins(seasonWins);
+        return this;
+    }
+
+    public void setSeasonWins(Integer seasonWins) {
+        this.seasonWins = seasonWins;
+    }
+
+    public Integer getSeasonDraws() {
+        return this.seasonDraws;
+    }
+
+    public TeamMember seasonDraws(Integer seasonDraws) {
+        this.setSeasonDraws(seasonDraws);
+        return this;
+    }
+
+    public void setSeasonDraws(Integer seasonDraws) {
+        this.seasonDraws = seasonDraws;
+    }
+
+    public Integer getSeasonLosses() {
+        return this.seasonLosses;
+    }
+
+    public TeamMember seasonLosses(Integer seasonLosses) {
+        this.setSeasonLosses(seasonLosses);
+        return this;
+    }
+
+    public void setSeasonLosses(Integer seasonLosses) {
+        this.seasonLosses = seasonLosses;
+    }
+
+    public Double getPassAccuracyPct() {
+        return this.passAccuracyPct;
+    }
+
+    public TeamMember passAccuracyPct(Double passAccuracyPct) {
+        this.setPassAccuracyPct(passAccuracyPct);
+        return this;
+    }
+
+    public void setPassAccuracyPct(Double passAccuracyPct) {
+        this.passAccuracyPct = passAccuracyPct;
+    }
+
+    public Double getShotAccuracyPct() {
+        return this.shotAccuracyPct;
+    }
+
+    public TeamMember shotAccuracyPct(Double shotAccuracyPct) {
+        this.setShotAccuracyPct(shotAccuracyPct);
+        return this;
+    }
+
+    public void setShotAccuracyPct(Double shotAccuracyPct) {
+        this.shotAccuracyPct = shotAccuracyPct;
+    }
+
+    public Double getTopSpeedKmh() {
+        return this.topSpeedKmh;
+    }
+
+    public TeamMember topSpeedKmh(Double topSpeedKmh) {
+        this.setTopSpeedKmh(topSpeedKmh);
+        return this;
+    }
+
+    public void setTopSpeedKmh(Double topSpeedKmh) {
+        this.topSpeedKmh = topSpeedKmh;
+    }
+
+    public Integer getCareerAppearances() {
+        return this.careerAppearances;
+    }
+
+    public TeamMember careerAppearances(Integer careerAppearances) {
+        this.setCareerAppearances(careerAppearances);
+        return this;
+    }
+
+    public void setCareerAppearances(Integer careerAppearances) {
+        this.careerAppearances = careerAppearances;
+    }
+
+    public Integer getCareerGoals() {
+        return this.careerGoals;
+    }
+
+    public TeamMember careerGoals(Integer careerGoals) {
+        this.setCareerGoals(careerGoals);
+        return this;
+    }
+
+    public void setCareerGoals(Integer careerGoals) {
+        this.careerGoals = careerGoals;
+    }
+
+    public Integer getCareerAssists() {
+        return this.careerAssists;
+    }
+
+    public TeamMember careerAssists(Integer careerAssists) {
+        this.setCareerAssists(careerAssists);
+        return this;
+    }
+
+    public void setCareerAssists(Integer careerAssists) {
+        this.careerAssists = careerAssists;
+    }
+
+    public Double getGpa() {
+        return this.gpa;
+    }
+
+    public TeamMember gpa(Double gpa) {
+        this.setGpa(gpa);
+        return this;
+    }
+
+    public void setGpa(Double gpa) {
+        this.gpa = gpa;
+    }
+
+    public String getAcademicScore() {
+        return this.academicScore;
+    }
+
+    public TeamMember academicScore(String academicScore) {
+        this.setAcademicScore(academicScore);
+        return this;
+    }
+
+    public void setAcademicScore(String academicScore) {
+        this.academicScore = academicScore;
+    }
+
+    public String getCoachName() {
+        return this.coachName;
+    }
+
+    public TeamMember coachName(String coachName) {
+        this.setCoachName(coachName);
+        return this;
+    }
+
+    public void setCoachName(String coachName) {
+        this.coachName = coachName;
+    }
+
+    public String getCoachEmail() {
+        return this.coachEmail;
+    }
+
+    public TeamMember coachEmail(String coachEmail) {
+        this.setCoachEmail(coachEmail);
+        return this;
+    }
+
+    public void setCoachEmail(String coachEmail) {
+        this.coachEmail = coachEmail;
+    }
+
+    public String getCoachPhone() {
+        return this.coachPhone;
+    }
+
+    public TeamMember coachPhone(String coachPhone) {
+        this.setCoachPhone(coachPhone);
+        return this;
+    }
+
+    public void setCoachPhone(String coachPhone) {
+        this.coachPhone = coachPhone;
+    }
+
+    public String getRecentMatches() {
+        return this.recentMatches;
+    }
+
+    public TeamMember recentMatches(String recentMatches) {
+        this.setRecentMatches(recentMatches);
+        return this;
+    }
+
+    public void setRecentMatches(String recentMatches) {
+        this.recentMatches = recentMatches;
+    }
+
+    public String getSportProfiles() {
+        return this.sportProfiles;
+    }
+
+    public TeamMember sportProfiles(String sportProfiles) {
+        this.setSportProfiles(sportProfiles);
+        return this;
+    }
+
+    public void setSportProfiles(String sportProfiles) {
+        this.sportProfiles = sportProfiles;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -499,6 +1042,37 @@ public class TeamMember implements Serializable {
             ", lineupSubtitle='" + getLineupSubtitle() + "'" +
             ", instrument='" + getInstrument() + "'" +
             ", vocalRole='" + getVocalRole() + "'" +
+            ", nationality='" + getNationality() + "'" +
+            ", dateOfBirth='" + getDateOfBirth() + "'" +
+            ", preferredFoot='" + getPreferredFoot() + "'" +
+            ", heightCm=" + getHeightCm() +
+            ", instagramUrl='" + getInstagramUrl() + "'" +
+            ", preferredName='" + getPreferredName() + "'" +
+            ", spokenLanguages='" + getSpokenLanguages() + "'" +
+            ", weightKg=" + getWeightKg() +
+            ", bodyBuild='" + getBodyBuild() + "'" +
+            ", clubName='" + getClubName() + "'" +
+            ", leagueDivision='" + getLeagueDivision() + "'" +
+            ", secondaryPositions='" + getSecondaryPositions() + "'" +
+            ", seasonLabel='" + getSeasonLabel() + "'" +
+            ", seasonAppearances=" + getSeasonAppearances() +
+            ", seasonGoals=" + getSeasonGoals() +
+            ", seasonAssists=" + getSeasonAssists() +
+            ", seasonMinutes=" + getSeasonMinutes() +
+            ", seasonWins=" + getSeasonWins() +
+            ", seasonDraws=" + getSeasonDraws() +
+            ", seasonLosses=" + getSeasonLosses() +
+            ", passAccuracyPct=" + getPassAccuracyPct() +
+            ", shotAccuracyPct=" + getShotAccuracyPct() +
+            ", topSpeedKmh=" + getTopSpeedKmh() +
+            ", careerAppearances=" + getCareerAppearances() +
+            ", careerGoals=" + getCareerGoals() +
+            ", careerAssists=" + getCareerAssists() +
+            ", gpa=" + getGpa() +
+            ", academicScore='" + getAcademicScore() + "'" +
+            ", coachName='" + getCoachName() + "'" +
+            ", coachEmail='" + getCoachEmail() + "'" +
+            ", coachPhone='" + getCoachPhone() + "'" +
             "}";
     }
 }

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261019120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="team_members"/>
+            <not>
+                <columnExists tableName="team_members" columnName="nationality"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="team_members">
+            <column name="nationality" type="varchar(100)"/>
+            <column name="date_of_birth" type="date"/>
+            <column name="preferred_foot" type="varchar(16)"/>
+            <column name="height_cm" type="integer"/>
+            <column name="instagram_url" type="varchar(500)"/>
+        </addColumn>
+        <sql>
+            ALTER TABLE team_members
+            ADD CONSTRAINT chk_team_members__preferred_foot
+            CHECK (preferred_foot IS NULL OR preferred_foot IN ('LEFT', 'RIGHT', 'BOTH'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261019120000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="team_member_achievement_id_seq"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="team_member_achievement_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="20261019120000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="team_member_achievement"/>
+            </not>
+        </preConditions>
+        <createTable tableName="team_member_achievement">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="team_member_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(2000)"/>
+            <column name="achievement_date" type="date"/>
+            <column name="category" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="issuer" type="varchar(255)"/>
+            <column name="url" type="varchar(500)"/>
+            <column name="image_url" type="varchar(500)"/>
+            <column name="display_order" type="integer"/>
+            <column name="is_featured" type="boolean" defaultValueBoolean="false"/>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="team_member_achievement"
+            baseColumnNames="tenant_id"
+            constraintName="fk_team_member_achievement__tenant_id"
+            referencedTableName="tenant_organization"
+            referencedColumnNames="tenant_id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="team_member_achievement"
+            baseColumnNames="team_member_id"
+            constraintName="fk_team_member_achievement__team_member_id"
+            referencedTableName="team_members"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <sql>
+            ALTER TABLE team_member_achievement
+            ADD CONSTRAINT chk_team_member_achievement__category
+            CHECK (category IN ('AWARD', 'HONOR', 'TROPHY', 'CAP', 'OTHER'));
+        </sql>
+        <createIndex indexName="idx_team_member_achievement_tenant_member_order" tableName="team_member_achievement">
+            <column name="tenant_id"/>
+            <column name="team_member_id"/>
+            <column name="display_order"/>
+        </createIndex>
+        <sql dbms="postgresql">
+            CREATE TRIGGER trg_team_member_achievement_updated_at
+                BEFORE UPDATE ON team_member_achievement
+                FOR EACH ROW
+                EXECUTE FUNCTION update_updated_at_column();
+        </sql>
+    </changeSet>
+</databaseChangeLog>

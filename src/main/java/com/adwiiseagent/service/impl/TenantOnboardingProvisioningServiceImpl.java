@@ -369,7 +369,8 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
             }
             boolean exists =
                 userProfileRepository.findByUserIdAndTenantId(src.getUserId(), r.tenantId).isPresent() ||
-                (src.getEmail() != null && userProfileRepository.findByEmailAndTenantId(src.getEmail(), r.tenantId).isPresent());
+                (src.getEmail() != null &&
+                    !userProfileRepository.findAllByEmailAndTenantIdOrderByIdAsc(src.getEmail(), r.tenantId).isEmpty());
             if (exists) {
                 continue;
             }
