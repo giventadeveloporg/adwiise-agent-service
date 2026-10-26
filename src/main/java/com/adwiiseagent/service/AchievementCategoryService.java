@@ -63,7 +63,9 @@ public class AchievementCategoryService {
         return repository
             .findById(dto.getId())
             .map(existing -> {
-                String requestedTenant = dto.getTenantId() == null ? existing.getTenantId() : RosterCatalogGuard.normalizeTenant(dto.getTenantId());
+                String requestedTenant = dto.getTenantId() == null
+                    ? existing.getTenantId()
+                    : RosterCatalogGuard.normalizeTenant(dto.getTenantId());
                 guard.assertWrite(true, existing.getTenantId(), requestedTenant);
                 if (dto.getCode() != null) {
                     String code = RosterCatalogGuard.normalizeCode(dto.getCode());
@@ -132,7 +134,7 @@ public class AchievementCategoryService {
         Optional<AchievementCategory> found = tenantId == null
             ? repository.findByCodeAndTenantIdIsNull(code)
             : repository.findByCodeAndTenantId(code, tenantId);
-        if (found.isPresent() && (excludeId == null || !found.get().getId().equals(excludeId))) {
+        if (found.isPresent() && (excludeId == null || !found.orElseThrow().getId().equals(excludeId))) {
             throw new BadRequestAlertException("A catalog row with this code already exists", ENTITY, "codeexists");
         }
     }

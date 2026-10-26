@@ -17,10 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +70,9 @@ public class RosterCatalogLookup {
             .findActiveForTenant(code.trim(), tenantId)
             .stream()
             .findFirst()
-            .orElseThrow(() -> new BadRequestAlertException("category is not an active catalog value", "teamMemberAchievement", "categoryinvalid"));
+            .orElseThrow(() ->
+                new BadRequestAlertException("category is not an active catalog value", "teamMemberAchievement", "categoryinvalid")
+            );
     }
 
     public AchievementCategory requireAchievementById(Long id, String tenantId) {
@@ -173,6 +177,22 @@ public class RosterCatalogLookup {
         } catch (Exception ex) {
             node = objectMapper.createObjectNode();
         }
+        Set<String> catalogCodes = new HashSet<>();
+        for (SportsCategory category : sportsCategoryRepository.findAll()) {
+            if (category.getCode() != null && !category.getCode().isBlank()) {
+                catalogCodes.add(category.getCode());
+            }
+        }
+        Set<String> selected = new HashSet<>(codes);
+        List<String> drop = new ArrayList<>();
+        node
+            .fieldNames()
+            .forEachRemaining(name -> {
+                if (!"categories".equals(name) && catalogCodes.contains(name) && !selected.contains(name)) {
+                    drop.add(name);
+                }
+            });
+        drop.forEach(node::remove);
         ArrayNode categories = node.putArray("categories");
         codes.forEach(categories::add);
         return node.toString();

@@ -63,7 +63,9 @@ public class TeamTypeService {
         return repository
             .findById(dto.getId())
             .map(existing -> {
-                String requestedTenant = dto.getTenantId() == null ? existing.getTenantId() : RosterCatalogGuard.normalizeTenant(dto.getTenantId());
+                String requestedTenant = dto.getTenantId() == null
+                    ? existing.getTenantId()
+                    : RosterCatalogGuard.normalizeTenant(dto.getTenantId());
                 guard.assertWrite(true, existing.getTenantId(), requestedTenant);
                 if (dto.getCode() != null) {
                     String code = RosterCatalogGuard.normalizeCode(dto.getCode());
@@ -91,7 +93,9 @@ public class TeamTypeService {
     }
 
     public void delete(Long id) {
-        TeamType existing = repository.findById(id).orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY, "idnotfound"));
+        TeamType existing = repository
+            .findById(id)
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY, "idnotfound"));
         guard.assertWrite(true, existing.getTenantId(), existing.getTenantId());
         if (isReferenced(existing)) {
             existing.setIsActive(false);
@@ -124,8 +128,10 @@ public class TeamTypeService {
     }
 
     private void assertCodeAvailable(String code, String tenantId, Long excludeId) {
-        Optional<TeamType> found = tenantId == null ? repository.findByCodeAndTenantIdIsNull(code) : repository.findByCodeAndTenantId(code, tenantId);
-        if (found.isPresent() && (excludeId == null || !found.get().getId().equals(excludeId))) {
+        Optional<TeamType> found = tenantId == null
+            ? repository.findByCodeAndTenantIdIsNull(code)
+            : repository.findByCodeAndTenantId(code, tenantId);
+        if (found.isPresent() && (excludeId == null || !found.orElseThrow().getId().equals(excludeId))) {
             throw new BadRequestAlertException("A catalog row with this code already exists", ENTITY, "codeexists");
         }
     }
