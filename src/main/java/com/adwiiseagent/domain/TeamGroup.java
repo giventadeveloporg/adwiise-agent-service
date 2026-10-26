@@ -30,8 +30,8 @@ public class TeamGroup implements Serializable {
     private String tenantId;
 
     @NotNull
-    @Size(max = 32)
-    @Column(name = "team_type", length = 32, nullable = false)
+    @Size(max = 64)
+    @Column(name = "team_type", length = 64, nullable = false)
     private String teamType;
 
     @NotNull

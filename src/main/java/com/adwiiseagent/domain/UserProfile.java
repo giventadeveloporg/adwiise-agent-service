@@ -113,8 +113,8 @@ public class UserProfile implements Serializable {
     @Column(name = "user_status", length = 50)
     private String userStatus;
 
-    @Size(max = 50)
-    @Column(name = "user_role", length = 50)
+    @Size(max = 64)
+    @Column(name = "user_role", length = 64)
     private String userRole;
 
     @Column(name = "reviewed_by_admin_at")

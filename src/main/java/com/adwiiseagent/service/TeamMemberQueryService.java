@@ -28,16 +28,25 @@ public class TeamMemberQueryService extends QueryService<TeamMember> {
 
     private final TeamMemberMapper teamMemberMapper;
 
-    public TeamMemberQueryService(TeamMemberRepository teamMemberRepository, TeamMemberMapper teamMemberMapper) {
+    private final RosterCatalogLookup rosterCatalogLookup;
+
+    public TeamMemberQueryService(
+        TeamMemberRepository teamMemberRepository,
+        TeamMemberMapper teamMemberMapper,
+        RosterCatalogLookup rosterCatalogLookup
+    ) {
         this.teamMemberRepository = teamMemberRepository;
         this.teamMemberMapper = teamMemberMapper;
+        this.rosterCatalogLookup = rosterCatalogLookup;
     }
 
     @Transactional(readOnly = true)
     public Page<TeamMemberDTO> findByCriteria(TeamMemberCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<TeamMember> specification = createSpecification(criteria);
-        return teamMemberRepository.findAll(specification, page).map(teamMemberMapper::toDto);
+        Page<TeamMemberDTO> result = teamMemberRepository.findAll(specification, page).map(teamMemberMapper::toDto);
+        rosterCatalogLookup.attachSports(result.getContent());
+        return result;
     }
 
     @Transactional(readOnly = true)

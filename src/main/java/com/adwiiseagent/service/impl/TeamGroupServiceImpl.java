@@ -2,6 +2,7 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.TeamGroup;
 import com.adwiiseagent.repository.TeamGroupRepository;
+import com.adwiiseagent.service.RosterCatalogLookup;
 import com.adwiiseagent.service.TeamGroupService;
 import com.adwiiseagent.service.dto.TeamGroupDTO;
 import com.adwiiseagent.service.mapper.TeamGroupMapper;
@@ -24,9 +25,16 @@ public class TeamGroupServiceImpl implements TeamGroupService {
 
     private final TeamGroupMapper teamGroupMapper;
 
-    public TeamGroupServiceImpl(TeamGroupRepository teamGroupRepository, TeamGroupMapper teamGroupMapper) {
+    private final RosterCatalogLookup rosterCatalogLookup;
+
+    public TeamGroupServiceImpl(
+        TeamGroupRepository teamGroupRepository,
+        TeamGroupMapper teamGroupMapper,
+        RosterCatalogLookup rosterCatalogLookup
+    ) {
         this.teamGroupRepository = teamGroupRepository;
         this.teamGroupMapper = teamGroupMapper;
+        this.rosterCatalogLookup = rosterCatalogLookup;
     }
 
     @Override
@@ -39,6 +47,7 @@ public class TeamGroupServiceImpl implements TeamGroupService {
             teamGroup.setId(null);
         }
 
+        rosterCatalogLookup.requireTeamType(teamGroup.getTeamType(), teamGroup.getTenantId());
         teamGroup = teamGroupRepository.save(teamGroup);
         return teamGroupMapper.toDto(teamGroup);
     }
@@ -47,6 +56,7 @@ public class TeamGroupServiceImpl implements TeamGroupService {
     public TeamGroupDTO update(TeamGroupDTO teamGroupDTO) {
         LOG.debug("Request to update TeamGroup : {}", teamGroupDTO);
         TeamGroup teamGroup = teamGroupMapper.toEntity(teamGroupDTO);
+        rosterCatalogLookup.requireTeamType(teamGroup.getTeamType(), teamGroup.getTenantId());
         teamGroup = teamGroupRepository.save(teamGroup);
         return teamGroupMapper.toDto(teamGroup);
     }
@@ -59,6 +69,7 @@ public class TeamGroupServiceImpl implements TeamGroupService {
             .findById(teamGroupDTO.getId())
             .map(existingTeamGroup -> {
                 teamGroupMapper.partialUpdate(existingTeamGroup, teamGroupDTO);
+                rosterCatalogLookup.requireTeamType(existingTeamGroup.getTeamType(), existingTeamGroup.getTenantId());
                 return existingTeamGroup;
             })
             .map(teamGroupRepository::save)

@@ -2,6 +2,7 @@ package com.adwiiseagent.web.rest;
 
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.service.RetailerTypeLookup;
 import com.adwiiseagent.service.TenantOrganizationQueryService;
 import com.adwiiseagent.service.TenantOrganizationService;
 import com.adwiiseagent.service.criteria.TenantOrganizationCriteria;
@@ -46,14 +47,18 @@ public class TenantOrganizationResource {
 
     private final TenantOrganizationQueryService tenantOrganizationQueryService;
 
+    private final RetailerTypeLookup retailerTypeLookup;
+
     public TenantOrganizationResource(
         TenantOrganizationService tenantOrganizationService,
         TenantOrganizationRepository tenantOrganizationRepository,
-        TenantOrganizationQueryService tenantOrganizationQueryService
+        TenantOrganizationQueryService tenantOrganizationQueryService,
+        RetailerTypeLookup retailerTypeLookup
     ) {
         this.tenantOrganizationService = tenantOrganizationService;
         this.tenantOrganizationRepository = tenantOrganizationRepository;
         this.tenantOrganizationQueryService = tenantOrganizationQueryService;
+        this.retailerTypeLookup = retailerTypeLookup;
     }
 
     /**
@@ -206,9 +211,13 @@ public class TenantOrganizationResource {
     }
 
     private void validateSiteType(TenantOrganizationDTO tenantOrganizationDTO, boolean required) {
-        if (required && tenantOrganizationDTO.getSiteType() == null) {
-            throw new BadRequestAlertException("siteType is required", ENTITY_NAME, "sitetyperequired");
+        if (tenantOrganizationDTO.getSiteType() == null || tenantOrganizationDTO.getSiteType().isBlank()) {
+            if (required) {
+                throw new BadRequestAlertException("siteType is required", ENTITY_NAME, "sitetyperequired");
+            }
+            return;
         }
+        retailerTypeLookup.requireAssignable(tenantOrganizationDTO.getSiteType().trim(), tenantOrganizationDTO.getTenantId());
     }
 
     /**

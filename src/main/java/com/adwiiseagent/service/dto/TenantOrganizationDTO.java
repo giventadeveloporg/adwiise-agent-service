@@ -1,6 +1,5 @@
 package com.adwiiseagent.service.dto;
 
-import com.adwiiseagent.domain.enumeration.SiteType;
 import com.adwiiseagent.service.validation.TenantOrganizationProfileValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -121,7 +120,7 @@ public class TenantOrganizationDTO implements Serializable {
     private ZonedDateTime updatedAt;
 
     @NotNull
-    private SiteType siteType;
+    private String siteType;
 
     @Size(max = 32)
     private String siteTemplateVersion;
@@ -390,11 +389,11 @@ public class TenantOrganizationDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public SiteType getSiteType() {
+    public String getSiteType() {
         return siteType;
     }
 
-    public void setSiteType(SiteType siteType) {
+    public void setSiteType(String siteType) {
         this.siteType = siteType;
     }
 

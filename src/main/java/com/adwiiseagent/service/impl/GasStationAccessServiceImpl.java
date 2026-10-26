@@ -3,12 +3,12 @@ package com.adwiiseagent.service.impl;
 import com.adwiiseagent.domain.GasStationRecommendation;
 import com.adwiiseagent.domain.GasStationRecommendation_;
 import com.adwiiseagent.domain.UserProfile;
-import com.adwiiseagent.domain.enumeration.UserRoleType;
 import com.adwiiseagent.repository.GasStationUserStationAssignmentRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
 import com.adwiiseagent.security.AuthoritiesConstants;
 import com.adwiiseagent.security.SecurityUtils;
 import com.adwiiseagent.security.TenantContext;
+import com.adwiiseagent.service.AccessRoleLookup;
 import com.adwiiseagent.service.GasStationAccessService;
 import com.adwiiseagent.service.criteria.GasStationLocationCriteria;
 import com.adwiiseagent.service.criteria.GasStationUserStationAssignmentCriteria;
@@ -34,28 +34,22 @@ public class GasStationAccessServiceImpl implements GasStationAccessService {
     private static final Logger LOG = LoggerFactory.getLogger(GasStationAccessServiceImpl.class);
     private static final String SERVICE_JWT_SUBJECT = "jwtadmin";
 
-    private static final Set<String> ALL_LOCATIONS_ROLES = Set.of(
-        UserRoleType.SUPER_ADMIN.name(),
-        UserRoleType.ADMIN.name(),
-        UserRoleType.GAS_STATION_ADMIN.name()
-    );
-
-    private static final Set<String> GAS_MODULE_ROLES = Set.of(
-        UserRoleType.SUPER_ADMIN.name(),
-        UserRoleType.ADMIN.name(),
-        UserRoleType.GAS_STATION_ADMIN.name(),
-        UserRoleType.GAS_STATION_MANAGER.name()
-    );
-
     private final UserProfileRepository userProfileRepository;
     private final GasStationUserStationAssignmentRepository assignmentRepository;
+    private final AccessRoleLookup accessRoleLookup;
 
     public GasStationAccessServiceImpl(
         UserProfileRepository userProfileRepository,
-        GasStationUserStationAssignmentRepository assignmentRepository
+        GasStationUserStationAssignmentRepository assignmentRepository,
+        AccessRoleLookup accessRoleLookup
     ) {
         this.userProfileRepository = userProfileRepository;
         this.assignmentRepository = assignmentRepository;
+        this.accessRoleLookup = accessRoleLookup;
+    }
+
+    private AccessRoleLookup.Scope scopeOf(UserProfile profile) {
+        return accessRoleLookup.locationScope(profile.getUserRole(), profile.getTenantId());
     }
 
     @Override
@@ -79,7 +73,7 @@ public class GasStationAccessServiceImpl implements GasStationAccessService {
         UserProfile profile = resolveCurrentUserProfile()
             .orElseThrow(() -> gasAccessDenied("Gas station access requires an authenticated user profile."));
         String role = normalizeRole(profile.getUserRole());
-        if (!GAS_MODULE_ROLES.contains(role)) {
+        if (scopeOf(profile) == AccessRoleLookup.Scope.NONE) {
             throw gasAccessDenied("User does not have gas station module access.");
         }
     }
@@ -92,7 +86,7 @@ public class GasStationAccessServiceImpl implements GasStationAccessService {
         }
         UserProfile profile = resolveCurrentUserProfile().orElseThrow(() -> gasAccessDenied("Gas station admin role required."));
         String role = normalizeRole(profile.getUserRole());
-        if (!ALL_LOCATIONS_ROLES.contains(role)) {
+        if (scopeOf(profile) != AccessRoleLookup.Scope.ALL) {
             throw gasAccessDenied("Gas station tenant admin role required for this action.");
         }
     }
@@ -107,10 +101,10 @@ public class GasStationAccessServiceImpl implements GasStationAccessService {
             return Collections.emptySet();
         }
         String role = normalizeRole(profile.getUserRole());
-        if (ALL_LOCATIONS_ROLES.contains(role)) {
+        if (scopeOf(profile) == AccessRoleLookup.Scope.ALL) {
             return null;
         }
-        if (!UserRoleType.GAS_STATION_MANAGER.name().equals(role)) {
+        if (scopeOf(profile) != AccessRoleLookup.Scope.ASSIGNED) {
             return Collections.emptySet();
         }
         String tenantId = requireTenantId();
@@ -209,10 +203,10 @@ public class GasStationAccessServiceImpl implements GasStationAccessService {
             throw gasAccessDenied("Gas station access requires an authenticated user profile.");
         }
         String role = normalizeRole(profile.getUserRole());
-        if (ALL_LOCATIONS_ROLES.contains(role)) {
+        if (scopeOf(profile) == AccessRoleLookup.Scope.ALL) {
             return;
         }
-        if (UserRoleType.GAS_STATION_MANAGER.name().equals(role)) {
+        if (scopeOf(profile) == AccessRoleLookup.Scope.ASSIGNED) {
             LongFilter userFilter = criteria.getUserProfileId();
             if (userFilter == null) {
                 userFilter = new LongFilter();

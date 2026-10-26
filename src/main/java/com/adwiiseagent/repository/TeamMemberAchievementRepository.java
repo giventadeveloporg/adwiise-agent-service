@@ -7,4 +7,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TeamMemberAchievementRepository
-    extends JpaRepository<TeamMemberAchievement, Long>, JpaSpecificationExecutor<TeamMemberAchievement> {}
+    extends JpaRepository<TeamMemberAchievement, Long>, JpaSpecificationExecutor<TeamMemberAchievement> {
+    boolean existsByAchievementCategoryId(Long achievementCategoryId);
+
+    boolean existsByCategory(String category);
+
+    boolean existsByCategoryAndTenantId(String category, String tenantId);
+}

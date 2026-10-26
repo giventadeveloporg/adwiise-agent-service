@@ -4,6 +4,7 @@ import com.adwiiseagent.domain.TeamMember;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TeamMemberAchievementRepository;
 import com.adwiiseagent.repository.TeamMemberRepository;
+import com.adwiiseagent.service.RosterCatalogLookup;
 import com.adwiiseagent.service.TeamMemberAchievementQueryService;
 import com.adwiiseagent.service.TeamMemberAchievementService;
 import com.adwiiseagent.service.criteria.TeamMemberAchievementCriteria;
@@ -15,7 +16,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +35,6 @@ public class TeamMemberAchievementResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(TeamMemberAchievementResource.class);
     private static final String ENTITY_NAME = "teamMemberAchievement";
-    private static final Set<String> CATEGORIES = Set.of("AWARD", "HONOR", "TROPHY", "CAP", "OTHER");
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -44,17 +43,20 @@ public class TeamMemberAchievementResource {
     private final TeamMemberAchievementRepository teamMemberAchievementRepository;
     private final TeamMemberAchievementQueryService teamMemberAchievementQueryService;
     private final TeamMemberRepository teamMemberRepository;
+    private final RosterCatalogLookup rosterCatalogLookup;
 
     public TeamMemberAchievementResource(
         TeamMemberAchievementService teamMemberAchievementService,
         TeamMemberAchievementRepository teamMemberAchievementRepository,
         TeamMemberAchievementQueryService teamMemberAchievementQueryService,
-        TeamMemberRepository teamMemberRepository
+        TeamMemberRepository teamMemberRepository,
+        RosterCatalogLookup rosterCatalogLookup
     ) {
         this.teamMemberAchievementService = teamMemberAchievementService;
         this.teamMemberAchievementRepository = teamMemberAchievementRepository;
         this.teamMemberAchievementQueryService = teamMemberAchievementQueryService;
         this.teamMemberRepository = teamMemberRepository;
+        this.rosterCatalogLookup = rosterCatalogLookup;
     }
 
     private void validatePlayer(TeamMemberAchievementDTO dto) {
@@ -67,8 +69,14 @@ public class TeamMemberAchievementResource {
         if (dto.getTenantId() != null && !dto.getTenantId().isBlank() && !Objects.equals(member.getTenantId(), dto.getTenantId())) {
             throw new BadRequestAlertException("teamMemberId does not belong to the specified tenant", ENTITY_NAME, "teammembertenantmismatch");
         }
-        if (dto.getCategory() != null && !CATEGORIES.contains(dto.getCategory())) {
-            throw new BadRequestAlertException("category must be AWARD, HONOR, TROPHY, CAP, or OTHER", ENTITY_NAME, "categoryinvalid");
+        if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
+            var category = rosterCatalogLookup.requireAchievement(dto.getCategory(), member.getTenantId());
+            dto.setCategory(category.getCode());
+            dto.setAchievementCategoryId(category.getId());
+        } else if (dto.getAchievementCategoryId() != null) {
+            var category = rosterCatalogLookup.requireAchievementById(dto.getAchievementCategoryId(), member.getTenantId());
+            dto.setCategory(category.getCode());
+            dto.setAchievementCategoryId(category.getId());
         }
     }
 
@@ -123,7 +131,7 @@ public class TeamMemberAchievementResource {
         if (!teamMemberAchievementRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        if (dto.getTeamMemberId() != null || dto.getCategory() != null) {
+        if (dto.getTeamMemberId() != null || dto.getCategory() != null || dto.getAchievementCategoryId() != null) {
             validatePlayer(dto);
         }
         Optional<TeamMemberAchievementDTO> result = teamMemberAchievementService.partialUpdate(dto);

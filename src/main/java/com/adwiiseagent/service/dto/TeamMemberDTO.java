@@ -156,6 +156,12 @@ public class TeamMemberDTO implements Serializable {
 
     private String sportProfiles;
 
+    /** Selected sports_category ids. Omitted (null) leaves the current links unchanged. */
+    private java.util.List<Long> sportCategoryIds;
+
+    /** Labels for the selected sports, in catalog sort order. Read-only on save. */
+    private java.util.List<String> sportLabels;
+
     public Long getId() {
         return id;
     }
@@ -626,6 +632,22 @@ public class TeamMemberDTO implements Serializable {
 
     public void setSportProfiles(String sportProfiles) {
         this.sportProfiles = sportProfiles;
+    }
+
+    public java.util.List<Long> getSportCategoryIds() {
+        return sportCategoryIds;
+    }
+
+    public void setSportCategoryIds(java.util.List<Long> sportCategoryIds) {
+        this.sportCategoryIds = sportCategoryIds;
+    }
+
+    public java.util.List<String> getSportLabels() {
+        return sportLabels;
+    }
+
+    public void setSportLabels(java.util.List<String> sportLabels) {
+        this.sportLabels = sportLabels;
     }
 
     @Override

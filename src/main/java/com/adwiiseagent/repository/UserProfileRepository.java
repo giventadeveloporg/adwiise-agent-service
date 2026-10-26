@@ -57,4 +57,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long>,
 
     // Multi-tenant support: Check if user with Clerk ID exists
     boolean existsByClerkUserId(String clerkUserId);
+
+    boolean existsByUserRole(String userRole);
+
+    boolean existsByUserRoleAndTenantId(String userRole, String tenantId);
 }

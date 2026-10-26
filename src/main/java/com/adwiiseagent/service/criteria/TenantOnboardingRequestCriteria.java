@@ -2,7 +2,6 @@ package com.adwiiseagent.service.criteria;
 
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
-import com.adwiiseagent.domain.enumeration.SiteType;
 import java.io.Serializable;
 import java.util.Objects;
 import org.springdoc.core.annotations.ParameterObject;
@@ -54,7 +53,7 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
     /**
      * Class for filtering SiteType
      */
-    public static class SiteTypeFilter extends Filter<SiteType> {
+    public static class SiteTypeFilter extends StringFilter {
 
         public SiteTypeFilter() {}
 

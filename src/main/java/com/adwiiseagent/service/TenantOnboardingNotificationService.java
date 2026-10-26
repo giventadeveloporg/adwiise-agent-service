@@ -95,7 +95,7 @@ public class TenantOnboardingNotificationService {
             "<ul>" +
             item("Request code", r.getRequestCode()) +
             item("Organization", r.getOrganizationName()) +
-            item("Site type", r.getSiteType() != null ? r.getSiteType().name() : null) +
+            item("Site type", r.getSiteType()) +
             item("Requested hostname", r.getRequestedHostname()) +
             item("Contact", joinName(r.getContactFirstName(), r.getContactLastName())) +
             item("Contact email", r.getContactEmail()) +

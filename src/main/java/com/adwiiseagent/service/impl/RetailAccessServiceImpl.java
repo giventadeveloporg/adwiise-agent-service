@@ -4,12 +4,12 @@ import com.adwiiseagent.domain.RetailRecommendation;
 import com.adwiiseagent.domain.RetailRecommendation_;
 import com.adwiiseagent.domain.RetailUserLocationAssignment;
 import com.adwiiseagent.domain.UserProfile;
-import com.adwiiseagent.domain.enumeration.UserRoleType;
 import com.adwiiseagent.repository.RetailUserLocationAssignmentRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
 import com.adwiiseagent.security.AuthoritiesConstants;
 import com.adwiiseagent.security.SecurityUtils;
 import com.adwiiseagent.security.TenantContext;
+import com.adwiiseagent.service.AccessRoleLookup;
 import com.adwiiseagent.service.RetailAccessService;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,28 +30,22 @@ public class RetailAccessServiceImpl implements RetailAccessService {
 
     private static final String SERVICE_JWT_SUBJECT = "jwtadmin";
 
-    private static final Set<String> ALL_LOCATIONS_ROLES = Set.of(
-        UserRoleType.SUPER_ADMIN.name(),
-        UserRoleType.ADMIN.name(),
-        UserRoleType.GAS_STATION_ADMIN.name()
-    );
-
-    private static final Set<String> MODULE_ROLES = Set.of(
-        UserRoleType.SUPER_ADMIN.name(),
-        UserRoleType.ADMIN.name(),
-        UserRoleType.GAS_STATION_ADMIN.name(),
-        UserRoleType.GAS_STATION_MANAGER.name()
-    );
-
     private final UserProfileRepository userProfileRepository;
     private final RetailUserLocationAssignmentRepository assignmentRepository;
+    private final AccessRoleLookup accessRoleLookup;
 
     public RetailAccessServiceImpl(
         UserProfileRepository userProfileRepository,
-        RetailUserLocationAssignmentRepository assignmentRepository
+        RetailUserLocationAssignmentRepository assignmentRepository,
+        AccessRoleLookup accessRoleLookup
     ) {
         this.userProfileRepository = userProfileRepository;
         this.assignmentRepository = assignmentRepository;
+        this.accessRoleLookup = accessRoleLookup;
+    }
+
+    private AccessRoleLookup.Scope scopeOf(UserProfile profile) {
+        return accessRoleLookup.locationScope(profile.getUserRole(), profile.getTenantId());
     }
 
     @Override
@@ -72,7 +66,7 @@ public class RetailAccessServiceImpl implements RetailAccessService {
         }
         UserProfile profile = resolveCurrentUserProfile()
             .orElseThrow(() -> denied("Retail access requires an authenticated user profile."));
-        if (!MODULE_ROLES.contains(normalizeRole(profile.getUserRole()))) {
+        if (scopeOf(profile) == AccessRoleLookup.Scope.NONE) {
             throw denied("User does not have retail module access.");
         }
     }
@@ -84,7 +78,7 @@ public class RetailAccessServiceImpl implements RetailAccessService {
             return;
         }
         UserProfile profile = resolveCurrentUserProfile().orElseThrow(() -> denied("Retail admin role required."));
-        if (!ALL_LOCATIONS_ROLES.contains(normalizeRole(profile.getUserRole()))) {
+        if (scopeOf(profile) != AccessRoleLookup.Scope.ALL) {
             throw denied("Retail tenant admin role required for this action.");
         }
     }
@@ -98,11 +92,10 @@ public class RetailAccessServiceImpl implements RetailAccessService {
         if (profile == null) {
             return Collections.emptySet();
         }
-        String role = normalizeRole(profile.getUserRole());
-        if (ALL_LOCATIONS_ROLES.contains(role)) {
+        if (scopeOf(profile) == AccessRoleLookup.Scope.ALL) {
             return null;
         }
-        if (!UserRoleType.GAS_STATION_MANAGER.name().equals(role)) {
+        if (scopeOf(profile) != AccessRoleLookup.Scope.ASSIGNED) {
             return Collections.emptySet();
         }
         String tenantId = TenantContext.getCurrentTenant();

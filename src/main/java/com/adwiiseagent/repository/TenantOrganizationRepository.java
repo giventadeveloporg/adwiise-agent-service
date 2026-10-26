@@ -18,4 +18,6 @@ public interface TenantOrganizationRepository
     boolean existsByTenantId(String tenantId);
 
     boolean existsByDomainIgnoreCase(String domain);
+
+    boolean existsBySiteType(String siteType);
 }

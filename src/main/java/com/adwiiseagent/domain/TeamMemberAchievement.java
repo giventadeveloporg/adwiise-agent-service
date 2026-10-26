@@ -46,9 +46,12 @@ public class TeamMemberAchievement implements Serializable {
     private LocalDate achievementDate;
 
     @NotNull
-    @Size(max = 32)
-    @Column(name = "category", length = 32, nullable = false)
+    @Size(max = 64)
+    @Column(name = "category", length = 64, nullable = false)
     private String category;
+
+    @Column(name = "achievement_category_id")
+    private Long achievementCategoryId;
 
     @Size(max = 255)
     @Column(name = "issuer", length = 255)
@@ -122,6 +125,14 @@ public class TeamMemberAchievement implements Serializable {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Long getAchievementCategoryId() {
+        return this.achievementCategoryId;
+    }
+
+    public void setAchievementCategoryId(Long achievementCategoryId) {
+        this.achievementCategoryId = achievementCategoryId;
     }
 
     public String getIssuer() {

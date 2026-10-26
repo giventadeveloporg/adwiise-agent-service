@@ -6,10 +6,10 @@ import com.adwiiseagent.domain.TenantOnboardingRequest;
 import com.adwiiseagent.domain.enumeration.DomainOwnership;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
-import com.adwiiseagent.domain.enumeration.SiteType;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.SatelliteDomainRepository;
 import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
+import com.adwiiseagent.service.RetailerTypeLookup;
 import com.adwiiseagent.service.TenantOnboardingRequestService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
 import com.adwiiseagent.service.dto.TenantOnboardingRejectDTO;
@@ -56,14 +56,18 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
 
     private final SatelliteDomainRepository satelliteDomainRepository;
 
+    private final RetailerTypeLookup retailerTypeLookup;
+
     public TenantOnboardingRequestServiceImpl(
         TenantOnboardingRequestRepository repository,
         TenantOnboardingRequestMapper mapper,
-        SatelliteDomainRepository satelliteDomainRepository
+        SatelliteDomainRepository satelliteDomainRepository,
+        RetailerTypeLookup retailerTypeLookup
     ) {
         this.repository = repository;
         this.mapper = mapper;
         this.satelliteDomainRepository = satelliteDomainRepository;
+        this.retailerTypeLookup = retailerTypeLookup;
     }
 
     @Override
@@ -99,7 +103,9 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
         entity.setStatus(OnboardingRequestStatus.PENDING);
         entity.setSource(in.getSource() != null ? in.getSource() : OnboardingRequestSource.PUBLIC_FORM);
         entity.setOrganizationName(in.getOrganizationName().trim());
-        entity.setSiteType(in.getSiteType() != null ? in.getSiteType() : SiteType.EVENT_ORG);
+        String siteType = in.getSiteType() != null && !in.getSiteType().isBlank() ? in.getSiteType().trim() : "EVENT_ORG";
+        retailerTypeLookup.requireAssignable(siteType, null);
+        entity.setSiteType(siteType);
         entity.setDescription(TenantOnboardingSupport.trimToNull(in.getDescription()));
         entity.setContactFirstName(TenantOnboardingSupport.trimToNull(in.getContactFirstName()));
         entity.setContactLastName(TenantOnboardingSupport.trimToNull(in.getContactLastName()));
@@ -163,6 +169,11 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
                             "tenantidtaken"
                         );
                     }
+                }
+                if (dto.getSiteType() != null) {
+                    String siteType = dto.getSiteType().trim();
+                    retailerTypeLookup.requireAssignable(siteType, null);
+                    dto.setSiteType(siteType);
                 }
                 mapper.partialUpdate(existing, dto);
                 return existing;

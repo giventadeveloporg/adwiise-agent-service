@@ -1,6 +1,5 @@
 package com.adwiiseagent.domain;
 
-import com.adwiiseagent.domain.enumeration.SiteType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -137,9 +136,9 @@ public class TenantOrganization implements Serializable {
     private TenantSettings tenantSettings;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "site_type", length = 32, nullable = false)
-    private SiteType siteType = SiteType.EVENT_ORG;
+    @Size(max = 64)
+    @Column(name = "site_type", length = 64, nullable = false)
+    private String siteType = "EVENT_ORG";
 
     @Size(max = 32)
     @Column(name = "site_template_version", length = 32)
@@ -498,16 +497,16 @@ public class TenantOrganization implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public SiteType getSiteType() {
+    public String getSiteType() {
         return this.siteType;
     }
 
-    public TenantOrganization siteType(SiteType siteType) {
+    public TenantOrganization siteType(String siteType) {
         this.setSiteType(siteType);
         return this;
     }
 
-    public void setSiteType(SiteType siteType) {
+    public void setSiteType(String siteType) {
         this.siteType = siteType;
     }
 

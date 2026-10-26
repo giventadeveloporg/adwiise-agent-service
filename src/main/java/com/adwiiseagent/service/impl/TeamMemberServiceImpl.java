@@ -2,9 +2,11 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.TeamMember;
 import com.adwiiseagent.repository.TeamMemberRepository;
+import com.adwiiseagent.service.RosterCatalogLookup;
 import com.adwiiseagent.service.TeamMemberService;
 import com.adwiiseagent.service.dto.TeamMemberDTO;
 import com.adwiiseagent.service.mapper.TeamMemberMapper;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +26,16 @@ public class TeamMemberServiceImpl implements TeamMemberService {
 
     private final TeamMemberMapper teamMemberMapper;
 
-    public TeamMemberServiceImpl(TeamMemberRepository teamMemberRepository, TeamMemberMapper teamMemberMapper) {
+    private final RosterCatalogLookup rosterCatalogLookup;
+
+    public TeamMemberServiceImpl(
+        TeamMemberRepository teamMemberRepository,
+        TeamMemberMapper teamMemberMapper,
+        RosterCatalogLookup rosterCatalogLookup
+    ) {
         this.teamMemberRepository = teamMemberRepository;
         this.teamMemberMapper = teamMemberMapper;
+        this.rosterCatalogLookup = rosterCatalogLookup;
     }
 
     @Override
@@ -40,7 +49,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         }
 
         teamMember = teamMemberRepository.save(teamMember);
-        return teamMemberMapper.toDto(teamMember);
+        return finish(teamMember, teamMemberDTO.getSportCategoryIds());
     }
 
     @Override
@@ -48,7 +57,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         LOG.debug("Request to update TeamMember : {}", teamMemberDTO);
         TeamMember teamMember = teamMemberMapper.toEntity(teamMemberDTO);
         teamMember = teamMemberRepository.save(teamMember);
-        return teamMemberMapper.toDto(teamMember);
+        return finish(teamMember, teamMemberDTO.getSportCategoryIds());
     }
 
     @Override
@@ -62,19 +71,31 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 return existingTeamMember;
             })
             .map(teamMemberRepository::save)
-            .map(teamMemberMapper::toDto);
+            .map(saved -> finish(saved, teamMemberDTO.getSportCategoryIds()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<TeamMemberDTO> findOne(Long id) {
         LOG.debug("Request to get TeamMember : {}", id);
-        return teamMemberRepository.findById(id).map(teamMemberMapper::toDto);
+        return teamMemberRepository.findById(id).map(teamMemberMapper::toDto).map(dto -> {
+            rosterCatalogLookup.attachSports(List.of(dto));
+            return dto;
+        });
     }
 
     @Override
     public void delete(Long id) {
         LOG.debug("Request to delete TeamMember : {}", id);
         teamMemberRepository.deleteById(id);
+    }
+
+    private TeamMemberDTO finish(TeamMember saved, List<Long> sportCategoryIds) {
+        if (sportCategoryIds != null) {
+            rosterCatalogLookup.replaceMemberSports(saved, sportCategoryIds);
+        }
+        TeamMemberDTO dto = teamMemberMapper.toDto(saved);
+        rosterCatalogLookup.attachSports(List.of(dto));
+        return dto;
     }
 }

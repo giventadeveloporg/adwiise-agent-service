@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261025120000-1-catalog-tables" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sports_category"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.sports_category_id_seq INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE SEQUENCE IF NOT EXISTS public.achievement_category_id_seq INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE SEQUENCE IF NOT EXISTS public.team_type_id_seq INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE SEQUENCE IF NOT EXISTS public.team_member_sport_id_seq INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+
+            CREATE TABLE public.sports_category (
+                id bigint DEFAULT nextval('public.sports_category_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT sports_category_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_sports_category__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_sports_category__global_code ON public.sports_category (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_sports_category__tenant_code ON public.sports_category (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_sports_category_tenant_active ON public.sports_category (tenant_id, is_active, sort_order);
+
+            CREATE TABLE public.achievement_category (
+                id bigint DEFAULT nextval('public.achievement_category_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT achievement_category_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_achievement_category__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_achievement_category__global_code ON public.achievement_category (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_achievement_category__tenant_code ON public.achievement_category (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_achievement_category_tenant_active ON public.achievement_category (tenant_id, is_active, sort_order);
+
+            CREATE TABLE public.team_type (
+                id bigint DEFAULT nextval('public.team_type_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT team_type_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_team_type__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_team_type__global_code ON public.team_type (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_team_type__tenant_code ON public.team_type (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_team_type_tenant_active ON public.team_type (tenant_id, is_active, sort_order);
+
+            CREATE TABLE public.team_member_sport (
+                id bigint DEFAULT nextval('public.team_member_sport_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255) NOT NULL,
+                team_member_id bigint NOT NULL,
+                sports_category_id bigint NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT team_member_sport_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_team_member_sport__member_category UNIQUE (team_member_id, sports_category_id),
+                CONSTRAINT fk_team_member_sport__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE,
+                CONSTRAINT fk_team_member_sport__team_member_id FOREIGN KEY (team_member_id) REFERENCES public.team_members(id) ON DELETE CASCADE,
+                CONSTRAINT fk_team_member_sport__sports_category_id FOREIGN KEY (sports_category_id) REFERENCES public.sports_category(id) ON DELETE RESTRICT
+            );
+            CREATE INDEX idx_team_member_sport_tenant_member ON public.team_member_sport (tenant_id, team_member_id);
+            CREATE INDEX idx_team_member_sport_category ON public.team_member_sport (sports_category_id);
+
+            CREATE TRIGGER trg_sports_category_updated_at BEFORE UPDATE ON public.sports_category FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+            CREATE TRIGGER trg_achievement_category_updated_at BEFORE UPDATE ON public.achievement_category FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+            CREATE TRIGGER trg_team_type_updated_at BEFORE UPDATE ON public.team_type FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+            CREATE TRIGGER trg_team_member_sport_updated_at BEFORE UPDATE ON public.team_member_sport FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-2-seed-catalogs" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="sports_category"/>
+            <tableExists tableName="achievement_category"/>
+            <tableExists tableName="team_type"/>
+        </preConditions>
+        <sql>
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'cricket', 'Cricket', 1, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'cricket');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'football', 'Football (Soccer)', 2, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'football');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'basketball', 'Basketball', 3, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'basketball');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'volleyball', 'Volleyball', 4, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'volleyball');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'tennis-squash', 'Tennis &amp; Squash', 5, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'tennis-squash');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'badminton', 'Badminton', 6, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'badminton');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'table-tennis', 'Table Tennis', 7, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'table-tennis');
+            INSERT INTO public.sports_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'golf', 'Golf', 8, true WHERE NOT EXISTS (SELECT 1 FROM public.sports_category WHERE tenant_id IS NULL AND code = 'golf');
+
+            INSERT INTO public.achievement_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'AWARD', 'Award', 1, true WHERE NOT EXISTS (SELECT 1 FROM public.achievement_category WHERE tenant_id IS NULL AND code = 'AWARD');
+            INSERT INTO public.achievement_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'HONOR', 'Honor', 2, true WHERE NOT EXISTS (SELECT 1 FROM public.achievement_category WHERE tenant_id IS NULL AND code = 'HONOR');
+            INSERT INTO public.achievement_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'TROPHY', 'Trophy', 3, true WHERE NOT EXISTS (SELECT 1 FROM public.achievement_category WHERE tenant_id IS NULL AND code = 'TROPHY');
+            INSERT INTO public.achievement_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'CAP', 'Cap', 4, true WHERE NOT EXISTS (SELECT 1 FROM public.achievement_category WHERE tenant_id IS NULL AND code = 'CAP');
+            INSERT INTO public.achievement_category (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'OTHER', 'Other', 5, true WHERE NOT EXISTS (SELECT 1 FROM public.achievement_category WHERE tenant_id IS NULL AND code = 'OTHER');
+
+            INSERT INTO public.team_type (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'SPORTS', 'Sports', 1, true WHERE NOT EXISTS (SELECT 1 FROM public.team_type WHERE tenant_id IS NULL AND code = 'SPORTS');
+            INSERT INTO public.team_type (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'MUSIC', 'Music', 2, true WHERE NOT EXISTS (SELECT 1 FROM public.team_type WHERE tenant_id IS NULL AND code = 'MUSIC');
+            INSERT INTO public.team_type (tenant_id, code, label, sort_order, is_active)
+            SELECT NULL, 'OTHER', 'Other', 3, true WHERE NOT EXISTS (SELECT 1 FROM public.team_type WHERE tenant_id IS NULL AND code = 'OTHER');
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-3-drop-team-type-check" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM pg_constraint WHERE conname = 'chk_team_groups__team_type'</sqlCheck>
+        </preConditions>
+        <sql>ALTER TABLE public.team_groups DROP CONSTRAINT chk_team_groups__team_type;</sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-4-drop-achievement-check" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM pg_constraint WHERE conname = 'chk_team_member_achievement__category'</sqlCheck>
+        </preConditions>
+        <sql>ALTER TABLE public.team_member_achievement DROP CONSTRAINT chk_team_member_achievement__category;</sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-5-widen-codes" author="roster-catalogs">
+        <sql>
+            ALTER TABLE public.team_groups ALTER COLUMN team_type TYPE character varying(64);
+            ALTER TABLE public.team_member_achievement ALTER COLUMN category TYPE character varying(64);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-6-achievement-category-fk" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="achievement_category"/>
+            <not>
+                <columnExists tableName="team_member_achievement" columnName="achievement_category_id"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE public.team_member_achievement ADD COLUMN achievement_category_id bigint;
+            ALTER TABLE public.team_member_achievement
+                ADD CONSTRAINT fk_team_member_achievement__achievement_category_id
+                FOREIGN KEY (achievement_category_id) REFERENCES public.achievement_category(id) ON DELETE SET NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-7-category-json-function" author="roster-catalogs">
+        <sql splitStatements="false"><![CDATA[
+            CREATE OR REPLACE FUNCTION public.roster_json_categories(raw text)
+            RETURNS TABLE(code text)
+            LANGUAGE plpgsql
+            AS $$
+            BEGIN
+                IF raw IS NULL OR btrim(raw) = '' THEN
+                    RETURN;
+                END IF;
+                RETURN QUERY
+                SELECT jsonb_array_elements_text(parsed -> 'categories')
+                FROM (SELECT raw::jsonb AS parsed) s
+                WHERE jsonb_typeof(parsed) = 'object'
+                  AND jsonb_typeof(parsed -> 'categories') = 'array';
+            EXCEPTION WHEN others THEN
+                RETURN;
+            END;
+            $$;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-8-backfill-member-sports" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="team_member_sport"/>
+            <tableExists tableName="sports_category"/>
+        </preConditions>
+        <sql>
+            INSERT INTO public.team_member_sport (tenant_id, team_member_id, sports_category_id)
+            SELECT tm.tenant_id, tm.id, sc.id
+            FROM public.team_members tm
+            JOIN LATERAL public.roster_json_categories(tm.sport_profiles) cat ON true
+            JOIN public.sports_category sc ON sc.tenant_id IS NULL AND sc.code = cat.code
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.team_member_sport existing
+                WHERE existing.team_member_id = tm.id AND existing.sports_category_id = sc.id
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-9-backfill-achievement-category" author="roster-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="team_member_achievement" columnName="achievement_category_id"/>
+        </preConditions>
+        <sql>
+            UPDATE public.team_member_achievement a
+            SET achievement_category_id = c.id
+            FROM public.achievement_category c
+            WHERE a.achievement_category_id IS NULL
+              AND c.tenant_id IS NULL
+              AND c.code = a.category;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000-10-drop-json-function" author="roster-catalogs">
+        <sql>DROP FUNCTION IF EXISTS public.roster_json_categories(text);</sql>
+    </changeSet>
+</databaseChangeLog>

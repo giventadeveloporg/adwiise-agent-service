@@ -29,8 +29,10 @@ public class TeamMemberAchievementDTO implements Serializable {
     private LocalDate achievementDate;
 
     @NotNull
-    @Size(max = 32)
+    @Size(max = 64)
     private String category;
+
+    private Long achievementCategoryId;
 
     @Size(max = 255)
     private String issuer;
@@ -99,6 +101,14 @@ public class TeamMemberAchievementDTO implements Serializable {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Long getAchievementCategoryId() {
+        return achievementCategoryId;
+    }
+
+    public void setAchievementCategoryId(Long achievementCategoryId) {
+        this.achievementCategoryId = achievementCategoryId;
     }
 
     public String getIssuer() {

@@ -18,7 +18,7 @@ public class TeamGroupDTO implements Serializable {
     private String tenantId;
 
     @NotNull
-    @Size(max = 32)
+    @Size(max = 64)
     private String teamType;
 
     @NotNull

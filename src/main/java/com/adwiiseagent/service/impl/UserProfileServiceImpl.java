@@ -6,6 +6,7 @@ import com.adwiiseagent.domain.enumeration.UserStatusType;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.UserProfileRepository;
 import com.adwiiseagent.security.TenantContext;
+import com.adwiiseagent.service.AccessRoleLookup;
 import com.adwiiseagent.service.EmailSubscriptionTokenService;
 import com.adwiiseagent.service.UserProfileService;
 import com.adwiiseagent.service.dto.UserProfileDTO;
@@ -41,14 +42,18 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final EmailSubscriptionTokenService emailSubscriptionTokenService;
 
+    private final AccessRoleLookup accessRoleLookup;
+
     public UserProfileServiceImpl(
         UserProfileRepository userProfileRepository,
         UserProfileMapper userProfileMapper,
-        EmailSubscriptionTokenService emailSubscriptionTokenService
+        EmailSubscriptionTokenService emailSubscriptionTokenService,
+        AccessRoleLookup accessRoleLookup
     ) {
         this.userProfileRepository = userProfileRepository;
         this.userProfileMapper = userProfileMapper;
         this.emailSubscriptionTokenService = emailSubscriptionTokenService;
+        this.accessRoleLookup = accessRoleLookup;
     }
 
     @Override
@@ -77,9 +82,10 @@ public class UserProfileServiceImpl implements UserProfileService {
             }
         }
 
-        if (userProfile.getUserRole() == null) {
-            userProfile.setUserRole(UserRoleType.MEMBER.name()); // Set a default role
+        if (userProfile.getUserRole() == null || userProfile.getUserRole().isBlank()) {
+            userProfile.setUserRole(UserRoleType.MEMBER.name());
         }
+        accessRoleLookup.requireAssignable(userProfile.getUserRole(), userProfile.getTenantId());
 
         if (userProfile.getUserStatus() == null) {
             userProfile.setUserStatus(UserStatusType.PENDING_APPROVAL.name()); // Set a default status
@@ -107,8 +113,11 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.debug("Request to update UserProfile : {}", userProfileDTO);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileDTO);
 
-        // Normalize email (trim and convert empty strings to NULL to satisfy database constraint)
         normalizeEmail(userProfile);
+        if (userProfile.getUserRole() == null || userProfile.getUserRole().isBlank()) {
+            userProfile.setUserRole(UserRoleType.MEMBER.name());
+        }
+        accessRoleLookup.requireAssignable(userProfile.getUserRole(), userProfile.getTenantId());
 
         // Generate JWT token for email subscription
         generateEmailSubscriptionTokenIfNeeded(userProfile);
@@ -129,8 +138,10 @@ public class UserProfileServiceImpl implements UserProfileService {
                 // Normalize email (trim and convert empty strings to NULL to satisfy database constraint)
                 normalizeEmail(existingUserProfile);
 
-                // Generate JWT token for email subscription
                 generateEmailSubscriptionTokenIfNeeded(existingUserProfile);
+                if (existingUserProfile.getUserRole() != null && !existingUserProfile.getUserRole().isBlank()) {
+                    accessRoleLookup.requireAssignable(existingUserProfile.getUserRole(), existingUserProfile.getTenantId());
+                }
 
                 return existingUserProfile;
             })

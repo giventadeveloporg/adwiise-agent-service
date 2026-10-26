@@ -1,6 +1,5 @@
 package com.adwiiseagent.service.criteria;
 
-import com.adwiiseagent.domain.enumeration.SiteType;
 import java.io.Serializable;
 import java.util.Objects;
 import org.springdoc.core.annotations.ParameterObject;
@@ -513,7 +512,7 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
             "}";
     }
 
-    public static class SiteTypeFilter extends Filter<SiteType> {
+    public static class SiteTypeFilter extends StringFilter {
 
         public SiteTypeFilter() {}
 

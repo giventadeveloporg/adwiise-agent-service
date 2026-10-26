@@ -3,7 +3,6 @@ package com.adwiiseagent.domain;
 import com.adwiiseagent.domain.enumeration.DomainOwnership;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
-import com.adwiiseagent.domain.enumeration.SiteType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -47,9 +46,9 @@ public class TenantOnboardingRequest implements Serializable {
     private String organizationName;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "site_type", length = 32, nullable = false)
-    private SiteType siteType = SiteType.EVENT_ORG;
+    @Size(max = 64)
+    @Column(name = "site_type", length = 64, nullable = false)
+    private String siteType = "EVENT_ORG";
 
     @Size(max = 1000)
     @Column(name = "description", length = 1000)
@@ -230,11 +229,11 @@ public class TenantOnboardingRequest implements Serializable {
         this.organizationName = organizationName;
     }
 
-    public SiteType getSiteType() {
+    public String getSiteType() {
         return siteType;
     }
 
-    public void setSiteType(SiteType siteType) {
+    public void setSiteType(String siteType) {
         this.siteType = siteType;
     }
 

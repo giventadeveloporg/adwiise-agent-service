@@ -2,7 +2,6 @@ package com.adwiiseagent.service.dto;
 
 import com.adwiiseagent.domain.enumeration.DomainOwnership;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
-import com.adwiiseagent.domain.enumeration.SiteType;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 
@@ -16,7 +15,7 @@ public class TenantOnboardingSubmitDTO implements Serializable {
     @Size(max = 255)
     private String organizationName;
 
-    private SiteType siteType;
+    private String siteType;
 
     @Size(max = 1000)
     private String description;
@@ -90,11 +89,11 @@ public class TenantOnboardingSubmitDTO implements Serializable {
         this.organizationName = organizationName;
     }
 
-    public SiteType getSiteType() {
+    public String getSiteType() {
         return siteType;
     }
 
-    public void setSiteType(SiteType siteType) {
+    public void setSiteType(String siteType) {
         this.siteType = siteType;
     }
 

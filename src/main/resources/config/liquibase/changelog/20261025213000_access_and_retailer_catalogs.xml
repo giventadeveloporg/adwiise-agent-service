@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261025213000-1" author="access-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="access_role"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.access_role_id_seq INCREMENT BY 1 START WITH 1 CACHE 1;
+            CREATE TABLE public.access_role (
+                id bigint DEFAULT nextval('public.access_role_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                grants_admin boolean DEFAULT false NOT NULL,
+                platform_super boolean DEFAULT false NOT NULL,
+                location_scope character varying(16) DEFAULT 'NONE' NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT access_role_pkey PRIMARY KEY (id),
+                CONSTRAINT chk_access_role__location_scope CHECK ((location_scope IN ('ALL', 'ASSIGNED', 'NONE'))),
+                CONSTRAINT fk_access_role__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_access_role__global_code ON public.access_role (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_access_role__tenant_code ON public.access_role (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_access_role_tenant_active ON public.access_role (tenant_id, is_active, sort_order);
+            CREATE TRIGGER trg_access_role_updated_at BEFORE UPDATE ON public.access_role FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025213000-2" author="access-catalogs">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="retailer_type"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.retailer_type_id_seq INCREMENT BY 1 START WITH 1 CACHE 1;
+            CREATE TABLE public.retailer_type (
+                id bigint DEFAULT nextval('public.retailer_type_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                hint character varying(255),
+                module_key character varying(32) DEFAULT 'EVENT' NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT retailer_type_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_retailer_type__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_retailer_type__global_code ON public.retailer_type (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_retailer_type__tenant_code ON public.retailer_type (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_retailer_type_tenant_active ON public.retailer_type (tenant_id, is_active, sort_order);
+            CREATE TRIGGER trg_retailer_type_updated_at BEFORE UPDATE ON public.retailer_type FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025213000-3" author="access-catalogs">
+        <sql>
+            ALTER TABLE public.tenant_organization DROP CONSTRAINT IF EXISTS chk_tenant_organization__site_type;
+            ALTER TABLE public.tenant_onboarding_request DROP CONSTRAINT IF EXISTS chk_tenant_onboarding_request__site_type;
+            ALTER TABLE public.tenant_organization ALTER COLUMN site_type TYPE character varying(64);
+            ALTER TABLE public.tenant_onboarding_request ALTER COLUMN site_type TYPE character varying(64);
+            ALTER TABLE public.user_profile ALTER COLUMN user_role TYPE character varying(64);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025213000-4" author="access-catalogs">
+        <sql>
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'SUPER_ADMIN', 'Super admin', 1, true, true, true, 'ALL'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'SUPER_ADMIN');
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'ADMIN', 'Admin', 2, true, true, false, 'ALL'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'ADMIN');
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'GAS_STATION_ADMIN', 'Gas station admin', 3, true, false, false, 'ALL'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'GAS_STATION_ADMIN');
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'GAS_STATION_MANAGER', 'Gas station manager', 4, true, false, false, 'ASSIGNED'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'GAS_STATION_MANAGER');
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'ORGANIZER', 'Organizer', 5, true, false, false, 'NONE'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'ORGANIZER');
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'VOLUNTEER', 'Volunteer', 6, true, false, false, 'NONE'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'VOLUNTEER');
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            SELECT NULL, 'MEMBER', 'Member', 7, true, false, false, 'NONE'
+            WHERE NOT EXISTS (SELECT 1 FROM public.access_role WHERE tenant_id IS NULL AND code = 'MEMBER');
+
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'EVENT_ORG', 'Events organization', 'Community groups, associations, event organizers', 'EVENT', 1, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'EVENT_ORG');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'CHURCH_ORG', 'Church / parish', 'Parish news, services, events and documents', 'CHURCH', 2, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'CHURCH_ORG');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'SPORTS_TEAM', 'Sports team', 'Teams, squads, fixtures', 'SPORTS', 3, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'SPORTS_TEAM');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'MUSIC_BAND', 'Music band', 'Bands, choirs, performances', 'MUSIC', 4, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'MUSIC_BAND');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'PERSONAL_PROFILE', 'Personal profile', 'Individual professional or personal site', 'PROFILE', 5, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'PERSONAL_PROFILE');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'HYBRID', 'Hybrid', 'Profile plus events', 'HYBRID', 6, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'HYBRID');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'GAS_STATION', 'Gas station', 'Fuel station operations', 'GAS_STATION', 7, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'GAS_STATION');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'GAS_STATION_ENT', 'Gas station enterprise', 'Multi-site gas station group', 'GAS_STATION', 8, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'GAS_STATION_ENT');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'LIQUOR_STORE', 'Liquor store', 'Beer, wine, and spirits shop', 'RETAIL', 9, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'LIQUOR_STORE');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'DUNKIN_DONUTS', 'Dunkin Donuts', 'Coffee and donut shop', 'RETAIL', 10, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'DUNKIN_DONUTS');
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'SEVEN_ELEVEN', 'Seven-Eleven', 'Convenience store', 'RETAIL', 11, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'SEVEN_ELEVEN');
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -2,11 +2,11 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.GasStationUserStationAssignment;
 import com.adwiiseagent.domain.UserProfile;
-import com.adwiiseagent.domain.enumeration.UserRoleType;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.GasStationLocationRepository;
 import com.adwiiseagent.repository.GasStationUserStationAssignmentRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
+import com.adwiiseagent.service.AccessRoleLookup;
 import com.adwiiseagent.service.GasStationAccessService;
 import com.adwiiseagent.service.GasStationUserStationAssignmentService;
 import com.adwiiseagent.service.dto.GasStationUserStationAssignmentDTO;
@@ -29,19 +29,22 @@ public class GasStationUserStationAssignmentServiceImpl implements GasStationUse
     private final GasStationAccessService gasStationAccessService;
     private final UserProfileRepository userProfileRepository;
     private final GasStationLocationRepository gasStationLocationRepository;
+    private final AccessRoleLookup accessRoleLookup;
 
     public GasStationUserStationAssignmentServiceImpl(
         GasStationUserStationAssignmentRepository assignmentRepository,
         GasStationUserStationAssignmentMapper assignmentMapper,
         GasStationAccessService gasStationAccessService,
         UserProfileRepository userProfileRepository,
-        GasStationLocationRepository gasStationLocationRepository
+        GasStationLocationRepository gasStationLocationRepository,
+        AccessRoleLookup accessRoleLookup
     ) {
         this.assignmentRepository = assignmentRepository;
         this.assignmentMapper = assignmentMapper;
         this.gasStationAccessService = gasStationAccessService;
         this.userProfileRepository = userProfileRepository;
         this.gasStationLocationRepository = gasStationLocationRepository;
+        this.accessRoleLookup = accessRoleLookup;
     }
 
     @Override
@@ -128,9 +131,9 @@ public class GasStationUserStationAssignmentServiceImpl implements GasStationUse
         if (!dto.getTenantId().equals(targetUser.getTenantId())) {
             throw new BadRequestAlertException("user_profile_id must belong to tenant", ENTITY_NAME, "tenantmismatch");
         }
-        if (!UserRoleType.GAS_STATION_MANAGER.name().equalsIgnoreCase(String.valueOf(targetUser.getUserRole()))) {
+        if (accessRoleLookup.locationScope(targetUser.getUserRole(), targetUser.getTenantId()) != AccessRoleLookup.Scope.ASSIGNED) {
             throw new BadRequestAlertException(
-                "Assignments are only allowed for GAS_STATION_MANAGER users",
+                "Assignments are only allowed for roles with assigned-location scope",
                 ENTITY_NAME,
                 "invalidtargetrole"
             );
