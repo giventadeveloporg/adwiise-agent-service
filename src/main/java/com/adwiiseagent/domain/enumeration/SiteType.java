@@ -12,4 +12,5 @@ public enum SiteType {
     HYBRID,
     GAS_STATION,
     LIQUOR_STORE,
+    RETAIL,
 }

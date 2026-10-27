@@ -12,6 +12,7 @@ import com.adwiiseagent.service.dto.BatchJobSummaryResponseDTO;
 import com.adwiiseagent.service.dto.ConfiguredBatchJobResponseDTO;
 import com.adwiiseagent.service.dto.ManualPaymentSummaryJobRequest;
 import com.adwiiseagent.service.dto.ManualPaymentSummaryJobResponse;
+import com.adwiiseagent.service.dto.RetailSampleRunRequest;
 import com.adwiiseagent.service.dto.StripeFeesTaxUpdateRequest;
 import com.adwiiseagent.service.dto.StripeFeesTaxUpdateResponse;
 import com.adwiiseagent.service.dto.StripeTicketBatchRefundRequest;
@@ -21,7 +22,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,6 +46,7 @@ public class BatchJobService {
     private static final String SUBSCRIPTION_RENEWAL_ENDPOINT = "/api/batch-jobs/subscription-renewal";
     private static final String STRIPE_FEES_TAX_UPDATE_ENDPOINT = "/api/batch-jobs/stripe-fees-tax-update";
     private static final String MANUAL_PAYMENT_SUMMARY_ENDPOINT = "/api/batch-jobs/manual-payment-summary";
+    private static final String RETAIL_SAMPLE_RUN_ENDPOINT = "/api/batch-jobs/retail-sample-run";
     private static final String STRIPE_TICKET_BATCH_REFUND_ENDPOINT = "/api/batch-jobs/stripe-ticket-batch-refund";
     private static final String MONITORING_EXECUTIONS_ENDPOINT = "/api/batch-jobs/executions";
     private static final String MONITORING_EXECUTION_BY_ID_ENDPOINT = "/api/batch-jobs/executions/{id}";
@@ -50,6 +54,7 @@ public class BatchJobService {
     private static final String MONITORING_RUNNING_EXECUTIONS_ENDPOINT = "/api/batch-jobs/executions/running";
     private static final String MONITORING_SUMMARY_ENDPOINT = "/api/batch-jobs/summary";
     private static final String MONITORING_CONFIGURED_JOBS_ENDPOINT = "/api/batch-jobs/configured-jobs";
+    private static final ParameterizedTypeReference<Map<String, Object>> MAP_TYPE = new ParameterizedTypeReference<>() {};
     private static final ParameterizedTypeReference<List<BatchJobExecutionDTO>> EXECUTION_LIST_TYPE = new ParameterizedTypeReference<>() {};
     private static final ParameterizedTypeReference<List<ConfiguredBatchJobResponseDTO>> CONFIGURED_JOBS_LIST_TYPE =
         new ParameterizedTypeReference<>() {};
@@ -195,6 +200,46 @@ public class BatchJobService {
         } catch (Exception e) {
             log.error("Unexpected error triggering manual payment summary job", e);
             return createManualPaymentSummaryError("Failed to trigger batch job: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Ask the batch job to run the bundled sample or the tenant inbox now.
+     */
+    public Map<String, Object> triggerRetailSampleRun(RetailSampleRunRequest request) {
+        if (!batchJobProperties.getEnabled()) {
+            log.warn("Batch job service is disabled. Skipping retail sample run.");
+            Map<String, Object> disabled = new HashMap<>();
+            disabled.put("accepted", false);
+            disabled.put("message", "Batch job service is disabled");
+            return disabled;
+        }
+        RetailSampleRunRequest body = request != null ? request : new RetailSampleRunRequest();
+        try {
+            log.info(
+                "Triggering retail sample run tenantId={} retailerType={} source={}",
+                body.getTenantId(),
+                body.getRetailerType(),
+                body.getSource()
+            );
+            Map<String, Object> response = webClient
+                .post()
+                .uri(RETAIL_SAMPLE_RUN_ENDPOINT)
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(MAP_TYPE)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+            return response != null ? response : Map.of("accepted", false, "message", "Empty response from batch job");
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error triggering retail sample run: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            Map<String, Object> failed = new HashMap<>();
+            failed.put("accepted", false);
+            failed.put("message", e.getResponseBodyAsString());
+            return failed;
+        } catch (Exception e) {
+            log.error("Unexpected error triggering retail sample run", e);
+            return Map.of("accepted", false, "message", e.getMessage() == null ? "Retail sample run failed" : e.getMessage());
         }
     }
 

@@ -15,6 +15,7 @@ import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
 import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
+import com.adwiiseagent.service.RetailSiteTypes;
 import com.adwiiseagent.service.TenantOnboardingProvisioningService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
 import com.adwiiseagent.service.TenantOrganizationService;
@@ -87,6 +88,9 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
 
     @Value("${onboarding.admin-source-tenant-id:mosc_malankara_orthodox_2}")
     private String defaultAdminSourceTenantId;
+
+    @Value("${retail.engine.base-url:http://127.0.0.1:8090}")
+    private String retailEngineBaseUrl;
 
     public TenantOnboardingProvisioningServiceImpl(
         TenantOnboardingRequestRepository requestRepository,
@@ -283,6 +287,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         dto.setWebsiteUrl("https://" + r.hostname);
         dto.setIsActive(true);
         dto.setSiteType(request.getSiteType());
+        RetailSiteTypes.normalize(dto);
         dto.setCreatedAt(now);
         dto.setUpdatedAt(now);
         return tenantOrganizationService.save(dto);
@@ -317,6 +322,10 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         dto.setShowProfileServicesSection(false);
         dto.setShowProfileFamilySection(false);
         dto.setEnableGasStationModule(false);
+        if (RetailSiteTypes.RETAIL.equals(org.getSiteType())) {
+            dto.setEnableRetailModule(true);
+            dto.setRetailAiEngineBaseUrl(retailEngineBaseUrl);
+        }
         dto.setCreatedAt(now);
         dto.setUpdatedAt(now);
         return tenantSettingsService.save(dto);

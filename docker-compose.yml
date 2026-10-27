@@ -30,6 +30,9 @@ services:
       JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME: '2592000'
       JHIPSTER_MAIL_FROM: event-site-manager@local.com
       JHIPSTER_MAIL_BASE_URL: http://localhost:8080
+      # AI engine runs on the Windows host. Inside this container, localhost and
+      # 127.0.0.1 are the container itself.
+      RETAIL_ENGINE_BASE_URL: http://host.docker.internal:8090
     volumes:
       - ./logs:/var/log/spring-boot-app
       - ./target:/app/target

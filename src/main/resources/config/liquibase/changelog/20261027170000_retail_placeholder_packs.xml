@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261027170000-1" author="retail-site-type">
+        <sql>
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'RESTAURANT', 'Restaurant', 'Restaurant chain. Food starts as a FOODSERVICE register line', 'RETAIL', 13, true
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'RESTAURANT'
+            );
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'CLINIC', 'Clinic', 'Clinic placeholder. Visits stay off the shop tables until a visit file exists', 'RETAIL', 14, true
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'CLINIC'
+            );
+            COMMENT ON COLUMN public.tenant_organization.retailer_type_code IS
+                'Shop pack when site_type is RETAIL: GAS_STATION, GAS_STATION_ENT, LIQUOR_STORE, DUNKIN_DONUTS, SEVEN_ELEVEN, RESTAURANT, or CLINIC.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

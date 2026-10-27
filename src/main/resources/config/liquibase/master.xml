@@ -167,5 +167,7 @@
     <include file="config/liquibase/changelog/20261017140000_tenant_tournament_short_label.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261025120000_roster_catalogs.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261025213000_access_and_retailer_catalogs.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261027140000_retail_site_type.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261027170000_retail_placeholder_packs.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

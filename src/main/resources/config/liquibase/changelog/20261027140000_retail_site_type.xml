@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261027140000-1" author="retail-site-type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="tenant_organization" columnName="retailer_type_code"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE public.tenant_organization
+                ADD COLUMN retailer_type_code character varying(64);
+            COMMENT ON COLUMN public.tenant_organization.retailer_type_code IS
+                'Shop pack when site_type is RETAIL: GAS_STATION, GAS_STATION_ENT, LIQUOR_STORE, DUNKIN_DONUTS, or SEVEN_ELEVEN.';
+            COMMENT ON COLUMN public.tenant_organization.site_type IS
+                'Product archetype for the tenant site: EVENT_ORG | SPORTS_TEAM | MUSIC_BAND | CHURCH_ORG | PERSONAL_PROFILE | HYBRID | RETAIL. Shop packs live in retailer_type_code.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261027140000-2" author="retail-site-type">
+        <sql>
+            INSERT INTO public.retailer_type (tenant_id, code, label, hint, module_key, sort_order, is_active)
+            SELECT NULL, 'RETAIL', 'Retail', 'Shop archetype for gas, liquor, and other retail packs', 'RETAIL', 12, true
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.retailer_type WHERE tenant_id IS NULL AND code = 'RETAIL'
+            );
+            UPDATE public.retailer_type
+               SET module_key = 'RETAIL'
+             WHERE tenant_id IS NULL
+               AND code IN ('GAS_STATION', 'GAS_STATION_ENT');
+            UPDATE public.tenant_organization
+               SET retailer_type_code = site_type,
+                   site_type = 'RETAIL'
+             WHERE site_type IN ('GAS_STATION', 'GAS_STATION_ENT', 'LIQUOR_STORE', 'DUNKIN_DONUTS', 'SEVEN_ELEVEN')
+               AND (retailer_type_code IS NULL OR retailer_type_code = '');
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261027140000-3" author="retail-site-type">
+        <sql>
+            UPDATE public.tenant_settings AS settings
+               SET enable_retail_module = true,
+                   retail_ai_engine_base_url = CASE
+                       WHEN settings.retail_ai_engine_base_url IS NULL OR btrim(settings.retail_ai_engine_base_url) = ''
+                       THEN 'http://127.0.0.1:8090'
+                       ELSE settings.retail_ai_engine_base_url
+                   END
+              FROM public.tenant_organization AS organization
+             WHERE settings.tenant_id = organization.tenant_id
+               AND organization.site_type = 'RETAIL';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

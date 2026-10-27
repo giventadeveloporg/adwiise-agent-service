@@ -140,6 +140,10 @@ public class TenantOrganization implements Serializable {
     @Column(name = "site_type", length = 64, nullable = false)
     private String siteType = "EVENT_ORG";
 
+    @Size(max = 64)
+    @Column(name = "retailer_type_code", length = 64)
+    private String retailerTypeCode;
+
     @Size(max = 32)
     @Column(name = "site_template_version", length = 32)
     private String siteTemplateVersion;
@@ -508,6 +512,19 @@ public class TenantOrganization implements Serializable {
 
     public void setSiteType(String siteType) {
         this.siteType = siteType;
+    }
+
+    public String getRetailerTypeCode() {
+        return this.retailerTypeCode;
+    }
+
+    public TenantOrganization retailerTypeCode(String retailerTypeCode) {
+        this.setRetailerTypeCode(retailerTypeCode);
+        return this;
+    }
+
+    public void setRetailerTypeCode(String retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public String getSiteTemplateVersion() {

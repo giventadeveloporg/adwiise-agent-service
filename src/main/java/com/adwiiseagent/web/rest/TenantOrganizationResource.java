@@ -2,6 +2,7 @@ package com.adwiiseagent.web.rest;
 
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.service.RetailSiteTypes;
 import com.adwiiseagent.service.RetailerTypeLookup;
 import com.adwiiseagent.service.TenantOrganizationQueryService;
 import com.adwiiseagent.service.TenantOrganizationService;
@@ -211,6 +212,7 @@ public class TenantOrganizationResource {
     }
 
     private void validateSiteType(TenantOrganizationDTO tenantOrganizationDTO, boolean required) {
+        RetailSiteTypes.normalize(tenantOrganizationDTO);
         if (tenantOrganizationDTO.getSiteType() == null || tenantOrganizationDTO.getSiteType().isBlank()) {
             if (required) {
                 throw new BadRequestAlertException("siteType is required", ENTITY_NAME, "sitetyperequired");
@@ -218,6 +220,9 @@ public class TenantOrganizationResource {
             return;
         }
         retailerTypeLookup.requireAssignable(tenantOrganizationDTO.getSiteType().trim(), tenantOrganizationDTO.getTenantId());
+        if (tenantOrganizationDTO.getRetailerTypeCode() != null && !tenantOrganizationDTO.getRetailerTypeCode().isBlank()) {
+            retailerTypeLookup.requireAssignable(tenantOrganizationDTO.getRetailerTypeCode().trim(), tenantOrganizationDTO.getTenantId());
+        }
     }
 
     /**

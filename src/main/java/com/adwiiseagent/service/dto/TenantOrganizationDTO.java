@@ -122,6 +122,9 @@ public class TenantOrganizationDTO implements Serializable {
     @NotNull
     private String siteType;
 
+    @Size(max = 64)
+    private String retailerTypeCode;
+
     @Size(max = 32)
     private String siteTemplateVersion;
 
@@ -395,6 +398,14 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setSiteType(String siteType) {
         this.siteType = siteType;
+    }
+
+    public String getRetailerTypeCode() {
+        return retailerTypeCode;
+    }
+
+    public void setRetailerTypeCode(String retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public String getSiteTemplateVersion() {
