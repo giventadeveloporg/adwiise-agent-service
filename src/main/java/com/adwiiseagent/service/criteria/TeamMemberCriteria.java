@@ -22,6 +22,8 @@ public class TeamMemberCriteria implements Serializable, Criteria {
 
     private LongFilter teamGroupId;
 
+    private LongFilter membershipTeamGroupId;
+
     private LongFilter userProfileId;
 
     private StringFilter firstName;
@@ -86,6 +88,7 @@ public class TeamMemberCriteria implements Serializable, Criteria {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
         this.teamGroupId = other.optionalTeamGroupId().map(LongFilter::copy).orElse(null);
+        this.membershipTeamGroupId = other.optionalMembershipTeamGroupId().map(LongFilter::copy).orElse(null);
         this.userProfileId = other.optionalUserProfileId().map(LongFilter::copy).orElse(null);
         this.firstName = other.optionalFirstName().map(StringFilter::copy).orElse(null);
         this.lastName = other.optionalLastName().map(StringFilter::copy).orElse(null);
@@ -177,6 +180,25 @@ public class TeamMemberCriteria implements Serializable, Criteria {
 
     public void setTeamGroupId(LongFilter teamGroupId) {
         this.teamGroupId = teamGroupId;
+    }
+
+    public LongFilter getMembershipTeamGroupId() {
+        return membershipTeamGroupId;
+    }
+
+    public Optional<LongFilter> optionalMembershipTeamGroupId() {
+        return Optional.ofNullable(membershipTeamGroupId);
+    }
+
+    public LongFilter membershipTeamGroupId() {
+        if (membershipTeamGroupId == null) {
+            setMembershipTeamGroupId(new LongFilter());
+        }
+        return membershipTeamGroupId;
+    }
+
+    public void setMembershipTeamGroupId(LongFilter membershipTeamGroupId) {
+        this.membershipTeamGroupId = membershipTeamGroupId;
     }
 
     public LongFilter getUserProfileId() {
@@ -743,6 +765,7 @@ public class TeamMemberCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(teamGroupId, that.teamGroupId) &&
+            Objects.equals(membershipTeamGroupId, that.membershipTeamGroupId) &&
             Objects.equals(userProfileId, that.userProfileId) &&
             Objects.equals(firstName, that.firstName) &&
             Objects.equals(lastName, that.lastName) &&
@@ -781,6 +804,7 @@ public class TeamMemberCriteria implements Serializable, Criteria {
             id,
             tenantId,
             teamGroupId,
+            membershipTeamGroupId,
             userProfileId,
             firstName,
             lastName,
@@ -820,6 +844,7 @@ public class TeamMemberCriteria implements Serializable, Criteria {
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
             optionalTeamGroupId().map(f -> "teamGroupId=" + f + ", ").orElse("") +
+            optionalMembershipTeamGroupId().map(f -> "membershipTeamGroupId=" + f + ", ").orElse("") +
             optionalUserProfileId().map(f -> "userProfileId=" + f + ", ").orElse("") +
             optionalFirstName().map(f -> "firstName=" + f + ", ").orElse("") +
             optionalLastName().map(f -> "lastName=" + f + ", ").orElse("") +

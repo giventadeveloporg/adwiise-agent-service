@@ -21,6 +21,9 @@ public class TeamGroupDTO implements Serializable {
     @Size(max = 64)
     private String teamType;
 
+    @Size(max = 128)
+    private String categoryLabel;
+
     @NotNull
     @Size(max = 255)
     private String name;
@@ -73,6 +76,14 @@ public class TeamGroupDTO implements Serializable {
 
     public void setTeamType(String teamType) {
         this.teamType = teamType;
+    }
+
+    public String getCategoryLabel() {
+        return categoryLabel;
+    }
+
+    public void setCategoryLabel(String categoryLabel) {
+        this.categoryLabel = categoryLabel;
     }
 
     public String getName() {
@@ -191,6 +202,7 @@ public class TeamGroupDTO implements Serializable {
             "id=" + getId() +
             ", tenantId='" + getTenantId() + "'" +
             ", teamType='" + getTeamType() + "'" +
+            ", categoryLabel='" + getCategoryLabel() + "'" +
             ", name='" + getName() + "'" +
             ", slug='" + getSlug() + "'" +
             ", sectionLabel='" + getSectionLabel() + "'" +

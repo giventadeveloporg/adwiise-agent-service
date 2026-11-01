@@ -34,6 +34,10 @@ public class TeamGroup implements Serializable {
     @Column(name = "team_type", length = 64, nullable = false)
     private String teamType;
 
+    @Size(max = 128)
+    @Column(name = "category_label", length = 128)
+    private String categoryLabel;
+
     @NotNull
     @Size(max = 255)
     @Column(name = "name", length = 255, nullable = false)
@@ -131,6 +135,19 @@ public class TeamGroup implements Serializable {
 
     public void setTeamType(String teamType) {
         this.teamType = teamType;
+    }
+
+    public String getCategoryLabel() {
+        return this.categoryLabel;
+    }
+
+    public TeamGroup categoryLabel(String categoryLabel) {
+        this.setCategoryLabel(categoryLabel);
+        return this;
+    }
+
+    public void setCategoryLabel(String categoryLabel) {
+        this.categoryLabel = categoryLabel;
     }
 
     public String getName() {
@@ -301,6 +318,7 @@ public class TeamGroup implements Serializable {
             "id=" + getId() +
             ", tenantId='" + getTenantId() + "'" +
             ", teamType='" + getTeamType() + "'" +
+            ", categoryLabel='" + getCategoryLabel() + "'" +
             ", name='" + getName() + "'" +
             ", slug='" + getSlug() + "'" +
             ", sectionLabel='" + getSectionLabel() + "'" +

@@ -266,6 +266,13 @@ public class TenantSettingsDTO implements Serializable {
     /** Header menu: featured tournament edition (null = OFF). Sports tenants. */
     private Boolean showHeaderTournament;
 
+    private Boolean showLeagueStandingsSectionInHomePage;
+
+    private Boolean showHeaderLeagues;
+
+    /** News page advertisements. True until an admin turns them off. */
+    private Boolean showNewsAdvertisements;
+
     private Boolean enableGasStationModule;
 
     @Size(max = 1024)
@@ -973,6 +980,30 @@ public class TenantSettingsDTO implements Serializable {
         this.showHeaderTournament = showHeaderTournament;
     }
 
+    public Boolean getShowLeagueStandingsSectionInHomePage() {
+        return showLeagueStandingsSectionInHomePage;
+    }
+
+    public void setShowLeagueStandingsSectionInHomePage(Boolean showLeagueStandingsSectionInHomePage) {
+        this.showLeagueStandingsSectionInHomePage = showLeagueStandingsSectionInHomePage;
+    }
+
+    public Boolean getShowHeaderLeagues() {
+        return showHeaderLeagues;
+    }
+
+    public void setShowHeaderLeagues(Boolean showHeaderLeagues) {
+        this.showHeaderLeagues = showHeaderLeagues;
+    }
+
+    public Boolean getShowNewsAdvertisements() {
+        return showNewsAdvertisements;
+    }
+
+    public void setShowNewsAdvertisements(Boolean showNewsAdvertisements) {
+        this.showNewsAdvertisements = showNewsAdvertisements;
+    }
+
     public Boolean getEnableGasStationModule() {
         return enableGasStationModule;
     }
@@ -1179,6 +1210,9 @@ public class TenantSettingsDTO implements Serializable {
                 ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
                 ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
                 ", showHeaderTournament='" + getShowHeaderTournament() + "'" +
+                ", showLeagueStandingsSectionInHomePage='" + getShowLeagueStandingsSectionInHomePage() + "'" +
+                ", showHeaderLeagues='" + getShowHeaderLeagues() + "'" +
+                ", showNewsAdvertisements='" + getShowNewsAdvertisements() + "'" +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261028120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="team_groups"/>
+            <not>
+                <columnExists tableName="team_groups" columnName="category_label"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="team_groups">
+            <column name="category_label" type="varchar(128)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261028120000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="show_league_standings_section_in_home_page"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="show_league_standings_section_in_home_page" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="show_header_leagues" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261028120000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not><sequenceExists sequenceName="league_id_seq"/></not>
+        </preConditions>
+        <createSequence sequenceName="league_id_seq" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="league_club_id_seq" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="league_match_id_seq" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="league_standing_id_seq" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="team_group_membership_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="20261028120000-4" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="league"/></not>
+        </preConditions>
+        <createTable tableName="league">
+            <column name="id" type="bigint"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant_id" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="name" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="slug" type="varchar(100)"><constraints nullable="false"/></column>
+            <column name="season_label" type="varchar(64)"/>
+            <column name="description" type="text"/>
+            <column name="logo_url" type="varchar(500)"/>
+            <column name="start_date" type="date"/>
+            <column name="end_date" type="date"/>
+            <column name="status" type="varchar(32)" defaultValue="DRAFT"><constraints nullable="false"/></column>
+            <column name="is_published" type="boolean" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="show_on_homepage" type="boolean" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="homepage_display_order" type="integer"/>
+            <column name="standings_source" type="varchar(32)" defaultValue="CALCULATED"><constraints nullable="false"/></column>
+            <column name="points_for_win" type="integer" defaultValueNumeric="3"><constraints nullable="false"/></column>
+            <column name="points_for_draw" type="integer" defaultValueNumeric="1"><constraints nullable="false"/></column>
+            <column name="points_for_loss" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="league" columnNames="tenant_id, slug" constraintName="ux_league__tenant_slug"/>
+        <addForeignKeyConstraint baseTableName="league" baseColumnNames="tenant_id" constraintName="fk_league__tenant_id" referencedTableName="tenant_organization" referencedColumnNames="tenant_id" onDelete="CASCADE"/>
+        <sql>ALTER TABLE league ADD CONSTRAINT chk_league__status CHECK (status IN ('DRAFT', 'ACTIVE', 'COMPLETED'));</sql>
+        <sql>ALTER TABLE league ADD CONSTRAINT chk_league__standings_source CHECK (standings_source IN ('CALCULATED', 'MANUAL'));</sql>
+    </changeSet>
+
+    <changeSet id="20261028120000-5" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="league_club"/></not>
+        </preConditions>
+        <createTable tableName="league_club">
+            <column name="id" type="bigint"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant_id" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="league_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="name" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="short_name" type="varchar(64)"/>
+            <column name="logo_url" type="varchar(500)"/>
+            <column name="is_home_club" type="boolean" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="display_order" type="integer"/>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="league_club" columnNames="league_id, name" constraintName="ux_league_club__league_name"/>
+        <addForeignKeyConstraint baseTableName="league_club" baseColumnNames="tenant_id" constraintName="fk_league_club__tenant_id" referencedTableName="tenant_organization" referencedColumnNames="tenant_id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="league_club" baseColumnNames="league_id" constraintName="fk_league_club__league_id" referencedTableName="league" referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="20261028120000-6" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="league_match"/></not>
+        </preConditions>
+        <createTable tableName="league_match">
+            <column name="id" type="bigint"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant_id" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="league_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="home_club_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="away_club_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="played_at" type="${datetimeType}"/>
+            <column name="venue" type="varchar(255)"/>
+            <column name="home_score" type="integer"/>
+            <column name="away_score" type="integer"/>
+            <column name="status" type="varchar(32)" defaultValue="SCHEDULED"><constraints nullable="false"/></column>
+            <column name="notes" type="varchar(1000)"/>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="league_match" baseColumnNames="tenant_id" constraintName="fk_league_match__tenant_id" referencedTableName="tenant_organization" referencedColumnNames="tenant_id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="league_match" baseColumnNames="league_id" constraintName="fk_league_match__league_id" referencedTableName="league" referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="league_match" baseColumnNames="home_club_id" constraintName="fk_league_match__home_club_id" referencedTableName="league_club" referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="league_match" baseColumnNames="away_club_id" constraintName="fk_league_match__away_club_id" referencedTableName="league_club" referencedColumnNames="id" onDelete="CASCADE"/>
+        <sql>ALTER TABLE league_match ADD CONSTRAINT chk_league_match__clubs_differ CHECK (home_club_id &lt;&gt; away_club_id);</sql>
+        <sql>ALTER TABLE league_match ADD CONSTRAINT chk_league_match__status CHECK (status IN ('SCHEDULED', 'PLAYED', 'POSTPONED', 'CANCELLED'));</sql>
+        <sql>ALTER TABLE league_match ADD CONSTRAINT chk_league_match__played_scores CHECK (status &lt;&gt; 'PLAYED' OR (home_score IS NOT NULL AND away_score IS NOT NULL));</sql>
+    </changeSet>
+
+    <changeSet id="20261028120000-7" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="league_standing"/></not>
+        </preConditions>
+        <createTable tableName="league_standing">
+            <column name="id" type="bigint"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant_id" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="league_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="league_club_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="played" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="won" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="drawn" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="lost" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="goals_for" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="goals_against" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="points" type="integer" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="position" type="integer"/>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="league_standing" columnNames="league_id, league_club_id" constraintName="ux_league_standing__league_club"/>
+        <addForeignKeyConstraint baseTableName="league_standing" baseColumnNames="tenant_id" constraintName="fk_league_standing__tenant_id" referencedTableName="tenant_organization" referencedColumnNames="tenant_id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="league_standing" baseColumnNames="league_id" constraintName="fk_league_standing__league_id" referencedTableName="league" referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="league_standing" baseColumnNames="league_club_id" constraintName="fk_league_standing__league_club_id" referencedTableName="league_club" referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="20261028120000-8" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="team_group_membership"/></not>
+        </preConditions>
+        <createTable tableName="team_group_membership">
+            <column name="id" type="bigint"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant_id" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="team_group_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="team_member_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="jersey_number" type="integer"/>
+            <column name="position" type="varchar(128)"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true"><constraints nullable="false"/></column>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="team_group_membership" columnNames="team_group_id, team_member_id" constraintName="ux_team_group_membership__group_member"/>
+        <addForeignKeyConstraint baseTableName="team_group_membership" baseColumnNames="tenant_id" constraintName="fk_team_group_membership__tenant_id" referencedTableName="tenant_organization" referencedColumnNames="tenant_id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="team_group_membership" baseColumnNames="team_group_id" constraintName="fk_team_group_membership__team_group_id" referencedTableName="team_groups" referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="team_group_membership" baseColumnNames="team_member_id" constraintName="fk_team_group_membership__team_member_id" referencedTableName="team_members" referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="20261028120000-9" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="team_group_membership"/>
+            <tableExists tableName="team_members"/>
+        </preConditions>
+        <sql>
+            INSERT INTO team_group_membership (id, tenant_id, team_group_id, team_member_id, jersey_number, position, is_active, created_at, updated_at)
+            SELECT nextval('team_group_membership_id_seq'), tm.tenant_id, tm.team_group_id, tm.id, tm.jersey_number, tm.position, COALESCE(tm.is_active, true), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            FROM team_members tm
+            WHERE tm.team_group_id IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1 FROM team_group_membership m
+                WHERE m.team_member_id = tm.id AND m.team_group_id = tm.team_group_id
+              );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261029120000-1" author="system">
+        <sql>
+            ALTER TABLE league DROP CONSTRAINT IF EXISTS chk_league__status;
+            ALTER TABLE league ADD CONSTRAINT chk_league__status CHECK (status IN ('DRAFT', 'ACTIVE', 'COMPLETED', 'UPCOMING'));
+        </sql>
+    </changeSet>
+</databaseChangeLog>

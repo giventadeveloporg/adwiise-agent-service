@@ -303,6 +303,18 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_header_tournament")
     private Boolean showHeaderTournament;
 
+    /** Homepage block of published league tables (false = hidden). */
+    @Column(name = "show_league_standings_section_in_home_page")
+    private Boolean showLeagueStandingsSectionInHomePage;
+
+    /** Header menu: Leagues (false = hidden). */
+    @Column(name = "show_header_leagues")
+    private Boolean showHeaderLeagues;
+
+    /** News page advertisements (true = show slots that are visible in the editorial CMS). */
+    @Column(name = "show_news_advertisements")
+    private Boolean showNewsAdvertisements;
+
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
 
@@ -937,6 +949,45 @@ public class TenantSettings implements Serializable {
 
     public void setShowHeaderTournament(Boolean showHeaderTournament) {
         this.showHeaderTournament = showHeaderTournament;
+    }
+
+    public Boolean getShowLeagueStandingsSectionInHomePage() {
+        return this.showLeagueStandingsSectionInHomePage;
+    }
+
+    public TenantSettings showLeagueStandingsSectionInHomePage(Boolean showLeagueStandingsSectionInHomePage) {
+        this.setShowLeagueStandingsSectionInHomePage(showLeagueStandingsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowLeagueStandingsSectionInHomePage(Boolean showLeagueStandingsSectionInHomePage) {
+        this.showLeagueStandingsSectionInHomePage = showLeagueStandingsSectionInHomePage;
+    }
+
+    public Boolean getShowHeaderLeagues() {
+        return this.showHeaderLeagues;
+    }
+
+    public TenantSettings showHeaderLeagues(Boolean showHeaderLeagues) {
+        this.setShowHeaderLeagues(showHeaderLeagues);
+        return this;
+    }
+
+    public void setShowHeaderLeagues(Boolean showHeaderLeagues) {
+        this.showHeaderLeagues = showHeaderLeagues;
+    }
+
+    public Boolean getShowNewsAdvertisements() {
+        return this.showNewsAdvertisements;
+    }
+
+    public TenantSettings showNewsAdvertisements(Boolean showNewsAdvertisements) {
+        this.setShowNewsAdvertisements(showNewsAdvertisements);
+        return this;
+    }
+
+    public void setShowNewsAdvertisements(Boolean showNewsAdvertisements) {
+        this.showNewsAdvertisements = showNewsAdvertisements;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1606,6 +1657,9 @@ public class TenantSettings implements Serializable {
                 ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
                 ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
                 ", showHeaderTournament='" + getShowHeaderTournament() + "'" +
+                ", showLeagueStandingsSectionInHomePage='" + getShowLeagueStandingsSectionInHomePage() + "'" +
+                ", showHeaderLeagues='" + getShowHeaderLeagues() + "'" +
+                ", showNewsAdvertisements='" + getShowNewsAdvertisements() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";

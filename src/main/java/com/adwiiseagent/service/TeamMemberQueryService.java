@@ -1,11 +1,14 @@
 package com.adwiiseagent.service;
 
 import com.adwiiseagent.domain.*; // for static metamodels
+import com.adwiiseagent.domain.TeamGroupMembership;
 import com.adwiiseagent.domain.TeamMember;
 import com.adwiiseagent.repository.TeamMemberRepository;
 import com.adwiiseagent.service.criteria.TeamMemberCriteria;
 import com.adwiiseagent.service.dto.TeamMemberDTO;
 import com.adwiiseagent.service.mapper.TeamMemberMapper;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -108,6 +111,21 @@ public class TeamMemberQueryService extends QueryService<TeamMember> {
                     criteria.getHeightCm() != null ? buildRangeSpecification(criteria.getHeightCm(), TeamMember_.heightCm) : null,
                     criteria.getInstagramUrl() != null ? buildStringSpecification(criteria.getInstagramUrl(), TeamMember_.instagramUrl) : null
                 );
+            if (criteria.getMembershipTeamGroupId() != null && criteria.getMembershipTeamGroupId().getEquals() != null) {
+                Long groupId = criteria.getMembershipTeamGroupId().getEquals();
+                specification = specification.and((root, query, cb) -> {
+                    Subquery<Long> membership = query.subquery(Long.class);
+                    Root<TeamGroupMembership> member = membership.from(TeamGroupMembership.class);
+                    membership
+                        .select(member.get("teamMemberId"))
+                        .where(
+                            cb.equal(member.get("teamGroupId"), groupId),
+                            cb.or(cb.isNull(member.get("isActive")), cb.isTrue(member.get("isActive")))
+                        );
+                    query.distinct(true);
+                    return root.get("id").in(membership);
+                });
+            }
         }
         return specification;
     }
