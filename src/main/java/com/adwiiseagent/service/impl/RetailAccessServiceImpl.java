@@ -1,10 +1,14 @@
 package com.adwiiseagent.service.impl;
 
+import com.adwiiseagent.domain.RetailLocation;
 import com.adwiiseagent.domain.RetailRecommendation;
 import com.adwiiseagent.domain.RetailRecommendation_;
 import com.adwiiseagent.domain.RetailUserLocationAssignment;
+import com.adwiiseagent.domain.RetailUserRegionAssignment;
 import com.adwiiseagent.domain.UserProfile;
+import com.adwiiseagent.repository.RetailLocationRepository;
 import com.adwiiseagent.repository.RetailUserLocationAssignmentRepository;
+import com.adwiiseagent.repository.RetailUserRegionAssignmentRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
 import com.adwiiseagent.security.AuthoritiesConstants;
 import com.adwiiseagent.security.SecurityUtils;
@@ -30,17 +34,25 @@ public class RetailAccessServiceImpl implements RetailAccessService {
 
     private static final String SERVICE_JWT_SUBJECT = "jwtadmin";
 
+    private static final String REGIONAL_MANAGER = "RETAIL_REGIONAL_MANAGER";
+
     private final UserProfileRepository userProfileRepository;
     private final RetailUserLocationAssignmentRepository assignmentRepository;
+    private final RetailUserRegionAssignmentRepository regionAssignmentRepository;
+    private final RetailLocationRepository retailLocationRepository;
     private final AccessRoleLookup accessRoleLookup;
 
     public RetailAccessServiceImpl(
         UserProfileRepository userProfileRepository,
         RetailUserLocationAssignmentRepository assignmentRepository,
+        RetailUserRegionAssignmentRepository regionAssignmentRepository,
+        RetailLocationRepository retailLocationRepository,
         AccessRoleLookup accessRoleLookup
     ) {
         this.userProfileRepository = userProfileRepository;
         this.assignmentRepository = assignmentRepository;
+        this.regionAssignmentRepository = regionAssignmentRepository;
+        this.retailLocationRepository = retailLocationRepository;
         this.accessRoleLookup = accessRoleLookup;
     }
 
@@ -102,11 +114,35 @@ public class RetailAccessServiceImpl implements RetailAccessService {
         if (!StringUtils.hasText(tenantId)) {
             return Collections.emptySet();
         }
+        if (REGIONAL_MANAGER.equals(normalizeRole(profile.getUserRole()))) {
+            List<String> regions = regionAssignmentRepository
+                .findByTenantIdAndUserProfileId(tenantId, profile.getId())
+                .stream()
+                .map(RetailUserRegionAssignment::getRegion)
+                .filter(StringUtils::hasText)
+                .toList();
+            if (regions.isEmpty()) {
+                return Collections.emptySet();
+            }
+            return retailLocationRepository
+                .findByTenantIdAndRegionIn(tenantId, regions)
+                .stream()
+                .map(RetailLocation::getId)
+                .collect(Collectors.toCollection(HashSet::new));
+        }
         return assignmentRepository
             .findByTenantIdAndUserProfileId(tenantId, profile.getId())
             .stream()
             .map(RetailUserLocationAssignment::getLocationId)
             .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    @Override
+    public Long currentUserProfileIdOrNull() {
+        if (isUnrestrictedServiceAccess()) {
+            return null;
+        }
+        return resolveCurrentUserProfile().map(UserProfile::getId).orElse(null);
     }
 
     @Override

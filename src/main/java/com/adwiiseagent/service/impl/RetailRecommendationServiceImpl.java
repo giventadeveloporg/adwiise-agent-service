@@ -2,6 +2,7 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.RetailRecommendation;
 import com.adwiiseagent.repository.RetailRecommendationRepository;
+import com.adwiiseagent.service.RecommendationCategoryLookup;
 import com.adwiiseagent.service.RetailAccessService;
 import com.adwiiseagent.service.RetailRecommendationService;
 import com.adwiiseagent.service.dto.RetailRecommendationDTO;
@@ -22,21 +23,25 @@ public class RetailRecommendationServiceImpl implements RetailRecommendationServ
     private final RetailRecommendationRepository retailRecommendationRepository;
     private final RetailRecommendationMapper retailRecommendationMapper;
     private final RetailAccessService retailAccessService;
+    private final RecommendationCategoryLookup recommendationCategoryLookup;
 
     public RetailRecommendationServiceImpl(
         RetailRecommendationRepository retailRecommendationRepository,
         RetailRecommendationMapper retailRecommendationMapper,
-        RetailAccessService retailAccessService
+        RetailAccessService retailAccessService,
+        RecommendationCategoryLookup recommendationCategoryLookup
     ) {
         this.retailRecommendationRepository = retailRecommendationRepository;
         this.retailRecommendationMapper = retailRecommendationMapper;
         this.retailAccessService = retailAccessService;
+        this.recommendationCategoryLookup = recommendationCategoryLookup;
     }
 
     @Override
     public RetailRecommendationDTO save(RetailRecommendationDTO dto) {
         LOG.debug("Request to save RetailRecommendation : {}", dto);
         retailAccessService.assertRecommendationAccess(dto.getLocationId());
+        recommendationCategoryLookup.requireActive(dto.getCategory());
         RetailRecommendation entity = retailRecommendationMapper.toEntity(dto);
         entity.setId(null);
         stamp(entity);
@@ -47,7 +52,13 @@ public class RetailRecommendationServiceImpl implements RetailRecommendationServ
     @Override
     public RetailRecommendationDTO update(RetailRecommendationDTO dto) {
         LOG.debug("Request to update RetailRecommendation : {}", dto);
-        retailAccessService.assertRecommendationAccess(dto.getLocationId());
+        retailRecommendationRepository
+            .findById(dto.getId())
+            .ifPresent(existing -> retailAccessService.assertRecommendationAccess(existing.getLocationId()));
+        if (dto.getLocationId() != null) {
+            retailAccessService.assertRecommendationAccess(dto.getLocationId());
+        }
+        recommendationCategoryLookup.requireActive(dto.getCategory());
         RetailRecommendation entity = retailRecommendationMapper.toEntity(dto);
         if (entity.getUpdatedAt() == null) {
             entity.setUpdatedAt(ZonedDateTime.now());
@@ -59,11 +70,17 @@ public class RetailRecommendationServiceImpl implements RetailRecommendationServ
     @Override
     public Optional<RetailRecommendationDTO> partialUpdate(RetailRecommendationDTO dto) {
         LOG.debug("Request to partially update RetailRecommendation : {}", dto);
-        retailAccessService.assertRecommendationAccess(dto.getLocationId());
         return retailRecommendationRepository
             .findById(dto.getId())
             .map(existing -> {
+                retailAccessService.assertRecommendationAccess(existing.getLocationId());
+                if (dto.getLocationId() != null) {
+                    retailAccessService.assertRecommendationAccess(dto.getLocationId());
+                }
                 retailRecommendationMapper.partialUpdate(existing, dto);
+                if (dto.getCategory() != null) {
+                    recommendationCategoryLookup.requireActive(existing.getCategory());
+                }
                 if (existing.getUpdatedAt() == null) {
                     existing.setUpdatedAt(ZonedDateTime.now());
                 }

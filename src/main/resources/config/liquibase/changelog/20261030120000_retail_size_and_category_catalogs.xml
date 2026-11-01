@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261030120000-1" author="retail-size-catalog">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="retailer_size_band"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.retailer_size_band_id_seq
+                INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE TABLE public.retailer_size_band (
+                id bigint DEFAULT nextval('public.retailer_size_band_id_seq'::regclass) NOT NULL,
+                retailer_type_code character varying(64) NOT NULL,
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                min_locations integer NOT NULL,
+                max_locations integer,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT retailer_size_band_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_retailer_size_band__type_code UNIQUE (retailer_type_code, code),
+                CONSTRAINT chk_retailer_size_band__range CHECK (max_locations IS NULL OR max_locations &gt;= min_locations)
+            );
+            COMMENT ON TABLE public.retailer_size_band IS 'Size band for one retailer_type. Chosen from the retail_location count for that pack. Fuel rules ignore the band.';
+            ALTER TABLE public.tenant_organization
+                ADD COLUMN IF NOT EXISTS retailer_size_band_code character varying(64);
+            COMMENT ON COLUMN public.tenant_organization.retailer_size_band_code IS 'Optional size-band override. Empty means the band is computed from the location count.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261030120000-2" author="retail-size-catalog">
+        <sql>
+            ALTER TABLE public.tenant_organization
+                ADD COLUMN IF NOT EXISTS retailer_size_band_code character varying(64);
+            INSERT INTO public.retailer_size_band (retailer_type_code, code, label, min_locations, max_locations, sort_order, is_active)
+            SELECT 'GAS_STATION', 'SINGLE', 'Single site', 1, 4, 1, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_size_band WHERE retailer_type_code = 'GAS_STATION' AND code = 'SINGLE');
+            INSERT INTO public.retailer_size_band (retailer_type_code, code, label, min_locations, max_locations, sort_order, is_active)
+            SELECT 'GAS_STATION', 'MID', 'Mid size', 5, 10, 2, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_size_band WHERE retailer_type_code = 'GAS_STATION' AND code = 'MID');
+            INSERT INTO public.retailer_size_band (retailer_type_code, code, label, min_locations, max_locations, sort_order, is_active)
+            SELECT 'GAS_STATION', 'ENTERPRISE', 'Enterprise', 11, NULL, 3, true
+            WHERE NOT EXISTS (SELECT 1 FROM public.retailer_size_band WHERE retailer_type_code = 'GAS_STATION' AND code = 'ENTERPRISE');
+            INSERT INTO public.retailer_size_band (retailer_type_code, code, label, min_locations, max_locations, sort_order, is_active)
+            SELECT code, 'STANDARD', 'Standard', 1, NULL, 1, true
+            FROM public.retailer_type
+            WHERE tenant_id IS NULL
+              AND code IN ('LIQUOR_STORE', 'DUNKIN_DONUTS', 'SEVEN_ELEVEN', 'RESTAURANT', 'CLINIC')
+              AND NOT EXISTS (
+                  SELECT 1 FROM public.retailer_size_band band
+                  WHERE band.retailer_type_code = retailer_type.code AND band.code = 'STANDARD'
+              );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261030120000-3" author="retail-size-catalog">
+        <sql>
+            UPDATE public.tenant_organization
+               SET retailer_type_code = 'GAS_STATION'
+             WHERE retailer_type_code = 'GAS_STATION_ENT';
+            UPDATE public.retail_location
+               SET retailer_type_code = 'GAS_STATION'
+             WHERE retailer_type_code = 'GAS_STATION_ENT';
+            UPDATE public.retailer_type
+               SET is_active = false,
+                   hint = 'Retired. Size is a retailer_size_band on GAS_STATION.'
+             WHERE tenant_id IS NULL AND code = 'GAS_STATION_ENT';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261030120000-4" author="retail-size-catalog">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="recommendation_category"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.recommendation_category_id_seq
+                INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE TABLE public.recommendation_category (
+                id bigint DEFAULT nextval('public.recommendation_category_id_seq'::regclass) NOT NULL,
+                code character varying(32) NOT NULL,
+                label character varying(255) NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT recommendation_category_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_recommendation_category__code UNIQUE (code)
+            );
+            COMMENT ON TABLE public.recommendation_category IS 'Lookup for retail_recommendation.category. A new card kind is a row here.';
+            INSERT INTO public.recommendation_category (code, label, sort_order, is_active) VALUES
+                ('FUEL_PRICING', 'Fuel pricing', 1, true),
+                ('ORDERING', 'Ordering', 2, true),
+                ('STAFFING', 'Staffing', 3, true),
+                ('INVENTORY', 'Inventory', 4, true),
+                ('LOSS_PREVENTION', 'Loss prevention', 5, true),
+                ('MAINTENANCE', 'Maintenance', 6, true),
+                ('ANOMALY', 'Anomaly', 7, true),
+                ('COMPLIANCE', 'Compliance', 8, true),
+                ('OTHER', 'Other', 9, true);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261030120000-5" author="retail-size-catalog">
+        <sql>
+            ALTER TABLE public.retail_recommendation DROP CONSTRAINT IF EXISTS chk_retail_recommendation__category;
+            ALTER TABLE public.platform_billing_plan DROP CONSTRAINT IF EXISTS chk_platform_billing_plan__product;
+            ALTER TABLE public.platform_billing_plan
+                ADD CONSTRAINT chk_platform_billing_plan__product CHECK (product IN ('EVENT_SITE', 'GAS_STATION', 'RETAIL'));
+            ALTER TABLE public.tenant_product_billing DROP CONSTRAINT IF EXISTS chk_tenant_product_billing__product;
+            ALTER TABLE public.tenant_product_billing
+                ADD CONSTRAINT chk_tenant_product_billing__product CHECK (product IN ('EVENT_SITE', 'GAS_STATION', 'RETAIL'));
+            INSERT INTO public.platform_billing_plan (product, name, code, billing_mode, billing_interval, list_price_usd, published, feature_summary, graduated_tiers_json)
+            SELECT 'RETAIL', 'Gas station single', 'GAS_STATION_SINGLE', 'RECURRING', 'MONTH', 0, false, 'Placeholder. Price follows the gas pack and the SINGLE size band.', NULL
+            WHERE NOT EXISTS (SELECT 1 FROM public.platform_billing_plan WHERE product = 'RETAIL' AND code = 'GAS_STATION_SINGLE');
+            INSERT INTO public.platform_billing_plan (product, name, code, billing_mode, billing_interval, list_price_usd, published, feature_summary, graduated_tiers_json)
+            SELECT 'RETAIL', 'Gas station mid', 'GAS_STATION_MID', 'RECURRING', 'MONTH', 0, false, 'Placeholder. Price follows the gas pack and the MID size band (5 to 10 locations).', NULL
+            WHERE NOT EXISTS (SELECT 1 FROM public.platform_billing_plan WHERE product = 'RETAIL' AND code = 'GAS_STATION_MID');
+            INSERT INTO public.platform_billing_plan (product, name, code, billing_mode, billing_interval, list_price_usd, published, feature_summary, graduated_tiers_json)
+            SELECT 'RETAIL', 'Gas station enterprise', 'GAS_STATION_ENTERPRISE', 'RECURRING', 'MONTH', 0, false, 'Placeholder. Price follows the gas pack and the ENTERPRISE size band.', NULL
+            WHERE NOT EXISTS (SELECT 1 FROM public.platform_billing_plan WHERE product = 'RETAIL' AND code = 'GAS_STATION_ENTERPRISE');
+        </sql>
+    </changeSet>
+</databaseChangeLog>

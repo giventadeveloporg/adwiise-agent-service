@@ -2,6 +2,7 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.RetailLocation;
 import com.adwiiseagent.repository.RetailLocationRepository;
+import com.adwiiseagent.repository.TenantOrganizationRepository;
 import com.adwiiseagent.service.RetailAccessService;
 import com.adwiiseagent.service.RetailLocationService;
 import com.adwiiseagent.service.dto.RetailLocationDTO;
@@ -22,21 +23,25 @@ public class RetailLocationServiceImpl implements RetailLocationService {
     private final RetailLocationRepository retailLocationRepository;
     private final RetailLocationMapper retailLocationMapper;
     private final RetailAccessService retailAccessService;
+    private final TenantOrganizationRepository tenantOrganizationRepository;
 
     public RetailLocationServiceImpl(
         RetailLocationRepository retailLocationRepository,
         RetailLocationMapper retailLocationMapper,
-        RetailAccessService retailAccessService
+        RetailAccessService retailAccessService,
+        TenantOrganizationRepository tenantOrganizationRepository
     ) {
         this.retailLocationRepository = retailLocationRepository;
         this.retailLocationMapper = retailLocationMapper;
         this.retailAccessService = retailAccessService;
+        this.tenantOrganizationRepository = tenantOrganizationRepository;
     }
 
     @Override
     public RetailLocationDTO save(RetailLocationDTO dto) {
         LOG.debug("Request to save RetailLocation : {}", dto);
         retailAccessService.assertAllLocationsScope();
+        applyDefaultPack(dto);
         RetailLocation entity = retailLocationMapper.toEntity(dto);
         entity.setId(null);
         stamp(entity);
@@ -92,6 +97,20 @@ public class RetailLocationServiceImpl implements RetailLocationService {
         LOG.debug("Request to delete RetailLocation : {}", id);
         retailAccessService.assertAllLocationsScope();
         retailLocationRepository.deleteById(id);
+    }
+
+    private void applyDefaultPack(RetailLocationDTO dto) {
+        if (dto == null || dto.getTenantId() == null || dto.getTenantId().isBlank()) {
+            return;
+        }
+        if (dto.getRetailerTypeCode() != null && !dto.getRetailerTypeCode().isBlank()) {
+            return;
+        }
+        tenantOrganizationRepository
+            .findOneByTenantId(dto.getTenantId().trim())
+            .map(org -> org.getRetailerTypeCode())
+            .filter(code -> code != null && !code.isBlank())
+            .ifPresent(dto::setRetailerTypeCode);
     }
 
     private static void stamp(RetailLocation entity) {

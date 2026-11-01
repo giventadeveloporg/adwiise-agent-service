@@ -24,6 +24,9 @@ public class RetailLocationDTO implements Serializable {
     @Size(max = 64)
     private String locationCode;
 
+    @Size(max = 64)
+    private String retailerTypeCode;
+
     @Size(max = 255)
     private String brand;
 
@@ -99,6 +102,14 @@ public class RetailLocationDTO implements Serializable {
 
     public void setLocationCode(String locationCode) {
         this.locationCode = locationCode;
+    }
+
+    public String getRetailerTypeCode() {
+        return retailerTypeCode;
+    }
+
+    public void setRetailerTypeCode(String retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public String getBrand() {

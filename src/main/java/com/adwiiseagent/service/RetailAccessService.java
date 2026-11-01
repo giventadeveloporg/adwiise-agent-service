@@ -12,6 +12,7 @@ public interface RetailAccessService {
     void assertLocationIdAllowed(Long locationId);
     void assertRecommendationAccess(Long locationId);
     Set<Long> getAllowedLocationIdsOrNull();
+    Long currentUserProfileIdOrNull();
     void restrict(LongFilter filter, Set<Long> allowed);
     Specification<RetailRecommendation> recommendationSpecification();
 }

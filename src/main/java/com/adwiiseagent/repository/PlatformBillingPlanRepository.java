@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PlatformBillingPlanRepository
-    extends JpaRepository<PlatformBillingPlan, Long>, JpaSpecificationExecutor<PlatformBillingPlan> {}
+    extends JpaRepository<PlatformBillingPlan, Long>, JpaSpecificationExecutor<PlatformBillingPlan> {
+    java.util.Optional<PlatformBillingPlan> findFirstByProductAndCode(String product, String code);
+}

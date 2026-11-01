@@ -2,8 +2,8 @@ package com.adwiiseagent.service;
 
 import com.adwiiseagent.domain.RetailerType;
 import com.adwiiseagent.errors.BadRequestAlertException;
+import com.adwiiseagent.repository.RetailLocationRepository;
 import com.adwiiseagent.repository.RetailerTypeRepository;
-import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
 import com.adwiiseagent.service.dto.RetailerTypeDTO;
 import com.adwiiseagent.service.mapper.RetailerTypeMapper;
@@ -21,20 +21,23 @@ public class RetailerTypeService {
     private final RetailerTypeMapper mapper;
     private final RosterCatalogGuard guard;
     private final TenantOrganizationRepository tenantOrganizationRepository;
-    private final TenantOnboardingRequestRepository tenantOnboardingRequestRepository;
+    private final RetailLocationRepository retailLocationRepository;
+    private final SiteTypeCatalogLookup siteTypeCatalogLookup;
 
     public RetailerTypeService(
         RetailerTypeRepository repository,
         RetailerTypeMapper mapper,
         RosterCatalogGuard guard,
         TenantOrganizationRepository tenantOrganizationRepository,
-        TenantOnboardingRequestRepository tenantOnboardingRequestRepository
+        RetailLocationRepository retailLocationRepository,
+        SiteTypeCatalogLookup siteTypeCatalogLookup
     ) {
         this.repository = repository;
         this.mapper = mapper;
         this.guard = guard;
         this.tenantOrganizationRepository = tenantOrganizationRepository;
-        this.tenantOnboardingRequestRepository = tenantOnboardingRequestRepository;
+        this.retailLocationRepository = retailLocationRepository;
+        this.siteTypeCatalogLookup = siteTypeCatalogLookup;
     }
 
     public RetailerTypeDTO save(RetailerTypeDTO dto) {
@@ -81,6 +84,11 @@ public class RetailerTypeService {
                 if (dto.getModuleKey() != null) {
                     dto.setModuleKey(normalizeModule(dto.getModuleKey()));
                 }
+                if (dto.getSiteTypeCode() != null) {
+                    String parent = dto.getSiteTypeCode().trim().toUpperCase();
+                    siteTypeCatalogLookup.requireAssignable(parent, requestedTenant);
+                    dto.setSiteTypeCode(parent);
+                }
                 dto.setTenantId(requestedTenant);
                 protectBuiltIn(existing, dto);
                 if (dto.getCode() != null && !existing.getCode().equals(dto.getCode()) && isReferenced(existing)) {
@@ -104,8 +112,8 @@ public class RetailerTypeService {
             .findById(id)
             .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY, "idnotfound"));
         guard.assertWrite(true, existing.getTenantId(), existing.getTenantId());
-        if ("EVENT_ORG".equals(existing.getCode())) {
-            throw new BadRequestAlertException("The default site type cannot be removed", ENTITY, "builtin");
+        if ("GAS_STATION".equals(existing.getCode()) && existing.getTenantId() == null) {
+            throw new BadRequestAlertException("The gas station pack cannot be removed", ENTITY, "builtin");
         }
         if (isReferenced(existing)) {
             existing.setIsActive(false);
@@ -116,10 +124,10 @@ public class RetailerTypeService {
     }
 
     private boolean isReferenced(RetailerType existing) {
-        if (tenantOrganizationRepository.existsBySiteType(existing.getCode())) {
-            return true;
-        }
-        return tenantOnboardingRequestRepository.existsBySiteType(existing.getCode());
+        return (
+            tenantOrganizationRepository.existsByRetailerTypeCode(existing.getCode()) ||
+            retailLocationRepository.existsByRetailerTypeCode(existing.getCode())
+        );
     }
 
     private void normalize(RetailerTypeDTO dto) {
@@ -133,6 +141,11 @@ public class RetailerTypeService {
             dto.setHint(dto.getHint().trim());
         }
         dto.setModuleKey(normalizeModule(dto.getModuleKey()));
+        if (dto.getSiteTypeCode() == null || dto.getSiteTypeCode().isBlank()) {
+            dto.setSiteTypeCode("RETAIL");
+        }
+        dto.setSiteTypeCode(dto.getSiteTypeCode().trim().toUpperCase());
+        siteTypeCatalogLookup.requireAssignable(dto.getSiteTypeCode(), dto.getTenantId());
         if (dto.getSortOrder() == null) {
             dto.setSortOrder(0);
         }
@@ -142,9 +155,10 @@ public class RetailerTypeService {
     }
 
     private void protectBuiltIn(RetailerType existing, RetailerTypeDTO dto) {
-        if ("EVENT_ORG".equals(existing.getCode())) {
-            dto.setCode("EVENT_ORG");
+        if (existing.getTenantId() == null && "GAS_STATION".equals(existing.getCode())) {
+            dto.setCode("GAS_STATION");
             dto.setIsActive(true);
+            dto.setSiteTypeCode("RETAIL");
         }
     }
 

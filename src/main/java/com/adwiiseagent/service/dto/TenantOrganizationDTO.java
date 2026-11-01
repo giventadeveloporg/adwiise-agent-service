@@ -125,6 +125,8 @@ public class TenantOrganizationDTO implements Serializable {
     @Size(max = 64)
     private String retailerTypeCode;
 
+    private String retailerSizeBandCode;
+
     @Size(max = 32)
     private String siteTemplateVersion;
 
@@ -406,6 +408,14 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setRetailerTypeCode(String retailerTypeCode) {
         this.retailerTypeCode = retailerTypeCode;
+    }
+
+    public String getRetailerSizeBandCode() {
+        return retailerSizeBandCode;
+    }
+
+    public void setRetailerSizeBandCode(String retailerSizeBandCode) {
+        this.retailerSizeBandCode = retailerSizeBandCode;
     }
 
     public String getSiteTemplateVersion() {

@@ -37,6 +37,10 @@ public class RetailLocation implements Serializable {
     @Column(name = "location_code", length = 64, nullable = false)
     private String locationCode;
 
+    @Size(max = 64)
+    @Column(name = "retailer_type_code", length = 64)
+    private String retailerTypeCode;
+
     @Size(max = 255)
     @Column(name = "brand", length = 255)
     private String brand;
@@ -130,6 +134,14 @@ public class RetailLocation implements Serializable {
 
     public void setLocationCode(String locationCode) {
         this.locationCode = locationCode;
+    }
+
+    public String getRetailerTypeCode() {
+        return retailerTypeCode;
+    }
+
+    public void setRetailerTypeCode(String retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public String getBrand() {

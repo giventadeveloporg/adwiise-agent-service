@@ -10,7 +10,5 @@ public enum SiteType {
     CHURCH_ORG,
     PERSONAL_PROFILE,
     HYBRID,
-    GAS_STATION,
-    LIQUOR_STORE,
     RETAIL,
 }

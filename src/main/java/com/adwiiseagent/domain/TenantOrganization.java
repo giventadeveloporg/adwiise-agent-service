@@ -144,6 +144,10 @@ public class TenantOrganization implements Serializable {
     @Column(name = "retailer_type_code", length = 64)
     private String retailerTypeCode;
 
+    @Size(max = 64)
+    @Column(name = "retailer_size_band_code", length = 64)
+    private String retailerSizeBandCode;
+
     @Size(max = 32)
     @Column(name = "site_template_version", length = 32)
     private String siteTemplateVersion;
@@ -525,6 +529,19 @@ public class TenantOrganization implements Serializable {
 
     public void setRetailerTypeCode(String retailerTypeCode) {
         this.retailerTypeCode = retailerTypeCode;
+    }
+
+    public String getRetailerSizeBandCode() {
+        return this.retailerSizeBandCode;
+    }
+
+    public TenantOrganization retailerSizeBandCode(String retailerSizeBandCode) {
+        this.setRetailerSizeBandCode(retailerSizeBandCode);
+        return this;
+    }
+
+    public void setRetailerSizeBandCode(String retailerSizeBandCode) {
+        this.retailerSizeBandCode = retailerSizeBandCode;
     }
 
     public String getSiteTemplateVersion() {

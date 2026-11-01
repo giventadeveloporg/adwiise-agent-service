@@ -26,6 +26,9 @@ public class RetailerTypeDTO implements Serializable {
     @Size(max = 32)
     private String moduleKey;
 
+    @Size(max = 64)
+    private String siteTypeCode;
+
     private Integer sortOrder;
 
     private Boolean isActive;
@@ -80,6 +83,14 @@ public class RetailerTypeDTO implements Serializable {
 
     public void setModuleKey(String moduleKey) {
         this.moduleKey = moduleKey;
+    }
+
+    public String getSiteTypeCode() {
+        return siteTypeCode;
+    }
+
+    public void setSiteTypeCode(String siteTypeCode) {
+        this.siteTypeCode = siteTypeCode;
     }
 
     public Integer getSortOrder() {

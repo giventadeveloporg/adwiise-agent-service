@@ -169,5 +169,12 @@
     <include file="config/liquibase/changelog/20261025213000_access_and_retailer_catalogs.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261027140000_retail_site_type.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261027170000_retail_placeholder_packs.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261028140000_retail_location_pack.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261028160000_retail_morning_roles.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261030120000_retail_size_and_category_catalogs.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261031120000_site_type_catalog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261031130000_drop_gas_station_ent_pack.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261101120000_move_gas_rows_to_retail.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261101133000_retail_recommendation_text_lobs.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

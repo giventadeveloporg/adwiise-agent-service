@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261028160000-1" author="retail-site-type">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM public.access_role WHERE tenant_id IS NULL AND code = 'RETAIL_OWNER'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO public.access_role (tenant_id, code, label, sort_order, is_active, grants_admin, platform_super, location_scope)
+            VALUES
+                (NULL, 'RETAIL_OWNER', 'Retail owner', 8, true, false, false, 'ALL'),
+                (NULL, 'RETAIL_REGIONAL_MANAGER', 'Retail regional manager', 9, true, false, false, 'ASSIGNED'),
+                (NULL, 'RETAIL_STORE_MANAGER', 'Retail store manager', 10, true, false, false, 'ASSIGNED');
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261028160000-2" author="retail-site-type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="retail_user_region_assignment"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.retail_user_region_assignment_id_seq
+                INCREMENT BY 1
+                NO MINVALUE
+                NO MAXVALUE
+                START WITH 1
+                CACHE 1;
+            CREATE TABLE public.retail_user_region_assignment (
+                id bigint DEFAULT nextval('public.retail_user_region_assignment_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255) NOT NULL,
+                user_profile_id bigint NOT NULL,
+                region character varying(255) NOT NULL,
+                assigned_by_user_profile_id bigint,
+                notes character varying(500),
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT retail_user_region_assignment_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_retail_user_region_assignment__tenant_user_region UNIQUE (tenant_id, user_profile_id, region),
+                CONSTRAINT fk_retail_user_region_assignment__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE,
+                CONSTRAINT fk_retail_user_region_assignment__user_profile FOREIGN KEY (user_profile_id) REFERENCES public.user_profile(id) ON DELETE CASCADE,
+                CONSTRAINT fk_retail_user_region_assignment__assigned_by FOREIGN KEY (assigned_by_user_profile_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
+            );
+            CREATE INDEX idx_retail_user_region_assignment_tenant_user
+                ON public.retail_user_region_assignment (tenant_id, user_profile_id);
+            COMMENT ON TABLE public.retail_user_region_assignment IS
+                'Regions a RETAIL_REGIONAL_MANAGER may see. A store is included when retail_location.region matches. A blank region on a store is not included.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

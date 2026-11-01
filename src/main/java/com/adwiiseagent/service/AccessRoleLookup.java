@@ -59,8 +59,15 @@ public class AccessRoleLookup {
         if (FALLBACK_ALL.contains(normalized)) {
             return Scope.ALL;
         }
-        if ("GAS_STATION_MANAGER".equals(normalized)) {
+        if (
+            "GAS_STATION_MANAGER".equals(normalized) ||
+            "RETAIL_STORE_MANAGER".equals(normalized) ||
+            "RETAIL_REGIONAL_MANAGER".equals(normalized)
+        ) {
             return Scope.ASSIGNED;
+        }
+        if ("RETAIL_OWNER".equals(normalized)) {
+            return Scope.ALL;
         }
         return Scope.NONE;
     }

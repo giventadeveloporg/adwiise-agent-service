@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261031120000-1" author="site-type-catalog">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="site_type_catalog"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.site_type_catalog_id_seq
+                INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE TABLE public.site_type_catalog (
+                id bigint DEFAULT nextval('public.site_type_catalog_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                hint character varying(255),
+                module_key character varying(32) DEFAULT 'EVENT' NOT NULL,
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT site_type_catalog_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_site_type_catalog__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_site_type_catalog__global_code ON public.site_type_catalog (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_site_type_catalog__tenant_code ON public.site_type_catalog (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_site_type_catalog_tenant_active ON public.site_type_catalog (tenant_id, is_active, sort_order);
+            COMMENT ON TABLE public.site_type_catalog IS 'Assignable tenant_organization.site_type. RETAIL is the shop archetype. Packs live in retailer_type.';
+            CREATE TRIGGER trg_site_type_catalog_updated_at
+                BEFORE UPDATE ON public.site_type_catalog
+                FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261031120000-2" author="site-type-catalog">
+        <sql>
+            INSERT INTO public.site_type_catalog (tenant_id, code, label, hint, module_key, sort_order, is_active, created_at, updated_at)
+            SELECT tenant_id, code, label, hint, module_key, sort_order, is_active, created_at, updated_at
+            FROM public.retailer_type
+            WHERE code IN ('EVENT_ORG', 'CHURCH_ORG', 'SPORTS_TEAM', 'MUSIC_BAND', 'PERSONAL_PROFILE', 'HYBRID', 'RETAIL')
+              AND NOT EXISTS (
+                  SELECT 1 FROM public.site_type_catalog existing
+                  WHERE existing.code = retailer_type.code
+                    AND existing.tenant_id IS NOT DISTINCT FROM retailer_type.tenant_id
+              );
+            DELETE FROM public.retailer_type
+            WHERE code IN ('EVENT_ORG', 'CHURCH_ORG', 'SPORTS_TEAM', 'MUSIC_BAND', 'PERSONAL_PROFILE', 'HYBRID', 'RETAIL');
+            ALTER TABLE public.retailer_type ADD COLUMN IF NOT EXISTS site_type_code character varying(64);
+            UPDATE public.retailer_type SET site_type_code = 'RETAIL' WHERE site_type_code IS NULL;
+            ALTER TABLE public.retailer_type ALTER COLUMN site_type_code SET DEFAULT 'RETAIL';
+            ALTER TABLE public.retailer_type ALTER COLUMN site_type_code SET NOT NULL;
+            COMMENT ON COLUMN public.retailer_type.site_type_code IS 'Parent site type. Shop packs use RETAIL.';
+            COMMENT ON TABLE public.retailer_type IS 'Shop pack for a site type. Fuel and register rules follow this code. Size is retailer_size_band.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

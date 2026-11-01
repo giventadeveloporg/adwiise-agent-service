@@ -17,7 +17,11 @@ public interface TenantOrganizationRepository
 
     boolean existsByTenantId(String tenantId);
 
+    java.util.Optional<TenantOrganization> findOneByTenantId(String tenantId);
+
     boolean existsByDomainIgnoreCase(String domain);
 
     boolean existsBySiteType(String siteType);
+
+    boolean existsByRetailerTypeCode(String retailerTypeCode);
 }

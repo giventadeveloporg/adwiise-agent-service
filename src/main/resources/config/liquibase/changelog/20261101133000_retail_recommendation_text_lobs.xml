@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261101133000-1" author="retail-cutover">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="retail_recommendation"/>
+        </preConditions>
+        <sql>
+            UPDATE public.retail_recommendation
+            SET detail = lo_from_bytea(0, convert_to(detail, 'UTF8'))::text
+            WHERE detail IS NOT NULL AND detail !~ '^[0-9]+$';
+
+            UPDATE public.retail_recommendation
+            SET explanation = lo_from_bytea(0, convert_to(explanation, 'UTF8'))::text
+            WHERE explanation IS NOT NULL AND explanation !~ '^[0-9]+$';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261028140000-1" author="retail-site-type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="retail_location" columnName="retailer_type_code"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE public.retail_location
+                ADD COLUMN retailer_type_code character varying(64);
+            COMMENT ON COLUMN public.retail_location.retailer_type_code IS
+                'Pack for this store: GAS_STATION, GAS_STATION_ENT, LIQUOR_STORE, DUNKIN_DONUTS, SEVEN_ELEVEN, RESTAURANT, or CLINIC. A tenant''s packs are the distinct codes on its locations. The organization code is only the default for a new location.';
+            COMMENT ON TABLE public.retail_location IS
+                'Store locations for a retail tenant. One tenant owns 1..N locations. Each location has its own pack.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261028140000-2" author="retail-site-type">
+        <sql>
+            UPDATE public.retail_location AS location
+               SET retailer_type_code = organization.retailer_type_code
+              FROM public.tenant_organization AS organization
+             WHERE location.tenant_id = organization.tenant_id
+               AND (location.retailer_type_code IS NULL OR btrim(location.retailer_type_code) = '')
+               AND organization.retailer_type_code IS NOT NULL
+               AND btrim(organization.retailer_type_code) &lt;&gt; '';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

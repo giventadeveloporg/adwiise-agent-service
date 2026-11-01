@@ -9,7 +9,7 @@ import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.SatelliteDomainRepository;
 import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
-import com.adwiiseagent.service.RetailerTypeLookup;
+import com.adwiiseagent.service.SiteTypeCatalogLookup;
 import com.adwiiseagent.service.TenantOnboardingRequestService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
 import com.adwiiseagent.service.dto.TenantOnboardingRejectDTO;
@@ -56,18 +56,18 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
 
     private final SatelliteDomainRepository satelliteDomainRepository;
 
-    private final RetailerTypeLookup retailerTypeLookup;
+    private final SiteTypeCatalogLookup siteTypeCatalogLookup;
 
     public TenantOnboardingRequestServiceImpl(
         TenantOnboardingRequestRepository repository,
         TenantOnboardingRequestMapper mapper,
         SatelliteDomainRepository satelliteDomainRepository,
-        RetailerTypeLookup retailerTypeLookup
+        SiteTypeCatalogLookup siteTypeCatalogLookup
     ) {
         this.repository = repository;
         this.mapper = mapper;
         this.satelliteDomainRepository = satelliteDomainRepository;
-        this.retailerTypeLookup = retailerTypeLookup;
+        this.siteTypeCatalogLookup = siteTypeCatalogLookup;
     }
 
     @Override
@@ -104,7 +104,7 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
         entity.setSource(in.getSource() != null ? in.getSource() : OnboardingRequestSource.PUBLIC_FORM);
         entity.setOrganizationName(in.getOrganizationName().trim());
         String siteType = in.getSiteType() != null && !in.getSiteType().isBlank() ? in.getSiteType().trim() : "EVENT_ORG";
-        retailerTypeLookup.requireAssignable(siteType, null);
+        siteTypeCatalogLookup.requireAssignable(siteType, null);
         entity.setSiteType(siteType);
         entity.setDescription(TenantOnboardingSupport.trimToNull(in.getDescription()));
         entity.setContactFirstName(TenantOnboardingSupport.trimToNull(in.getContactFirstName()));
@@ -172,7 +172,7 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
                 }
                 if (dto.getSiteType() != null) {
                     String siteType = dto.getSiteType().trim();
-                    retailerTypeLookup.requireAssignable(siteType, null);
+                    siteTypeCatalogLookup.requireAssignable(siteType, null);
                     dto.setSiteType(siteType);
                 }
                 mapper.partialUpdate(existing, dto);

@@ -4,6 +4,7 @@ import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
 import com.adwiiseagent.service.RetailSiteTypes;
 import com.adwiiseagent.service.RetailerTypeLookup;
+import com.adwiiseagent.service.SiteTypeCatalogLookup;
 import com.adwiiseagent.service.TenantOrganizationQueryService;
 import com.adwiiseagent.service.TenantOrganizationService;
 import com.adwiiseagent.service.criteria.TenantOrganizationCriteria;
@@ -49,17 +50,20 @@ public class TenantOrganizationResource {
     private final TenantOrganizationQueryService tenantOrganizationQueryService;
 
     private final RetailerTypeLookup retailerTypeLookup;
+    private final SiteTypeCatalogLookup siteTypeCatalogLookup;
 
     public TenantOrganizationResource(
         TenantOrganizationService tenantOrganizationService,
         TenantOrganizationRepository tenantOrganizationRepository,
         TenantOrganizationQueryService tenantOrganizationQueryService,
-        RetailerTypeLookup retailerTypeLookup
+        RetailerTypeLookup retailerTypeLookup,
+        SiteTypeCatalogLookup siteTypeCatalogLookup
     ) {
         this.tenantOrganizationService = tenantOrganizationService;
         this.tenantOrganizationRepository = tenantOrganizationRepository;
         this.tenantOrganizationQueryService = tenantOrganizationQueryService;
         this.retailerTypeLookup = retailerTypeLookup;
+        this.siteTypeCatalogLookup = siteTypeCatalogLookup;
     }
 
     /**
@@ -219,9 +223,15 @@ public class TenantOrganizationResource {
             }
             return;
         }
-        retailerTypeLookup.requireAssignable(tenantOrganizationDTO.getSiteType().trim(), tenantOrganizationDTO.getTenantId());
-        if (tenantOrganizationDTO.getRetailerTypeCode() != null && !tenantOrganizationDTO.getRetailerTypeCode().isBlank()) {
-            retailerTypeLookup.requireAssignable(tenantOrganizationDTO.getRetailerTypeCode().trim(), tenantOrganizationDTO.getTenantId());
+        siteTypeCatalogLookup.requireAssignable(tenantOrganizationDTO.getSiteType().trim(), tenantOrganizationDTO.getTenantId());
+        if (RetailSiteTypes.RETAIL.equals(tenantOrganizationDTO.getSiteType())) {
+            retailerTypeLookup.requirePackForSite(
+                tenantOrganizationDTO.getRetailerTypeCode(),
+                tenantOrganizationDTO.getTenantId(),
+                RetailSiteTypes.RETAIL
+            );
+        } else if (tenantOrganizationDTO.getRetailerTypeCode() != null && !tenantOrganizationDTO.getRetailerTypeCode().isBlank()) {
+            tenantOrganizationDTO.setRetailerTypeCode(null);
         }
     }
 

@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * Assignable {@code tenant_organization.site_type}. Null {@code tenantId} is the shared catalog.
+ * Shop pack for one site type. Null {@code tenantId} is the shared catalog.
  */
 @Entity
 @Table(name = "retailer_type")
@@ -53,6 +53,11 @@ public class RetailerType implements Serializable {
     private String moduleKey = "EVENT";
 
     @NotNull
+    @Size(max = 64)
+    @Column(name = "site_type_code", length = 64, nullable = false)
+    private String siteTypeCode = "RETAIL";
+
+    @NotNull
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
@@ -83,6 +88,9 @@ public class RetailerType implements Serializable {
         }
         if (moduleKey == null || moduleKey.isBlank()) {
             moduleKey = "EVENT";
+        }
+        if (siteTypeCode == null || siteTypeCode.isBlank()) {
+            siteTypeCode = "RETAIL";
         }
     }
 
@@ -137,6 +145,14 @@ public class RetailerType implements Serializable {
 
     public void setModuleKey(String moduleKey) {
         this.moduleKey = moduleKey;
+    }
+
+    public String getSiteTypeCode() {
+        return siteTypeCode;
+    }
+
+    public void setSiteTypeCode(String siteTypeCode) {
+        this.siteTypeCode = siteTypeCode;
     }
 
     public Integer getSortOrder() {

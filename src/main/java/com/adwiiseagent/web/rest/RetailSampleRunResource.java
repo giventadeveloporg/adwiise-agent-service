@@ -58,6 +58,7 @@ public class RetailSampleRunResource {
         @RequestParam String retailerType,
         @RequestParam(required = false) String siteType,
         @RequestParam(required = false) String metricDate,
+        @RequestParam(required = false, defaultValue = "false") boolean post,
         @RequestParam(required = false) String tenantId,
         @RequestPart("registerFile") MultipartFile registerFile,
         @RequestPart(value = "fuelFile", required = false) MultipartFile fuelFile,
@@ -80,7 +81,7 @@ public class RetailSampleRunResource {
         request.setSiteType(StringUtils.hasText(siteType) ? siteType : "RETAIL");
         request.setMetricDate(metricDate);
         request.setSource("inbox");
-        request.setPost(false);
+        request.setPost(post);
         LOG.debug("REST request to run uploaded retail files tenant={} retailerType={}", tenant, retailerType);
         return ResponseEntity.ok(batchJobService.triggerRetailSampleRun(request));
     }
