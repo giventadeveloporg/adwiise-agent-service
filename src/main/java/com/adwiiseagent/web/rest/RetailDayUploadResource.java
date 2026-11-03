@@ -77,7 +77,7 @@ public class RetailDayUploadResource {
         }
         String fuelName = fuelFile == null ? null : fuelFile.getOriginalFilename();
         LOG.debug("REST request to upload retail day tenant={} location={} date={}", tenant, location.getLocationCode(), metricDate);
-        Map<String, Object> result = retailEngineClient.uploadDay(
+        Map<String, Object> engine = retailEngineClient.uploadDay(
             tenant,
             location.getLocationCode(),
             metricDate,
@@ -88,8 +88,22 @@ public class RetailDayUploadResource {
             fuelBytes,
             fuelName
         );
+        // Stable UI payload: identity from this service; post/cards from the engine.
+        java.util.LinkedHashMap<String, Object> result = new java.util.LinkedHashMap<>();
+        if (engine != null) {
+            result.putAll(engine);
+        }
+        result.put("accepted", Boolean.TRUE);
         result.put("locationId", locationId);
         result.put("locationName", location.getLocationName());
+        result.put("stationCode", location.getLocationCode());
+        result.put("metricDate", metricDate);
+        result.put("retailerType", pack);
+        Object posted = result.get("posted");
+        result.put("posted", Boolean.TRUE.equals(posted));
+        if (!(result.get("recommendations") instanceof java.util.List)) {
+            result.put("recommendations", java.util.List.of());
+        }
         return ResponseEntity.ok(result);
     }
 }
