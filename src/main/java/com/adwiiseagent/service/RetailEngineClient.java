@@ -95,6 +95,46 @@ public class RetailEngineClient {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> triggerRun(Map<String, Object> body) {
+        try {
+            Map<String, Object> result = WebClient
+                .create(baseUrl())
+                .post()
+                .uri("/v1/runs/trigger")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body == null ? Map.of() : body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block(Duration.ofSeconds(120));
+            return result == null ? Map.of() : result;
+        } catch (WebClientRequestException ex) {
+            throw engineUnreachable(ex);
+        } catch (WebClientResponseException ex) {
+            throw engineHttpError(ex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> chat(Map<String, Object> body) {
+        try {
+            Map<String, Object> result = WebClient
+                .create(baseUrl())
+                .post()
+                .uri("/v1/chat")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body == null ? Map.of() : body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block(Duration.ofSeconds(60));
+            return result == null ? Map.of() : result;
+        } catch (WebClientRequestException ex) {
+            throw engineUnreachable(ex);
+        } catch (WebClientResponseException ex) {
+            throw engineHttpError(ex);
+        }
+    }
+
     private IllegalStateException engineUnreachable(WebClientRequestException ex) {
         LOG.error("Retail engine unreachable at {}", baseUrl(), ex);
         return new IllegalStateException(
