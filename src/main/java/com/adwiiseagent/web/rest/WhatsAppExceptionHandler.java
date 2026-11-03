@@ -1,6 +1,5 @@
 package com.adwiiseagent.web.rest;
 
-import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.service.exception.*;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -14,9 +13,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 /**
- * Global exception handler for WhatsApp-related errors.
+ * Exception handler for WhatsApp-related errors only.
+ * Must not catch unrelated RuntimeExceptions — returning null from an
+ * {@code @ExceptionHandler} becomes an empty HTTP 200 in Spring MVC.
  */
-@ControllerAdvice
+@ControllerAdvice(assignableTypes = { TwilioWhatsAppResource.class, WhatsAppWebhookResource.class, WhatsAppLogResource.class })
 public class WhatsAppExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(WhatsAppExceptionHandler.class);
@@ -111,50 +112,6 @@ public class WhatsAppExceptionHandler {
     }
 
     /**
-     * Handle BadRequestAlertException for WhatsApp operations.
-     */
-    @ExceptionHandler(BadRequestAlertException.class)
-    public ResponseEntity<Map<String, Object>> handleBadRequestAlertException(BadRequestAlertException ex, WebRequest request) {
-        // Only handle WhatsApp-related BadRequestAlertException
-        if (!"whatsapp".equals(ex.getEntityName())) {
-            return null; // Let other handlers deal with it
-        }
-
-        LOG.warn("WhatsApp bad request: {}", ex.getMessage());
-
-        Map<String, Object> errorResponse = createErrorResponse(
-            "WHATSAPP_BAD_REQUEST",
-            "Invalid WhatsApp request",
-            ex.getMessage(),
-            HttpStatus.BAD_REQUEST.value()
-        );
-
-        return ResponseEntity.badRequest().body(errorResponse);
-    }
-
-    /**
-     * Handle generic RuntimeException for WhatsApp operations.
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex, WebRequest request) {
-        // Only handle WhatsApp-related exceptions by checking the stack trace
-        if (!isWhatsAppRelatedException(ex)) {
-            return null; // Let other handlers deal with it
-        }
-
-        LOG.error("WhatsApp runtime error: {}", ex.getMessage(), ex);
-
-        Map<String, Object> errorResponse = createErrorResponse(
-            "WHATSAPP_INTERNAL_ERROR",
-            "An internal error occurred while processing WhatsApp request",
-            "An unexpected error occurred. Please try again later.",
-            HttpStatus.INTERNAL_SERVER_ERROR.value()
-        );
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
-
-    /**
      * Create a standardized error response.
      */
     private Map<String, Object> createErrorResponse(String errorCode, String title, String detail, int status) {
@@ -165,19 +122,5 @@ public class WhatsAppExceptionHandler {
         errorResponse.put("status", status);
         errorResponse.put("timestamp", ZonedDateTime.now());
         return errorResponse;
-    }
-
-    /**
-     * Check if the exception is WhatsApp-related by examining the stack trace.
-     */
-    private boolean isWhatsAppRelatedException(RuntimeException ex) {
-        StackTraceElement[] stackTrace = ex.getStackTrace();
-        for (StackTraceElement element : stackTrace) {
-            String className = element.getClassName();
-            if (className.contains("whatsapp") || className.contains("WhatsApp") || className.contains("TwilioWhatsApp")) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -2,18 +2,24 @@ package com.adwiiseagent.service;
 
 import java.time.Duration;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * Forwards register uploads to the AI engine. Owner day uploads post through the feature store path.
  */
 @Component
 public class RetailEngineClient {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RetailEngineClient.class);
 
     private final String engineBaseUrl;
 
@@ -29,15 +35,21 @@ public class RetailEngineClient {
         if (fuelBytes != null && fuelBytes.length > 0) {
             builder.part("fuelFile", named(fuelBytes, fuelName == null ? "fuel.csv" : fuelName));
         }
-        WebClient
-            .create(base)
-            .post()
-            .uri("/v1/inbox")
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(builder.build()))
-            .retrieve()
-            .toBodilessEntity()
-            .block(Duration.ofSeconds(30));
+        try {
+            WebClient
+                .create(base)
+                .post()
+                .uri("/v1/inbox")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve()
+                .toBodilessEntity()
+                .block(Duration.ofSeconds(30));
+        } catch (WebClientRequestException ex) {
+            throw engineUnreachable(ex);
+        } catch (WebClientResponseException ex) {
+            throw engineHttpError(ex);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -62,19 +74,43 @@ public class RetailEngineClient {
         if (fuelBytes != null && fuelBytes.length > 0) {
             builder.part("fuelFile", named(fuelBytes, fuelName == null ? "fuel.csv" : fuelName));
         }
-        Map<String, Object> body = WebClient
-            .create(baseUrl())
-            .post()
-            .uri("/v1/uploads/day")
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(builder.build()))
-            .retrieve()
-            .bodyToMono(Map.class)
-            .block(Duration.ofSeconds(120));
-        if (body == null) {
-            throw new IllegalStateException("Engine day upload returned an empty body");
+        try {
+            Map<String, Object> body = WebClient
+                .create(baseUrl())
+                .post()
+                .uri("/v1/uploads/day")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block(Duration.ofSeconds(120));
+            if (body == null || body.isEmpty()) {
+                throw new IllegalStateException("Engine day upload returned an empty body from " + baseUrl());
+            }
+            return body;
+        } catch (WebClientRequestException ex) {
+            throw engineUnreachable(ex);
+        } catch (WebClientResponseException ex) {
+            throw engineHttpError(ex);
         }
-        return body;
+    }
+
+    private IllegalStateException engineUnreachable(WebClientRequestException ex) {
+        LOG.error("Retail engine unreachable at {}", baseUrl(), ex);
+        return new IllegalStateException(
+            "Retail AI engine is unreachable at " +
+            baseUrl() +
+            ". Set RETAIL_ENGINE_BASE_URL on the backend to a running engine that serves POST /v1/uploads/day.",
+            ex
+        );
+    }
+
+    private IllegalStateException engineHttpError(WebClientResponseException ex) {
+        LOG.error("Retail engine HTTP {} from {}: {}", ex.getStatusCode().value(), baseUrl(), ex.getResponseBodyAsString());
+        return new IllegalStateException(
+            "Retail AI engine returned HTTP " + ex.getStatusCode().value() + ": " + ex.getResponseBodyAsString(),
+            ex
+        );
     }
 
     private String baseUrl() {

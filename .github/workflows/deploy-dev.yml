@@ -213,6 +213,33 @@ jobs:
           mv task-definition-batch.json task-definition.json
           echo "Synced BATCH_JOBS_* from GitHub environment variables into container '$CONTAINER_NAME'."
 
+      # Sync retail AI engine base URL (standing HTTP engine behind internal ALB).
+      - name: Sync retail engine URL into ECS task definition
+        env:
+          RETAIL_ENGINE_BASE_URL: ${{ vars.RETAIL_ENGINE_BASE_URL }}
+          CONTAINER_NAME: ${{ env.CONTAINER_NAME }}
+        run: |
+          jq --arg container "$CONTAINER_NAME" \
+             --arg url "${RETAIL_ENGINE_BASE_URL:-}" \
+             '
+             .containerDefinitions = [
+               .containerDefinitions[] |
+               if .name == $container then
+                 .environment = (
+                   ((.environment // []) | map(select(.name != "RETAIL_ENGINE_BASE_URL"))) +
+                   (if ($url | length) > 0 then [{"name": "RETAIL_ENGINE_BASE_URL", "value": $url}] else [] end)
+                 )
+               else .
+               end
+             ]
+             ' task-definition.json > task-definition-engine.json
+          mv task-definition-engine.json task-definition.json
+          if [ -n "${RETAIL_ENGINE_BASE_URL:-}" ]; then
+            echo "Synced RETAIL_ENGINE_BASE_URL from GitHub environment variables into container '$CONTAINER_NAME'."
+          else
+            echo "RETAIL_ENGINE_BASE_URL not set in GitHub environment; left existing task-def value (if any)."
+          fi
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
