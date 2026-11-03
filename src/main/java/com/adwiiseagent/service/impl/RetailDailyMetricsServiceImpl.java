@@ -49,9 +49,13 @@ public class RetailDailyMetricsServiceImpl implements RetailDailyMetricsService 
         LOG.debug("Request to update RetailDailyMetrics : {}", dto);
         retailAccessService.assertAllLocationsScope();
         RetailDailyMetrics entity = retailDailyMetricsMapper.toEntity(dto);
-        if (entity.getUpdatedAt() == null) {
-            entity.setUpdatedAt(ZonedDateTime.now());
+        if (entity.getCreatedAt() == null && dto.getId() != null) {
+            retailDailyMetricsRepository.findById(dto.getId()).map(RetailDailyMetrics::getCreatedAt).ifPresent(entity::setCreatedAt);
         }
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(ZonedDateTime.now());
+        }
+        entity.setUpdatedAt(ZonedDateTime.now());
         entity = retailDailyMetricsRepository.save(entity);
         return retailDailyMetricsMapper.toDto(entity);
     }

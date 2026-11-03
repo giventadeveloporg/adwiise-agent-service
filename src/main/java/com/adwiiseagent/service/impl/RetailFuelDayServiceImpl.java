@@ -49,9 +49,13 @@ public class RetailFuelDayServiceImpl implements RetailFuelDayService {
         LOG.debug("Request to update RetailFuelDay : {}", dto);
         retailAccessService.assertAllLocationsScope();
         RetailFuelDay entity = retailFuelDayMapper.toEntity(dto);
-        if (entity.getUpdatedAt() == null) {
-            entity.setUpdatedAt(ZonedDateTime.now());
+        if (entity.getCreatedAt() == null && dto.getId() != null) {
+            retailFuelDayRepository.findById(dto.getId()).map(RetailFuelDay::getCreatedAt).ifPresent(entity::setCreatedAt);
         }
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(ZonedDateTime.now());
+        }
+        entity.setUpdatedAt(ZonedDateTime.now());
         entity = retailFuelDayRepository.save(entity);
         return retailFuelDayMapper.toDto(entity);
     }
