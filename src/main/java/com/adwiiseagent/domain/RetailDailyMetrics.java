@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "retail_daily_metrics")
@@ -60,7 +62,7 @@ public class RetailDailyMetrics implements Serializable {
     @Column(name = "actual_profit_usd", precision = 21, scale = 2)
     private BigDecimal actualProfitUsd;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "metrics_json")
     private String metricsJson;
 

@@ -145,7 +145,8 @@ spring:
 
   # Liquibase Configuration
   liquibase:
-    enabled: ${LIQUIBASE_ENABLED:true}
+    # Schema comes from the database-repo canonical dump. Keep Liquibase off unless you opt in.
+    enabled: ${LIQUIBASE_ENABLED:false}
     change-log: classpath:config/liquibase/master.xml
     contexts: ${LIQUIBASE_CONTEXTS:local}
     drop-first: false

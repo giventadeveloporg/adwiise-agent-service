@@ -349,61 +349,14 @@ COMMENT ON TABLE public.retail_user_location_assignment IS 'Which retail_locatio
         ]]></sql>
     </changeSet>
 
+    <!--
+      Former gas→retail row copy removed. Retail tables are created above.
+      ChangeSet id kept so databases that already ran the old copy keep a matching history.
+    -->
     <changeSet id="20261012180000-4" author="system">
-        <preConditions onFail="MARK_RAN">
-            <tableExists tableName="gas_station_location"/>
-            <tableExists tableName="retail_location"/>
-        </preConditions>
-        <sql><![CDATA[
-            INSERT INTO public.retail_location (
-                id, tenant_id, location_name, location_code, brand, region,
-                address_line_1, address_line_2, city, state_province, zip_code, country,
-                latitude, longitude, timezone, is_24_hours, is_active, included_in_subscription,
-                created_at, updated_at
-            )
-            SELECT
-                g.id, g.tenant_id, g.station_name, g.station_code, g.brand, g.region,
-                g.address_line_1, g.address_line_2, g.city, g.state_province, g.zip_code, g.country,
-                g.latitude, g.longitude, g.timezone, g.is_24_hours, g.is_active, g.included_in_subscription,
-                g.created_at, g.updated_at
-            FROM public.gas_station_location g
-            WHERE NOT EXISTS (
-                SELECT 1 FROM public.retail_location r
-                WHERE r.tenant_id = g.tenant_id AND r.location_code = g.station_code
-            );
-
-            INSERT INTO public.retail_location_profile (
-                tenant_id, location_id, fuel_dispenser_count, has_car_wash, has_lottery, has_foodservice,
-                created_at, updated_at
-            )
-            SELECT
-                g.tenant_id, r.id, g.fuel_dispenser_count, g.has_car_wash, g.has_lottery, g.has_foodservice,
-                g.created_at, g.updated_at
-            FROM public.gas_station_location g
-            JOIN public.retail_location r
-              ON r.tenant_id = g.tenant_id AND r.location_code = g.station_code
-            WHERE NOT EXISTS (
-                SELECT 1 FROM public.retail_location_profile p WHERE p.location_id = r.id
-            );
-
-            INSERT INTO public.retail_integration (
-                id, tenant_id, location_id, system_type, provider_name, connection_mode, config_json,
-                credentials_ref, sync_frequency, last_sync_at, last_sync_status, is_enabled, created_at, updated_at
-            )
-            SELECT
-                i.id, i.tenant_id, r.id, i.system_type, i.provider_name, i.connection_mode, i.config_json,
-                i.credentials_ref, i.sync_frequency, i.last_sync_at, i.last_sync_status, i.is_enabled,
-                i.created_at, i.updated_at
-            FROM public.gas_station_integration i
-            JOIN public.gas_station_location g ON g.id = i.station_id
-            JOIN public.retail_location r
-              ON r.tenant_id = g.tenant_id AND r.location_code = g.station_code
-            WHERE NOT EXISTS (SELECT 1 FROM public.retail_integration x WHERE x.id = i.id);
-
-            SELECT setval('public.retail_location_id_seq', GREATEST(COALESCE((SELECT MAX(id) FROM public.retail_location), 1), 1), true);
-            SELECT setval('public.retail_location_profile_id_seq', GREATEST(COALESCE((SELECT MAX(id) FROM public.retail_location_profile), 1), 1), true);
-            SELECT setval('public.retail_integration_id_seq', GREATEST(COALESCE((SELECT MAX(id) FROM public.retail_integration), 1), 1), true);
-        ]]></sql>
+        <validCheckSum>ANY</validCheckSum>
+        <comment>No-op. Gas row copy into retail is retired; retail is the only store.</comment>
+        <sql>SELECT 1;</sql>
     </changeSet>
 
 </databaseChangeLog>

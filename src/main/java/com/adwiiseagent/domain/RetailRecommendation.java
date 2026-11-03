@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "retail_recommendation")
@@ -45,7 +47,7 @@ public class RetailRecommendation implements Serializable {
     @Column(name = "title", length = 500, nullable = false)
     private String title;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "detail")
     private String detail;
 
@@ -58,7 +60,7 @@ public class RetailRecommendation implements Serializable {
     @Column(name = "confidence_pct", precision = 5, scale = 2)
     private BigDecimal confidencePct;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "explanation")
     private String explanation;
 
