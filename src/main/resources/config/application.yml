@@ -329,6 +329,15 @@ google:
     enabled: ${GOOGLE_OAUTH_ENABLED:false}
 
 # ===================================================================
+# Retail AI engine (owner Upload day, morning-brief refresh/chat)
+# ===================================================================
+# Docker Compose local sets RETAIL_ENGINE_BASE_URL=http://host.docker.internal:8090
+# so the container can reach the engine on the Windows host.
+retail:
+  engine:
+    base-url: ${RETAIL_ENGINE_BASE_URL:http://127.0.0.1:8090}
+
+# ===================================================================
 # Batch Jobs Service Configuration
 # ===================================================================
 batch-jobs:

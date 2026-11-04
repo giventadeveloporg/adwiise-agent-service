@@ -273,6 +273,11 @@ jwt-api-auth:
   username: ${JWT_API_AUTH_USERNAME:jwtlocal}
   password: ${JWT_API_AUTH_PASSWORD:jwt#local123}
 
+# Local Upload day / refresh: engine on the host (see docker-compose RETAIL_ENGINE_BASE_URL).
+retail:
+  engine:
+    base-url: ${RETAIL_ENGINE_BASE_URL:http://127.0.0.1:8090}
+
 # Development Tools Configuration
 development:
   h2-console:
