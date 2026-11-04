@@ -49,9 +49,13 @@ public class RetailDepartmentDayServiceImpl implements RetailDepartmentDayServic
         LOG.debug("Request to update RetailDepartmentDay : {}", dto);
         retailAccessService.assertAllLocationsScope();
         RetailDepartmentDay entity = retailDepartmentDayMapper.toEntity(dto);
-        if (entity.getUpdatedAt() == null) {
-            entity.setUpdatedAt(ZonedDateTime.now());
+        if (entity.getCreatedAt() == null && dto.getId() != null) {
+            retailDepartmentDayRepository.findById(dto.getId()).map(RetailDepartmentDay::getCreatedAt).ifPresent(entity::setCreatedAt);
         }
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(ZonedDateTime.now());
+        }
+        entity.setUpdatedAt(ZonedDateTime.now());
         entity = retailDepartmentDayRepository.save(entity);
         return retailDepartmentDayMapper.toDto(entity);
     }
