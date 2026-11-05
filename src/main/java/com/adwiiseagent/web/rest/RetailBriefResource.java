@@ -93,6 +93,15 @@ public class RetailBriefResource {
         if (body.get("stationCode") != null) {
             payload.put("stationCode", body.get("stationCode"));
         }
+        if (body.get("recommendationId") != null) {
+            payload.put("recommendationId", String.valueOf(body.get("recommendationId")));
+        }
+        if (body.get("recommendationTitle") != null) {
+            payload.put("recommendationTitle", String.valueOf(body.get("recommendationTitle")));
+        }
+        if (body.get("siteType") != null) {
+            payload.put("siteType", body.get("siteType"));
+        }
         LOG.debug("REST request to ask retail brief tenant={}", tenantId);
         return ResponseEntity.ok(retailEngineClient.chat(payload));
     }

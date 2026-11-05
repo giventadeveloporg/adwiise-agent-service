@@ -58,6 +58,12 @@ public class TenantOnboardingApproveDTO implements Serializable {
 
     private Boolean notifySubmitter;
 
+    /**
+     * Optional portfolio to attach the new tenant to after provisioning succeeds.
+     * The new tenant is added as a non-primary member. Satellite and Clerk setup do not depend on this.
+     */
+    private Long portfolioId;
+
     public String getTenantId() {
         return tenantId;
     }
@@ -168,5 +174,13 @@ public class TenantOnboardingApproveDTO implements Serializable {
 
     public void setNotifySubmitter(Boolean notifySubmitter) {
         this.notifySubmitter = notifySubmitter;
+    }
+
+    public Long getPortfolioId() {
+        return portfolioId;
+    }
+
+    public void setPortfolioId(Long portfolioId) {
+        this.portfolioId = portfolioId;
     }
 }

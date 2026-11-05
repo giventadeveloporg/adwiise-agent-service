@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Groups existing tenant_organization rows. Does not alter tenant_id uniqueness,
+        tenant_settings, satellite_domain, or Clerk tables. No backfill.
+        Mirrored in adwiise-agent-database-repo:
+          SQLS/migrations/20261105120000_organization_portfolio.sql
+          SQLS/Current_Sqls/adwiise_agent_Latest_Schema.sql
+    -->
+
+    <changeSet id="20261105120000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="organization_portfolio_id_seq"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            CREATE SEQUENCE IF NOT EXISTS public.organization_portfolio_id_seq
+                INCREMENT BY 1
+                NO MINVALUE
+                NO MAXVALUE
+                START WITH 1
+                CACHE 1;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261105120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="organization_portfolio_member_id_seq"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            CREATE SEQUENCE IF NOT EXISTS public.organization_portfolio_member_id_seq
+                INCREMENT BY 1
+                NO MINVALUE
+                NO MAXVALUE
+                START WITH 1
+                CACHE 1;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261105120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="organization_portfolio"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="true"><![CDATA[
+            CREATE TABLE IF NOT EXISTS public.organization_portfolio (
+                id bigint DEFAULT nextval('public.organization_portfolio_id_seq'::regclass) NOT NULL,
+                portfolio_name character varying(255) NOT NULL,
+                description character varying(1000),
+                primary_tenant_id character varying(255) NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                CONSTRAINT organization_portfolio_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_organization_portfolio__primary_tenant UNIQUE (primary_tenant_id),
+                CONSTRAINT fk_organization_portfolio__primary_tenant FOREIGN KEY (primary_tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE RESTRICT
+            );
+            COMMENT ON TABLE public.organization_portfolio IS 'Optional group of existing tenant sites. Each member keeps its own tenant_id, tenant_settings, Clerk satellite, and domain.';
+            COMMENT ON COLUMN public.organization_portfolio.primary_tenant_id IS 'Home tenant. An ADMIN or SUPER_ADMIN of this tenant may manage every member tenant_id. Platform SUPER_ADMIN still sees every tenant.';
+            COMMENT ON COLUMN public.organization_portfolio.is_active IS 'Inactive portfolios do not expand the primary tenant admin allowlist.';
+            CREATE INDEX IF NOT EXISTS idx_organization_portfolio_is_active ON public.organization_portfolio (is_active);
+            CREATE TRIGGER trg_organization_portfolio_updated_at
+                BEFORE UPDATE ON public.organization_portfolio
+                FOR EACH ROW
+                EXECUTE FUNCTION public.update_updated_at_column();
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261105120000-4" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="organization_portfolio_member"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="true"><![CDATA[
+            CREATE TABLE IF NOT EXISTS public.organization_portfolio_member (
+                id bigint DEFAULT nextval('public.organization_portfolio_member_id_seq'::regclass) NOT NULL,
+                portfolio_id bigint NOT NULL,
+                tenant_id character varying(255) NOT NULL,
+                is_primary boolean DEFAULT false NOT NULL,
+                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                CONSTRAINT organization_portfolio_member_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_organization_portfolio_member__tenant UNIQUE (tenant_id),
+                CONSTRAINT ux_organization_portfolio_member__portfolio_tenant UNIQUE (portfolio_id, tenant_id),
+                CONSTRAINT fk_org_portfolio_member__portfolio FOREIGN KEY (portfolio_id) REFERENCES public.organization_portfolio(id) ON DELETE CASCADE,
+                CONSTRAINT fk_org_portfolio_member__tenant FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            COMMENT ON TABLE public.organization_portfolio_member IS 'Membership of a tenant_id in one organization portfolio. The primary tenant is also stored here with is_primary true.';
+            COMMENT ON COLUMN public.organization_portfolio_member.tenant_id IS 'Existing tenant_organization.tenant_id. Unique so a site belongs to at most one portfolio.';
+            COMMENT ON COLUMN public.organization_portfolio_member.is_primary IS 'True for the portfolio primary tenant. Exactly one primary member per portfolio.';
+            CREATE INDEX IF NOT EXISTS idx_organization_portfolio_member_portfolio_id ON public.organization_portfolio_member (portfolio_id);
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_organization_portfolio_member__one_primary
+                ON public.organization_portfolio_member (portfolio_id)
+                WHERE is_primary = true;
+            CREATE TRIGGER trg_organization_portfolio_member_updated_at
+                BEFORE UPDATE ON public.organization_portfolio_member
+                FOR EACH ROW
+                EXECUTE FUNCTION public.update_updated_at_column();
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

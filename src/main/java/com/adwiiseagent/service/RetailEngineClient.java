@@ -6,12 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Forwards register uploads to the AI engine. Owner day uploads post through the feature store path.
@@ -85,7 +87,7 @@ public class RetailEngineClient {
                 .bodyToMono(Map.class)
                 .block(Duration.ofSeconds(120));
             if (body == null || body.isEmpty()) {
-                throw new IllegalStateException("Engine day upload returned an empty body from " + baseUrl());
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Engine day upload returned an empty body from " + baseUrl());
             }
             return body;
         } catch (WebClientRequestException ex) {
@@ -135,22 +137,26 @@ public class RetailEngineClient {
         }
     }
 
-    private IllegalStateException engineUnreachable(WebClientRequestException ex) {
+    private ResponseStatusException engineUnreachable(WebClientRequestException ex) {
         LOG.error("Retail engine unreachable at {}", baseUrl(), ex);
-        return new IllegalStateException(
-            "Retail AI engine is unreachable at " +
-            baseUrl() +
-            ". Set RETAIL_ENGINE_BASE_URL on the backend to a running engine that serves POST /v1/uploads/day.",
+        return new ResponseStatusException(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "Retail AI engine is unreachable at " + baseUrl() + ". Start the engine on that URL (or set RETAIL_ENGINE_BASE_URL).",
             ex
         );
     }
 
-    private IllegalStateException engineHttpError(WebClientResponseException ex) {
-        LOG.error("Retail engine HTTP {} from {}: {}", ex.getStatusCode().value(), baseUrl(), ex.getResponseBodyAsString());
-        return new IllegalStateException(
-            "Retail AI engine returned HTTP " + ex.getStatusCode().value() + ": " + ex.getResponseBodyAsString(),
-            ex
-        );
+    private ResponseStatusException engineHttpError(WebClientResponseException ex) {
+        int code = ex.getStatusCode().value();
+        LOG.error("Retail engine HTTP {} from {}: {}", code, baseUrl(), ex.getResponseBodyAsString());
+        HttpStatus mapped = code >= 500 ? HttpStatus.BAD_GATEWAY : (code == 404 ? HttpStatus.BAD_GATEWAY : HttpStatus.BAD_REQUEST);
+        String detail = ex.getResponseBodyAsString();
+        if (detail == null || detail.isBlank()) {
+            detail = "Retail AI engine returned HTTP " + code;
+        } else if (detail.length() > 400) {
+            detail = detail.substring(0, 400);
+        }
+        return new ResponseStatusException(mapped, detail, ex);
     }
 
     private String baseUrl() {

@@ -15,6 +15,7 @@ import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
 import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
+import com.adwiiseagent.service.OrganizationPortfolioService;
 import com.adwiiseagent.service.RetailSiteTypes;
 import com.adwiiseagent.service.TenantOnboardingProvisioningService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
@@ -81,6 +82,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
     private final TenantEmailAddressRepository tenantEmailAddressRepository;
     private final SatelliteDomainRepository satelliteDomainRepository;
     private final UserProfileRepository userProfileRepository;
+    private final OrganizationPortfolioService organizationPortfolioService;
     private final CacheManager cacheManager;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate approveTx;
@@ -102,6 +104,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         TenantEmailAddressRepository tenantEmailAddressRepository,
         SatelliteDomainRepository satelliteDomainRepository,
         UserProfileRepository userProfileRepository,
+        OrganizationPortfolioService organizationPortfolioService,
         CacheManager cacheManager,
         ObjectMapper objectMapper,
         PlatformTransactionManager transactionManager
@@ -115,6 +118,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         this.tenantEmailAddressRepository = tenantEmailAddressRepository;
         this.satelliteDomainRepository = satelliteDomainRepository;
         this.userProfileRepository = userProfileRepository;
+        this.organizationPortfolioService = organizationPortfolioService;
         this.cacheManager = cacheManager;
         this.objectMapper = objectMapper;
         this.approveTx = new TransactionTemplate(transactionManager);
@@ -124,6 +128,10 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
 
     @Override
     public TenantOnboardingRequestDTO approve(Long requestId, TenantOnboardingApproveDTO in) {
+        if (in.getPortfolioId() != null) {
+            // Fail before any tenant write when the portfolio id is wrong or inactive.
+            organizationPortfolioService.requireActivePortfolio(in.getPortfolioId());
+        }
         TenantOnboardingRequestDTO result;
         try {
             result = approveTx.execute(status -> provision(requestId, in));
@@ -136,8 +144,30 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
             markFailed(requestId, in, reason);
             throw new BadRequestAlertException("Provisioning failed and was rolled back: " + reason, ENTITY_NAME, "provisioningFailed");
         }
+        linkPortfolioAfterProvision(in);
         clearCaches();
         return result;
+    }
+
+    /**
+     * Runs after the provisioning transaction commits. A portfolio link failure must not roll back
+     * the new tenant, settings, emails, or satellite domain.
+     */
+    private void linkPortfolioAfterProvision(TenantOnboardingApproveDTO in) {
+        if (in.getPortfolioId() == null || in.getTenantId() == null || in.getTenantId().isBlank()) {
+            return;
+        }
+        try {
+            organizationPortfolioService.addMember(in.getPortfolioId(), in.getTenantId().trim(), false);
+            LOG.info("[ONBOARDING] Linked tenant {} to portfolio {}", in.getTenantId(), in.getPortfolioId());
+        } catch (RuntimeException e) {
+            LOG.warn(
+                "[ONBOARDING] Tenant {} was created, but linking portfolio {} failed: {}",
+                in.getTenantId(),
+                in.getPortfolioId(),
+                e.getMessage()
+            );
+        }
     }
 
     private TenantOnboardingRequestDTO provision(Long requestId, TenantOnboardingApproveDTO in) {
