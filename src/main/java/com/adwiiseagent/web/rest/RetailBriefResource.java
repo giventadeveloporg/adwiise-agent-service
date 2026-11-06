@@ -102,6 +102,11 @@ public class RetailBriefResource {
         if (body.get("siteType") != null) {
             payload.put("siteType", body.get("siteType"));
         }
+        // Morning-page snapshot so Ask can cite the same cards the UI shows when engine runs JSON lacks them.
+        Object context = body.get("context");
+        if (context instanceof Map) {
+            payload.put("context", context);
+        }
         LOG.debug("REST request to ask retail brief tenant={}", tenantId);
         return ResponseEntity.ok(retailEngineClient.chat(payload));
     }
