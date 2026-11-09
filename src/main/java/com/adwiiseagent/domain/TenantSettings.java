@@ -304,16 +304,19 @@ public class TenantSettings implements Serializable {
     private Boolean showHeaderTournament;
 
     /** Homepage block of published league tables (false = hidden). */
-    @Column(name = "show_league_standings_section_in_home_page")
-    private Boolean showLeagueStandingsSectionInHomePage;
+    @NotNull
+    @Column(name = "show_league_standings_section_in_home_page", nullable = false)
+    private Boolean showLeagueStandingsSectionInHomePage = Boolean.FALSE;
 
     /** Header menu: Leagues (false = hidden). */
-    @Column(name = "show_header_leagues")
-    private Boolean showHeaderLeagues;
+    @NotNull
+    @Column(name = "show_header_leagues", nullable = false)
+    private Boolean showHeaderLeagues = Boolean.FALSE;
 
     /** News page advertisements (true = show slots that are visible in the editorial CMS). */
-    @Column(name = "show_news_advertisements")
-    private Boolean showNewsAdvertisements;
+    @NotNull
+    @Column(name = "show_news_advertisements", nullable = false)
+    private Boolean showNewsAdvertisements = Boolean.TRUE;
 
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
@@ -333,8 +336,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "gas_daily_brief_hour_local")
     private Integer gasDailyBriefHourLocal;
 
-    @Column(name = "enable_retail_module")
-    private Boolean enableRetailModule;
+    @NotNull
+    @Column(name = "enable_retail_module", nullable = false)
+    private Boolean enableRetailModule = Boolean.FALSE;
 
     @Size(max = 1024)
     @Column(name = "retail_ai_engine_base_url", length = 1024)

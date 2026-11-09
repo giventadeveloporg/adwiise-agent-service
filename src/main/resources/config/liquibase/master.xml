@@ -179,5 +179,6 @@
     <include file="config/liquibase/changelog/20261101120000_move_gas_rows_to_retail.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261101133000_retail_recommendation_text_lobs.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261105120000_organization_portfolio.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261108120000_subscription_plan_catalog.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

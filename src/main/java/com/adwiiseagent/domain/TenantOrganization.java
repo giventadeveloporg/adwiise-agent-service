@@ -95,8 +95,8 @@ public class TenantOrganization implements Serializable {
     @Column(name = "website_url", length = 1024)
     private String websiteUrl;
 
-    @Size(max = 20)
-    @Column(name = "subscription_plan", length = 20)
+    @Size(max = 64)
+    @Column(name = "subscription_plan", length = 64)
     private String subscriptionPlan;
 
     @Size(max = 20)

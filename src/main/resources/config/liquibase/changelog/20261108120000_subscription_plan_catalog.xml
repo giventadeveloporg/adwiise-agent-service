@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261108120000-1" author="subscription-plan-catalog">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="subscription_plan_catalog"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.subscription_plan_catalog_id_seq
+                INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE TABLE public.subscription_plan_catalog (
+                id bigint DEFAULT nextval('public.subscription_plan_catalog_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                hint character varying(255),
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT subscription_plan_catalog_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_subscription_plan_catalog__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_subscription_plan_catalog__global_code ON public.subscription_plan_catalog (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_subscription_plan_catalog__tenant_code ON public.subscription_plan_catalog (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_subscription_plan_catalog_tenant_active ON public.subscription_plan_catalog (tenant_id, is_active, sort_order);
+            COMMENT ON TABLE public.subscription_plan_catalog IS 'Assignable tenant_organization.subscription_plan. Null tenant_id is the shared catalog.';
+            CREATE TRIGGER trg_subscription_plan_catalog_updated_at
+                BEFORE UPDATE ON public.subscription_plan_catalog
+                FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261108120000-2" author="subscription-plan-catalog">
+        <sql>
+            INSERT INTO public.subscription_plan_catalog (tenant_id, code, label, hint, sort_order, is_active, created_at, updated_at)
+            SELECT NULL, seed.code, seed.label, seed.hint, seed.sort_order, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            FROM (VALUES
+                ('BASIC', 'Basic', 'Entry plan', 1),
+                ('PROFESSIONAL', 'Professional', 'Standard plan', 2),
+                ('ENTERPRISE', 'Enterprise', 'Full plan', 3)
+            ) AS seed(code, label, hint, sort_order)
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.subscription_plan_catalog existing
+                WHERE existing.code = seed.code AND existing.tenant_id IS NULL
+            );
+            ALTER TABLE public.tenant_organization ALTER COLUMN subscription_plan TYPE character varying(64);
+            COMMENT ON COLUMN public.tenant_organization.subscription_plan IS 'Code from subscription_plan_catalog. Shared rows use a null tenant_id.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

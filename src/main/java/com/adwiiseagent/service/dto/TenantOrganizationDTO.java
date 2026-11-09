@@ -94,7 +94,7 @@ public class TenantOrganizationDTO implements Serializable {
     @JsonIgnore
     private boolean websiteUrlSet;
 
-    @Size(max = 20)
+    @Size(max = 64)
     private String subscriptionPlan;
 
     @Size(max = 20)

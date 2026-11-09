@@ -352,10 +352,16 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         dto.setShowProfileServicesSection(false);
         dto.setShowProfileFamilySection(false);
         dto.setEnableGasStationModule(false);
+        // DB column enable_retail_module is NOT NULL — always set an explicit boolean.
+        dto.setEnableRetailModule(false);
         if (RetailSiteTypes.RETAIL.equals(org.getSiteType())) {
             dto.setEnableRetailModule(true);
             dto.setRetailAiEngineBaseUrl(retailEngineBaseUrl);
         }
+        // NOT NULL booleans — Hibernate sends explicit null when unset, bypassing column defaults.
+        dto.setShowLeagueStandingsSectionInHomePage(false);
+        dto.setShowHeaderLeagues(false);
+        dto.setShowNewsAdvertisements(true);
         dto.setCreatedAt(now);
         dto.setUpdatedAt(now);
         return tenantSettingsService.save(dto);

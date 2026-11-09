@@ -17,4 +17,6 @@ public enum PaymentProvider {
     REVOLUT,
     CEFI_CHARITY,
     GIVEBUTTER,
+    RAZORPAY,
+    NTT_DATA,
 }

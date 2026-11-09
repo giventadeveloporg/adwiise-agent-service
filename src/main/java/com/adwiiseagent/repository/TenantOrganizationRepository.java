@@ -23,5 +23,7 @@ public interface TenantOrganizationRepository
 
     boolean existsBySiteType(String siteType);
 
+    boolean existsBySubscriptionPlan(String subscriptionPlan);
+
     boolean existsByRetailerTypeCode(String retailerTypeCode);
 }
