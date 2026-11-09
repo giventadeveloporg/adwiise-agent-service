@@ -53,10 +53,19 @@ public class ManualPaymentMethodResource {
 
         List<ManualPaymentMethodDTO> result = configs
             .stream()
-            .filter(cfg -> cfg.getProviderName() != null && MANUAL_PROVIDERS.contains(cfg.getProviderName()))
+            .filter(cfg -> {
+                if (cfg.getProviderName() == null) {
+                    return false;
+                }
+                try {
+                    return MANUAL_PROVIDERS.contains(PaymentProvider.valueOf(cfg.getProviderName()));
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                }
+            })
             .map(cfg -> {
                 ManualPaymentMethodDTO dto = new ManualPaymentMethodDTO();
-                dto.setProviderName(cfg.getProviderName());
+                dto.setProviderName(PaymentProvider.valueOf(cfg.getProviderName()));
                 dto.setIsActive(cfg.getIsActive());
                 dto.setConfigurationJson(cfg.getConfigurationJson());
                 return dto;

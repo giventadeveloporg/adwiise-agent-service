@@ -113,7 +113,32 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     @Transactional(readOnly = true)
     public Optional<TenantOrganizationDTO> findOne(Long id) {
         log.debug("Request to get TenantOrganization : {}", id);
+        if (id == null || !organizationRowExists(id)) {
+            evictOrganizationCache(id);
+            return Optional.empty();
+        }
         return tenantOrganizationRepository.findById(id).map(tenantOrganizationMapper::toDto);
+    }
+
+    /**
+     * The local profile keeps a read-write second-level cache. A delete can commit in the
+     * database while a concurrent read puts the old entity back into that cache, so
+     * {@code findById} still returns an organization the list no longer contains.
+     * A native count reads the table and bypasses that cache.
+     */
+    private boolean organizationRowExists(Long id) {
+        Number count = (Number) entityManager
+            .createNativeQuery("SELECT COUNT(*) FROM public.tenant_organization WHERE id = :id")
+            .setParameter("id", id)
+            .getSingleResult();
+        return count != null && count.longValue() > 0;
+    }
+
+    private void evictOrganizationCache(Long id) {
+        if (id == null) {
+            return;
+        }
+        entityManager.getEntityManagerFactory().getCache().evict(TenantOrganization.class, id);
     }
 
     /**
@@ -194,5 +219,7 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     public void delete(Long id) {
         log.debug("Request to delete TenantOrganization : {}", id);
         tenantOrganizationRepository.deleteById(id);
+        entityManager.flush();
+        evictOrganizationCache(id);
     }
 }

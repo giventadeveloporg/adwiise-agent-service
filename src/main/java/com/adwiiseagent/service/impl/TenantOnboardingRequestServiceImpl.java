@@ -3,12 +3,12 @@ package com.adwiiseagent.service.impl;
 import static com.adwiiseagent.service.TenantOnboardingSupport.ENTITY_NAME;
 
 import com.adwiiseagent.domain.TenantOnboardingRequest;
-import com.adwiiseagent.domain.enumeration.DomainOwnership;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.SatelliteDomainRepository;
 import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
+import com.adwiiseagent.service.DomainOwnershipCatalogLookup;
 import com.adwiiseagent.service.SiteTypeCatalogLookup;
 import com.adwiiseagent.service.TenantOnboardingRequestService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
@@ -58,16 +58,20 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
 
     private final SiteTypeCatalogLookup siteTypeCatalogLookup;
 
+    private final DomainOwnershipCatalogLookup domainOwnershipCatalogLookup;
+
     public TenantOnboardingRequestServiceImpl(
         TenantOnboardingRequestRepository repository,
         TenantOnboardingRequestMapper mapper,
         SatelliteDomainRepository satelliteDomainRepository,
-        SiteTypeCatalogLookup siteTypeCatalogLookup
+        SiteTypeCatalogLookup siteTypeCatalogLookup,
+        DomainOwnershipCatalogLookup domainOwnershipCatalogLookup
     ) {
         this.repository = repository;
         this.mapper = mapper;
         this.satelliteDomainRepository = satelliteDomainRepository;
         this.siteTypeCatalogLookup = siteTypeCatalogLookup;
+        this.domainOwnershipCatalogLookup = domainOwnershipCatalogLookup;
     }
 
     @Override
@@ -119,7 +123,9 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
         String country = TenantOnboardingSupport.trimToNull(in.getCountry());
         entity.setCountry(country != null ? country : "US");
         entity.setRequestedHostname(hostname);
-        entity.setDomainOwnership(in.getDomainOwnership() != null ? in.getDomainOwnership() : DomainOwnership.CUSTOMER_REGISTRAR);
+        entity.setDomainOwnership(domainOwnershipCatalogLookup.requireAssignable(in.getDomainOwnership()));
+        entity.setRegistrarNotes(TenantOnboardingSupport.trimToNull(in.getRegistrarNotes()));
+        entity.setSourceOrganizationId(in.getSourceOrganizationId());
         entity.setPrimaryColor(TenantOnboardingSupport.trimToNull(in.getPrimaryColor()));
         entity.setSecondaryColor(TenantOnboardingSupport.trimToNull(in.getSecondaryColor()));
         entity.setLogoUrl(TenantOnboardingSupport.trimToNull(in.getLogoUrl()));
@@ -175,7 +181,13 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
                     siteTypeCatalogLookup.requireAssignable(siteType, null);
                     dto.setSiteType(siteType);
                 }
+                if (dto.getDomainOwnership() != null) {
+                    dto.setDomainOwnership(domainOwnershipCatalogLookup.requireAssignable(dto.getDomainOwnership()));
+                }
                 mapper.partialUpdate(existing, dto);
+                if (dto.getRegistrarNotes() != null) {
+                    existing.setRegistrarNotes(TenantOnboardingSupport.trimToNull(dto.getRegistrarNotes()));
+                }
                 return existing;
             })
             .map(repository::save)

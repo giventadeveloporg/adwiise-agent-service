@@ -26,6 +26,8 @@ public interface TenantOnboardingRequestRepository
 
     boolean existsBySiteType(String siteType);
 
+    boolean existsByDomainOwnership(String domainOwnership);
+
     /** Row lock so two concurrent approve/reject calls cannot both act on a PENDING request. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from TenantOnboardingRequest r where r.id = :id")

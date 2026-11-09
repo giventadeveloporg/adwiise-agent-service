@@ -36,8 +36,8 @@ public class SchoolFeePayment implements Serializable {
     private Long invoiceId;
 
     @NotNull
-    @Size(max = 50)
-    @Column(name = "provider_name", length = 50, nullable = false)
+    @Size(max = 64)
+    @Column(name = "provider_name", length = 64, nullable = false)
     private String providerName;
 
     @Size(max = 255)
@@ -47,6 +47,9 @@ public class SchoolFeePayment implements Serializable {
     @Size(max = 255)
     @Column(name = "provider_payment_id", length = 255)
     private String providerPaymentId;
+
+    @Column(name = "provider_report_json", columnDefinition = "text")
+    private String providerReportJson;
 
     @NotNull
     @Column(name = "amount", nullable = false, precision = 21, scale = 2)
@@ -143,6 +146,14 @@ public class SchoolFeePayment implements Serializable {
 
     public void setPaidAt(Instant paidAt) {
         this.paidAt = paidAt;
+    }
+
+    public String getProviderReportJson() {
+        return providerReportJson;
+    }
+
+    public void setProviderReportJson(String providerReportJson) {
+        this.providerReportJson = providerReportJson;
     }
 
     @Override

@@ -1,8 +1,6 @@
 package com.adwiiseagent.repository;
 
 import com.adwiiseagent.domain.PaymentProviderConfig;
-import com.adwiiseagent.domain.enumeration.PaymentProvider;
-import com.adwiiseagent.domain.enumeration.PaymentUseCase;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
@@ -16,9 +14,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PaymentProviderConfigRepository
     extends JpaRepository<PaymentProviderConfig, Long>, JpaSpecificationExecutor<PaymentProviderConfig> {
-    Optional<PaymentProviderConfig> findByTenantIdAndProviderName(String tenantId, PaymentProvider providerName);
+    Optional<PaymentProviderConfig> findByTenantIdAndProviderName(String tenantId, String providerName);
+
+    Optional<PaymentProviderConfig> findFirstByTenantIdAndPaymentUseCaseAndIsActiveTrueOrderByFallbackOrderAsc(
+        String tenantId,
+        String paymentUseCase
+    );
 
     List<PaymentProviderConfig> findByTenantIdAndIsActiveTrueOrderByFallbackOrderAsc(String tenantId);
+
+    List<PaymentProviderConfig> findByTenantIdOrderByFallbackOrderAscIdAsc(String tenantId);
 
     /**
      * Find active provider configs for a tenant and payment use case.
@@ -33,7 +38,7 @@ public interface PaymentProviderConfigRepository
     )
     List<PaymentProviderConfig> findByTenantIdAndPaymentUseCaseAndIsActiveTrueOrderByFallbackOrderAsc(
         @Param("tenantId") String tenantId,
-        @Param("paymentUseCase") PaymentUseCase paymentUseCase
+        @Param("paymentUseCase") String paymentUseCase
     );
 
     /**

@@ -180,5 +180,8 @@
     <include file="config/liquibase/changelog/20261101133000_retail_recommendation_text_lobs.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261105120000_organization_portfolio.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261108120000_subscription_plan_catalog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261109120000_domain_ownership_catalog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261109133000_payment_gateway_catalog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261109140000_payment_use_case_catalog.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

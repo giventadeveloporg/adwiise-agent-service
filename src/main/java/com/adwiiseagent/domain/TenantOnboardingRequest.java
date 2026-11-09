@@ -1,6 +1,5 @@
 package com.adwiiseagent.domain;
 
-import com.adwiiseagent.domain.enumeration.DomainOwnership;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
 import jakarta.persistence.*;
@@ -101,9 +100,16 @@ public class TenantOnboardingRequest implements Serializable {
     private String requestedHostname;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "domain_ownership", length = 32, nullable = false)
-    private DomainOwnership domainOwnership = DomainOwnership.CUSTOMER_REGISTRAR;
+    @Size(max = 64)
+    @Column(name = "domain_ownership", length = 64, nullable = false)
+    private String domainOwnership = "CUSTOMER_REGISTRAR";
+
+    @Column(name = "registrar_notes", columnDefinition = "text")
+    private String registrarNotes;
+
+    /** Organization chosen when the request starts from an existing row. Not a foreign key. */
+    @Column(name = "source_organization_id")
+    private Long sourceOrganizationId;
 
     @Size(max = 7)
     @Column(name = "primary_color", length = 7)
@@ -333,12 +339,28 @@ public class TenantOnboardingRequest implements Serializable {
         this.requestedHostname = requestedHostname;
     }
 
-    public DomainOwnership getDomainOwnership() {
+    public String getDomainOwnership() {
         return domainOwnership;
     }
 
-    public void setDomainOwnership(DomainOwnership domainOwnership) {
+    public void setDomainOwnership(String domainOwnership) {
         this.domainOwnership = domainOwnership;
+    }
+
+    public String getRegistrarNotes() {
+        return registrarNotes;
+    }
+
+    public void setRegistrarNotes(String registrarNotes) {
+        this.registrarNotes = registrarNotes;
+    }
+
+    public Long getSourceOrganizationId() {
+        return sourceOrganizationId;
+    }
+
+    public void setSourceOrganizationId(Long sourceOrganizationId) {
+        this.sourceOrganizationId = sourceOrganizationId;
     }
 
     public String getPrimaryColor() {

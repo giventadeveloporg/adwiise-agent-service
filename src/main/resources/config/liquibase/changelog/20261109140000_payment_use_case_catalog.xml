@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261109140000-1" author="payment-use-case-catalog">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="payment_use_case_catalog"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.payment_use_case_catalog_id_seq
+                INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE TABLE public.payment_use_case_catalog (
+                id bigint DEFAULT nextval('public.payment_use_case_catalog_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                hint character varying(255),
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT payment_use_case_catalog_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_payment_use_case_catalog__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_payment_use_case_catalog__global_code ON public.payment_use_case_catalog (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_payment_use_case_catalog__tenant_code ON public.payment_use_case_catalog (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_payment_use_case_catalog_tenant_active ON public.payment_use_case_catalog (tenant_id, is_active, sort_order);
+            COMMENT ON TABLE public.payment_use_case_catalog IS 'Assignable payment_provider_config.payment_use_case. Null tenant_id is the shared catalog. A null use case on the config row serves every product.';
+            CREATE TRIGGER trg_payment_use_case_catalog_updated_at
+                BEFORE UPDATE ON public.payment_use_case_catalog
+                FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261109140000-2" author="payment-use-case-catalog">
+        <sql>
+            INSERT INTO public.payment_use_case_catalog (tenant_id, code, label, hint, sort_order, is_active, created_at, updated_at)
+            SELECT NULL, seed.code, seed.label, seed.hint, seed.sort_order, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            FROM (VALUES
+                ('TICKET_SALE', 'Ticket sale', 'Event tickets and registrations', 1),
+                ('DONATION', 'Donation', 'Standard donation checkout', 2),
+                ('DONATION_CEFI', 'CeFi donation', 'CeFi charity donation checkout', 3),
+                ('DONATION_ZERO_FEE', 'Zero-fee donation', 'Givebutter and other zero-fee donation checkout', 4),
+                ('OFFERING', 'Offering', 'Church and parish offerings', 5),
+                ('MEMBERSHIP_SUBSCRIPTION', 'Membership', 'Membership and subscription charges', 6),
+                ('FEE_COLLECTION', 'Fee collection', 'School and campus fee invoices', 7)
+            ) AS seed(code, label, hint, sort_order)
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.payment_use_case_catalog existing
+                WHERE existing.code = seed.code AND existing.tenant_id IS NULL
+            );
+            COMMENT ON COLUMN public.payment_provider_config.payment_use_case IS 'Code from payment_use_case_catalog. Null means this gateway serves every use case.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

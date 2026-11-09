@@ -1,6 +1,5 @@
 package com.adwiiseagent.service.dto;
 
-import com.adwiiseagent.domain.enumeration.DomainOwnership;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -56,7 +55,12 @@ public class TenantOnboardingSubmitDTO implements Serializable {
     @Size(max = 255)
     private String requestedHostname;
 
-    private DomainOwnership domainOwnership;
+    @Size(max = 64)
+    private String domainOwnership;
+
+    private String registrarNotes;
+
+    private Long sourceOrganizationId;
 
     @Pattern(regexp = "^#[0-9A-Fa-f]{6}$")
     private String primaryColor;
@@ -193,12 +197,28 @@ public class TenantOnboardingSubmitDTO implements Serializable {
         this.requestedHostname = requestedHostname;
     }
 
-    public DomainOwnership getDomainOwnership() {
+    public String getDomainOwnership() {
         return domainOwnership;
     }
 
-    public void setDomainOwnership(DomainOwnership domainOwnership) {
+    public void setDomainOwnership(String domainOwnership) {
         this.domainOwnership = domainOwnership;
+    }
+
+    public String getRegistrarNotes() {
+        return registrarNotes;
+    }
+
+    public void setRegistrarNotes(String registrarNotes) {
+        this.registrarNotes = registrarNotes;
+    }
+
+    public Long getSourceOrganizationId() {
+        return sourceOrganizationId;
+    }
+
+    public void setSourceOrganizationId(Long sourceOrganizationId) {
+        this.sourceOrganizationId = sourceOrganizationId;
     }
 
     public String getPrimaryColor() {

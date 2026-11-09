@@ -1,7 +1,5 @@
 package com.adwiiseagent.domain;
 
-import com.adwiiseagent.domain.enumeration.PaymentProvider;
-import com.adwiiseagent.domain.enumeration.PaymentUseCase;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -34,13 +32,13 @@ public class PaymentProviderConfig implements Serializable {
     private String tenantId;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "provider_name", length = 50, nullable = false)
-    private PaymentProvider providerName;
+    @Size(max = 64)
+    @Column(name = "provider_name", length = 64, nullable = false)
+    private String providerName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_use_case", length = 50)
-    private PaymentUseCase paymentUseCase;
+    @Size(max = 64)
+    @Column(name = "payment_use_case", length = 64)
+    private String paymentUseCase;
 
     @NotNull
     @Column(name = "is_active", nullable = false)
@@ -121,29 +119,29 @@ public class PaymentProviderConfig implements Serializable {
         this.tenantId = tenantId;
     }
 
-    public PaymentProvider getProviderName() {
+    public String getProviderName() {
         return this.providerName;
     }
 
-    public PaymentProviderConfig providerName(PaymentProvider providerName) {
+    public PaymentProviderConfig providerName(String providerName) {
         this.setProviderName(providerName);
         return this;
     }
 
-    public void setProviderName(PaymentProvider providerName) {
+    public void setProviderName(String providerName) {
         this.providerName = providerName;
     }
 
-    public PaymentUseCase getPaymentUseCase() {
+    public String getPaymentUseCase() {
         return this.paymentUseCase;
     }
 
-    public PaymentProviderConfig paymentUseCase(PaymentUseCase paymentUseCase) {
+    public PaymentProviderConfig paymentUseCase(String paymentUseCase) {
         this.setPaymentUseCase(paymentUseCase);
         return this;
     }
 
-    public void setPaymentUseCase(PaymentUseCase paymentUseCase) {
+    public void setPaymentUseCase(String paymentUseCase) {
         this.paymentUseCase = paymentUseCase;
     }
 

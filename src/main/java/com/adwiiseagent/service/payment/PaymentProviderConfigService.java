@@ -44,7 +44,7 @@ public class PaymentProviderConfigService {
      */
     @Transactional(readOnly = true)
     public Optional<Map<String, Object>> getProviderConfig(String tenantId, PaymentProvider provider) {
-        return paymentProviderConfigRepository.findByTenantIdAndProviderName(tenantId, provider).map(this::toConfigMap);
+        return paymentProviderConfigRepository.findByTenantIdAndProviderName(tenantId, provider.name()).map(this::toConfigMap);
     }
 
     /**
@@ -61,7 +61,7 @@ public class PaymentProviderConfigService {
             configs =
                 paymentProviderConfigRepository.findByTenantIdAndPaymentUseCaseAndIsActiveTrueOrderByFallbackOrderAsc(
                     tenantId,
-                    paymentUseCase
+                    paymentUseCase.name()
                 );
         } else {
             configs = paymentProviderConfigRepository.findByTenantIdAndIsActiveTrueOrderByFallbackOrderAsc(tenantId);
@@ -157,7 +157,7 @@ public class PaymentProviderConfigService {
     @Transactional(readOnly = true)
     public boolean supportsFeature(String tenantId, PaymentProvider provider, String feature) {
         return paymentProviderConfigRepository
-            .findByTenantIdAndProviderName(tenantId, provider)
+            .findByTenantIdAndProviderName(tenantId, provider.name())
             .map(config -> {
                 return switch (feature.toUpperCase()) {
                     case "ACP" -> config.getSupportsAcp();

@@ -22,7 +22,7 @@ public class SchoolFeePaymentDTO implements Serializable {
     private Long invoiceId;
 
     @NotNull
-    @Size(max = 50)
+    @Size(max = 64)
     private String providerName;
 
     @Size(max = 255)
@@ -30,6 +30,8 @@ public class SchoolFeePaymentDTO implements Serializable {
 
     @Size(max = 255)
     private String providerPaymentId;
+
+    private String providerReportJson;
 
     @NotNull
     private BigDecimal amount;
@@ -86,6 +88,14 @@ public class SchoolFeePaymentDTO implements Serializable {
 
     public String getProviderPaymentId() {
         return providerPaymentId;
+    }
+
+    public String getProviderReportJson() {
+        return providerReportJson;
+    }
+
+    public void setProviderReportJson(String providerReportJson) {
+        this.providerReportJson = providerReportJson;
     }
 
     public void setProviderPaymentId(String providerPaymentId) {

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261109133000-1" author="payment-gateway-catalog">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="payment_gateway_catalog"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.payment_gateway_catalog_id_seq
+                INCREMENT BY 1 NO MINVALUE NO MAXVALUE START WITH 1 CACHE 1;
+            CREATE TABLE public.payment_gateway_catalog (
+                id bigint DEFAULT nextval('public.payment_gateway_catalog_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255),
+                code character varying(64) NOT NULL,
+                label character varying(255) NOT NULL,
+                hint character varying(255),
+                checkout_mode character varying(32) DEFAULT 'CLIENT_SDK' NOT NULL,
+                client_script_url character varying(1024),
+                signature_header character varying(128),
+                sort_order integer DEFAULT 0 NOT NULL,
+                is_active boolean DEFAULT true NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT payment_gateway_catalog_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_payment_gateway_catalog__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE UNIQUE INDEX ux_payment_gateway_catalog__global_code ON public.payment_gateway_catalog (code) WHERE tenant_id IS NULL;
+            CREATE UNIQUE INDEX ux_payment_gateway_catalog__tenant_code ON public.payment_gateway_catalog (tenant_id, code) WHERE tenant_id IS NOT NULL;
+            CREATE INDEX idx_payment_gateway_catalog_tenant_active ON public.payment_gateway_catalog (tenant_id, is_active, sort_order);
+            COMMENT ON TABLE public.payment_gateway_catalog IS 'Assignable payment_provider_config.provider_name. Null tenant_id is the shared catalog.';
+            CREATE TRIGGER trg_payment_gateway_catalog_updated_at
+                BEFORE UPDATE ON public.payment_gateway_catalog
+                FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261109133000-2" author="payment-gateway-catalog">
+        <sql>
+            INSERT INTO public.payment_gateway_catalog (tenant_id, code, label, hint, checkout_mode, client_script_url, signature_header, sort_order, is_active, created_at, updated_at)
+            SELECT NULL, seed.code, seed.label, seed.hint, seed.checkout_mode, seed.client_script_url, seed.signature_header, seed.sort_order, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            FROM (VALUES
+                ('STRIPE', 'Stripe', 'Card checkout with a publishable key and a secret key', 'CLIENT_SDK', 'https://js.stripe.com/v3/', 'stripe-signature', 1),
+                ('PAYPAL', 'PayPal', 'PayPal redirect checkout', 'REDIRECT', NULL, NULL, 2),
+                ('ZEFFY', 'Zeffy', 'Zeffy donation checkout', 'REDIRECT', NULL, NULL, 3),
+                ('ZELLE_MANUAL', 'Zelle', 'Manual Zelle payment', 'MANUAL', NULL, NULL, 4),
+                ('VENMO_MANUAL', 'Venmo', 'Manual Venmo payment', 'MANUAL', NULL, NULL, 5),
+                ('CASH_APP_MANUAL', 'Cash App', 'Manual Cash App payment', 'MANUAL', NULL, NULL, 6),
+                ('CASH', 'Cash', 'Cash collected in person', 'MANUAL', NULL, NULL, 7),
+                ('CHECK', 'Check', 'Check collected in person', 'MANUAL', NULL, NULL, 8),
+                ('OTHER_MANUAL', 'Other manual', 'Another manual payment method', 'MANUAL', NULL, NULL, 9),
+                ('REVOLUT', 'Revolut', 'Revolut checkout', 'CLIENT_SDK', NULL, NULL, 10),
+                ('CEFI_CHARITY', 'CeFi charity', 'CeFi charity checkout', 'REDIRECT', NULL, NULL, 11),
+                ('GIVEBUTTER', 'Givebutter', 'Givebutter donation checkout', 'REDIRECT', NULL, NULL, 12),
+                ('RAZORPAY', 'Razorpay', 'India card and UPI checkout', 'CLIENT_SDK', 'https://checkout.razorpay.com/v1/checkout.js', 'x-razorpay-signature', 13),
+                ('NTT_DATA', 'NTT DATA', 'NTT DATA Payment Services redirect', 'REDIRECT', NULL, NULL, 14)
+            ) AS seed(code, label, hint, checkout_mode, client_script_url, signature_header, sort_order)
+            WHERE NOT EXISTS (
+                SELECT 1 FROM public.payment_gateway_catalog existing
+                WHERE existing.code = seed.code AND existing.tenant_id IS NULL
+            );
+            ALTER TABLE public.payment_provider_config DROP CONSTRAINT IF EXISTS check_provider_name;
+            ALTER TABLE public.payment_provider_config DROP CONSTRAINT IF EXISTS check_payment_use_case;
+            ALTER TABLE public.payment_provider_config ALTER COLUMN provider_name TYPE character varying(64);
+            ALTER TABLE public.payment_provider_config ALTER COLUMN payment_use_case TYPE character varying(64);
+            COMMENT ON COLUMN public.payment_provider_config.provider_name IS 'Code from payment_gateway_catalog. A new gateway is a catalog row, not a new column.';
+            COMMENT ON COLUMN public.payment_provider_config.payment_use_case IS 'Use case code such as TICKET_SALE, DONATION, or FEE_COLLECTION. Not a fixed check list.';
+            ALTER TABLE public.school_fee_payment ALTER COLUMN provider_name TYPE character varying(64);
+            ALTER TABLE public.school_fee_payment ADD COLUMN IF NOT EXISTS provider_report_json text;
+            COMMENT ON COLUMN public.school_fee_payment.provider_report_json IS 'Final provider payload after a captured payment. Identifiers stay in provider_order_id and provider_payment_id.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

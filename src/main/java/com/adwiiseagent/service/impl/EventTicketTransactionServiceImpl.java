@@ -178,7 +178,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
             );
         } else {
             // Fallback: Lookup by tenantId only (for backward compatibility)
-            config = paymentProviderConfigRepository.findByTenantIdAndProviderName(tenantId, PaymentProvider.STRIPE).orElse(null);
+            config = paymentProviderConfigRepository.findByTenantIdAndProviderName(tenantId, PaymentProvider.STRIPE.name()).orElse(null);
 
             if (config == null) {
                 log.warn("No payment_provider_config found for tenantId={}, providerName=STRIPE", tenantId);

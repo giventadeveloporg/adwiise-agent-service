@@ -121,7 +121,7 @@ public class GivebutterWebhookController {
 
             // Retrieve webhook secret from database (per tenant)
             PaymentProviderConfig config = configRepository
-                .findByTenantIdAndProviderName(tenantId, PaymentProvider.GIVEBUTTER)
+                .findByTenantIdAndProviderName(tenantId, PaymentProvider.GIVEBUTTER.name())
                 .orElse(null);
 
             if (config == null) {

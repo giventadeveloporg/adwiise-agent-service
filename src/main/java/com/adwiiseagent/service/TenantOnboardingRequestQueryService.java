@@ -91,6 +91,12 @@ public class TenantOnboardingRequestQueryService extends QueryService<TenantOnbo
                 specification =
                     specification.and(buildStringSpecification(criteria.getAssignedTenantId(), TenantOnboardingRequest_.assignedTenantId));
             }
+            if (criteria.getSourceOrganizationId() != null) {
+                specification =
+                    specification.and(
+                        buildRangeSpecification(criteria.getSourceOrganizationId(), TenantOnboardingRequest_.sourceOrganizationId)
+                    );
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantOnboardingRequest_.createdAt));
             }

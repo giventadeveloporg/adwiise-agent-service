@@ -87,6 +87,8 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
 
     private StringFilter assignedTenantId;
 
+    private LongFilter sourceOrganizationId;
+
     private ZonedDateTimeFilter createdAt;
 
     private Boolean distinct;
@@ -103,6 +105,7 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
         this.contactEmail = other.contactEmail == null ? null : other.contactEmail.copy();
         this.requestedHostname = other.requestedHostname == null ? null : other.requestedHostname.copy();
         this.assignedTenantId = other.assignedTenantId == null ? null : other.assignedTenantId.copy();
+        this.sourceOrganizationId = other.sourceOrganizationId == null ? null : other.sourceOrganizationId.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.distinct = other.distinct;
     }
@@ -184,6 +187,14 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
         this.assignedTenantId = assignedTenantId;
     }
 
+    public LongFilter getSourceOrganizationId() {
+        return sourceOrganizationId;
+    }
+
+    public void setSourceOrganizationId(LongFilter sourceOrganizationId) {
+        this.sourceOrganizationId = sourceOrganizationId;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -219,6 +230,7 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
             Objects.equals(contactEmail, that.contactEmail) &&
             Objects.equals(requestedHostname, that.requestedHostname) &&
             Objects.equals(assignedTenantId, that.assignedTenantId) &&
+            Objects.equals(sourceOrganizationId, that.sourceOrganizationId) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -236,6 +248,7 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
             contactEmail,
             requestedHostname,
             assignedTenantId,
+            sourceOrganizationId,
             createdAt,
             distinct
         );
@@ -254,6 +267,7 @@ public class TenantOnboardingRequestCriteria implements Serializable, Criteria {
             (contactEmail != null ? "contactEmail=" + contactEmail + ", " : "") +
             (requestedHostname != null ? "requestedHostname=" + requestedHostname + ", " : "") +
             (assignedTenantId != null ? "assignedTenantId=" + assignedTenantId + ", " : "") +
+            (sourceOrganizationId != null ? "sourceOrganizationId=" + sourceOrganizationId + ", " : "") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}"
