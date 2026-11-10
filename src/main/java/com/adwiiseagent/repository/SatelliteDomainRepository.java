@@ -16,4 +16,5 @@ public interface SatelliteDomainRepository extends JpaRepository<SatelliteDomain
     Optional<SatelliteDomain> findByHostname(String hostname);
     List<SatelliteDomain> findByEnabledTrue();
     Optional<SatelliteDomain> findByTenantId(String tenantId);
+    List<SatelliteDomain> findAllByTenantId(String tenantId);
 }

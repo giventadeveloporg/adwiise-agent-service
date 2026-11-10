@@ -130,6 +130,8 @@ public class TenantOrganizationDTO implements Serializable {
     @Size(max = 32)
     private String siteTemplateVersion;
 
+    private Long parentOrganizationId;
+
     public Long getId() {
         return id;
     }
@@ -424,6 +426,14 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setSiteTemplateVersion(String siteTemplateVersion) {
         this.siteTemplateVersion = siteTemplateVersion;
+    }
+
+    public Long getParentOrganizationId() {
+        return parentOrganizationId;
+    }
+
+    public void setParentOrganizationId(Long parentOrganizationId) {
+        this.parentOrganizationId = parentOrganizationId;
     }
 
     @Override

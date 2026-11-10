@@ -24,6 +24,18 @@ public interface TenantOnboardingRequestRepository
 
     boolean existsByAssignedTenantIdAndIdNot(String assignedTenantId, Long id);
 
+    /**
+     * Drop a tenant id recorded on onboarding history. PostgreSQL's unique index allows many nulls,
+     * so the id can be provisioned again after the organization is gone.
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = false)
+    @Query("update TenantOnboardingRequest r set r.assignedTenantId = null where r.assignedTenantId = :tenantId")
+    int releaseAssignedTenantId(@Param("tenantId") String tenantId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = false)
+    @Query("update TenantOnboardingRequest r set r.assignedTenantId = null where r.assignedTenantId = :tenantId and r.id <> :id")
+    int releaseAssignedTenantIdExcept(@Param("tenantId") String tenantId, @Param("id") Long id);
+
     boolean existsBySiteType(String siteType);
 
     boolean existsByDomainOwnership(String domainOwnership);

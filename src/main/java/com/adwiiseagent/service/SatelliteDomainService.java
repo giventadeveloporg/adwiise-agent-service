@@ -45,4 +45,16 @@ public interface SatelliteDomainService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Remove satellite rows for an organization that is being deleted, including the public hostname.
+     * {@code satellite_domain.tenant_id} has no foreign key, so deleting the organization does not free the domain.
+     */
+    void releaseForOrganization(String tenantId, String... hostSources);
+
+    /**
+     * True when a satellite row for this hostname still belongs to a live organization.
+     * A row whose tenant organization is already gone is deleted so the hostname can be registered again.
+     */
+    boolean hostnameHeldByLiveOrganization(String hostname);
 }

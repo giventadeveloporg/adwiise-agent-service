@@ -8,6 +8,8 @@ import com.adwiiseagent.service.SiteTypeCatalogLookup;
 import com.adwiiseagent.service.TenantOrganizationQueryService;
 import com.adwiiseagent.service.TenantOrganizationService;
 import com.adwiiseagent.service.criteria.TenantOrganizationCriteria;
+import com.adwiiseagent.service.dto.OrganizationParentAssignmentDTO;
+import com.adwiiseagent.service.dto.OrganizationWebsitesDTO;
 import com.adwiiseagent.service.dto.TenantOrganizationDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -208,6 +210,25 @@ public class TenantOrganizationResource {
      * @param id the id of the tenantOrganizationDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the tenantOrganizationDTO, or with status {@code 404 (Not Found)}.
      */
+    @GetMapping("/{id}/websites")
+    public ResponseEntity<OrganizationWebsitesDTO> getOrganizationWebsites(@PathVariable Long id) {
+        log.debug("REST request to get websites for TenantOrganization : {}", id);
+        if (!tenantOrganizationRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(tenantOrganizationService.findWebsites(id));
+    }
+
+    @PutMapping("/{id}/parent")
+    public ResponseEntity<TenantOrganizationDTO> assignOrganizationParent(
+        @PathVariable Long id,
+        @RequestBody OrganizationParentAssignmentDTO assignment
+    ) {
+        log.debug("REST request to assign parent {} for TenantOrganization : {}", assignment.getParentOrganizationId(), id);
+        TenantOrganizationDTO result = tenantOrganizationService.assignParent(id, assignment.getParentOrganizationId());
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TenantOrganizationDTO> getTenantOrganization(@PathVariable Long id) {
         log.debug("REST request to get TenantOrganization : {}", id);

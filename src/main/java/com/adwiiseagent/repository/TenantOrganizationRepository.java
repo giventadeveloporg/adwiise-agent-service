@@ -19,6 +19,10 @@ public interface TenantOrganizationRepository
 
     java.util.Optional<TenantOrganization> findOneByTenantId(String tenantId);
 
+    java.util.List<TenantOrganization> findByParentOrganizationId(Long parentOrganizationId);
+
+    long countByParentOrganizationId(Long parentOrganizationId);
+
     boolean existsByDomainIgnoreCase(String domain);
 
     boolean existsBySiteType(String siteType);

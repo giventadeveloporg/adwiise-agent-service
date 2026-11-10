@@ -15,8 +15,8 @@ import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
 import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.repository.UserProfileRepository;
-import com.adwiiseagent.service.OrganizationPortfolioService;
 import com.adwiiseagent.service.RetailSiteTypes;
+import com.adwiiseagent.service.SatelliteDomainService;
 import com.adwiiseagent.service.TenantOnboardingProvisioningService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
 import com.adwiiseagent.service.TenantOrganizationService;
@@ -81,8 +81,8 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
     private final TenantSettingsService tenantSettingsService;
     private final TenantEmailAddressRepository tenantEmailAddressRepository;
     private final SatelliteDomainRepository satelliteDomainRepository;
+    private final SatelliteDomainService satelliteDomainService;
     private final UserProfileRepository userProfileRepository;
-    private final OrganizationPortfolioService organizationPortfolioService;
     private final CacheManager cacheManager;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate approveTx;
@@ -104,7 +104,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         TenantEmailAddressRepository tenantEmailAddressRepository,
         SatelliteDomainRepository satelliteDomainRepository,
         UserProfileRepository userProfileRepository,
-        OrganizationPortfolioService organizationPortfolioService,
+        SatelliteDomainService satelliteDomainService,
         CacheManager cacheManager,
         ObjectMapper objectMapper,
         PlatformTransactionManager transactionManager
@@ -118,7 +118,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         this.tenantEmailAddressRepository = tenantEmailAddressRepository;
         this.satelliteDomainRepository = satelliteDomainRepository;
         this.userProfileRepository = userProfileRepository;
-        this.organizationPortfolioService = organizationPortfolioService;
+        this.satelliteDomainService = satelliteDomainService;
         this.cacheManager = cacheManager;
         this.objectMapper = objectMapper;
         this.approveTx = new TransactionTemplate(transactionManager);
@@ -128,9 +128,17 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
 
     @Override
     public TenantOnboardingRequestDTO approve(Long requestId, TenantOnboardingApproveDTO in) {
-        if (in.getPortfolioId() != null) {
-            // Fail before any tenant write when the portfolio id is wrong or inactive.
-            organizationPortfolioService.requireActivePortfolio(in.getPortfolioId());
+        if (in.getParentOrganizationId() != null) {
+            tenantOrganizationRepository
+                .findById(in.getParentOrganizationId())
+                .filter(parent -> parent.getParentOrganization() == null)
+                .orElseThrow(() ->
+                    new BadRequestAlertException(
+                        "Choose a client organization. A website cannot own other websites.",
+                        ENTITY_NAME,
+                        "parentiswebsite"
+                    )
+                );
         }
         TenantOnboardingRequestDTO result;
         try {
@@ -144,27 +152,29 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
             markFailed(requestId, in, reason);
             throw new BadRequestAlertException("Provisioning failed and was rolled back: " + reason, ENTITY_NAME, "provisioningFailed");
         }
-        linkPortfolioAfterProvision(in);
+        linkParentAfterProvision(in);
         clearCaches();
         return result;
     }
 
     /**
-     * Runs after the provisioning transaction commits. A portfolio link failure must not roll back
+     * Runs after the provisioning transaction commits. A parent link failure must not roll back
      * the new tenant, settings, emails, or satellite domain.
      */
-    private void linkPortfolioAfterProvision(TenantOnboardingApproveDTO in) {
-        if (in.getPortfolioId() == null || in.getTenantId() == null || in.getTenantId().isBlank()) {
+    private void linkParentAfterProvision(TenantOnboardingApproveDTO in) {
+        if (in.getParentOrganizationId() == null || in.getTenantId() == null || in.getTenantId().isBlank()) {
             return;
         }
         try {
-            organizationPortfolioService.addMember(in.getPortfolioId(), in.getTenantId().trim(), false);
-            LOG.info("[ONBOARDING] Linked tenant {} to portfolio {}", in.getTenantId(), in.getPortfolioId());
+            tenantOrganizationRepository
+                .findOneByTenantId(in.getTenantId().trim())
+                .ifPresent(created -> tenantOrganizationService.assignParent(created.getId(), in.getParentOrganizationId()));
+            LOG.info("[ONBOARDING] Linked tenant {} under organization {}", in.getTenantId(), in.getParentOrganizationId());
         } catch (RuntimeException e) {
             LOG.warn(
-                "[ONBOARDING] Tenant {} was created, but linking portfolio {} failed: {}",
+                "[ONBOARDING] Tenant {} was created, but linking organization {} failed: {}",
                 in.getTenantId(),
-                in.getPortfolioId(),
+                in.getParentOrganizationId(),
                 e.getMessage()
             );
         }
@@ -271,13 +281,9 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
             throw new BadRequestAlertException("Tenant ID already exists: " + r.tenantId, ENTITY_NAME, "tenantidtaken");
         }
         if (requestRepository.existsByAssignedTenantIdAndIdNot(r.tenantId, requestId)) {
-            throw new BadRequestAlertException(
-                "Tenant ID is already assigned to another onboarding request: " + r.tenantId,
-                ENTITY_NAME,
-                "tenantidtaken"
-            );
-        }
-        if (tenantOrganizationRepository.existsByDomainIgnoreCase(r.organizationDomain)) {
+            // The organization is gone. An earlier approved request can still hold this tenant id
+            // on a unique column. Release that history so the id can be provisioned again.
+            requestRepository.releaseAssignedTenantIdExcept(r.tenantId, requestId);
             throw new BadRequestAlertException(
                 "Organization domain already belongs to another tenant: " + r.organizationDomain,
                 ENTITY_NAME,
@@ -288,13 +294,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
             throw new BadRequestAlertException("Satellite key already exists: " + r.satelliteKey, ENTITY_NAME, "satellitekeytaken");
         }
         String bare = TenantOnboardingSupport.stripWww(r.hostname);
-        if (
-            satelliteDomainRepository.findByHostname(r.hostname).isPresent() ||
-            satelliteDomainRepository.findByHostname(bare).isPresent() ||
-            satelliteDomainRepository.findByHostname("www." + bare).isPresent()
-        ) {
-            throw new BadRequestAlertException("Hostname is already registered: " + r.hostname, ENTITY_NAME, "hostnametaken");
-        }
+        if (satelliteDomainService.hostnameHeldByLiveOrganization(r.hostname)) {}
     }
 
     private TenantOrganizationDTO createOrganization(TenantOnboardingRequest request, Resolved r, ZonedDateTime now) {

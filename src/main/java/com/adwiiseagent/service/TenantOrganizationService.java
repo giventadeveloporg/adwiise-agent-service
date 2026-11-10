@@ -1,5 +1,6 @@
 package com.adwiiseagent.service;
 
+import com.adwiiseagent.service.dto.OrganizationWebsitesDTO;
 import com.adwiiseagent.service.dto.TenantOrganizationDTO;
 import java.util.List;
 import java.util.Optional;
@@ -63,4 +64,15 @@ public interface TenantOrganizationService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Client organization and the websites it owns. A website id resolves to its client.
+     */
+    OrganizationWebsitesDTO findWebsites(Long organizationId);
+
+    /**
+     * Move a website under a client, or detach it when {@code parentOrganizationId} is null.
+     * A client that already owns websites cannot become a website.
+     */
+    TenantOrganizationDTO assignParent(Long organizationId, Long parentOrganizationId);
 }

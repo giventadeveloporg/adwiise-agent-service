@@ -1,0 +1,43 @@
+---
+description: Fail the Maven package build if Java uses Optional.get(); use orElseThrow, orElse, or ifPresent
+globs: src/main/java/**/*.java
+alwaysApply: false
+---
+
+# Modernizer: Prefer Optional.orElseThrow
+
+`org.gaul:modernizer-maven-plugin:2.7.0` runs on the **package** phase (`pom.xml`, execution id `modernizer`). `-DskipTests` does not skip it. One `Optional.get()` fails the build:
+
+`Prefer java.util.Optional.orElseThrow`
+
+Reference: [SatelliteDomainServiceImpl.java](mdc:src/main/java/com/adwiiseagent/service/impl/SatelliteDomainServiceImpl.java) line 129 (`found.get()` after `found.isEmpty()`).
+
+## Required
+
+- **Never call `Optional.get()`.** An `isEmpty()` or `isPresent()` guard does not make `get()` legal.
+- **Value is required:** `optional.orElseThrow()` or `optional.orElseThrow(() -> new SpecificException("..."))`.
+- **Absence is a normal skip:** `ifPresent`, `orElse(null)` plus a null check, or `orElse(default)`. Do not throw just to satisfy the plugin.
+- **After a presence check, if you still need the value:** call `orElseThrow()`, not `get()`.
+
+## Examples
+
+```java
+// ❌ DON'T: isEmpty/isPresent + get() — modernizer fails the package
+Optional<SatelliteDomain> found = repository.findByHostname(host);
+if (found.isEmpty()) {
+    continue;
+}
+SatelliteDomain row = found.get();
+
+// ✅ DO: absence is expected — skip without get()
+repository.findByHostname(host).ifPresent(row -> handle(row));
+
+// ✅ DO: required value
+SatelliteDomain row = repository.findByHostname(host)
+    .orElseThrow(() -> new EntityNotFoundException("hostname " + host));
+
+// ✅ DO: already proved present
+if (found.isPresent()) {
+    SatelliteDomain row = found.orElseThrow();
+}
+```

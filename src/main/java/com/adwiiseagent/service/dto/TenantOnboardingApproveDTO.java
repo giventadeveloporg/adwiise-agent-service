@@ -59,9 +59,12 @@ public class TenantOnboardingApproveDTO implements Serializable {
     private Boolean notifySubmitter;
 
     /**
-     * Optional portfolio to attach the new tenant to after provisioning succeeds.
-     * The new tenant is added as a non-primary member. Satellite and Clerk setup do not depend on this.
+     * Optional client organization that owns the new website after provisioning succeeds.
+     * The new row keeps its own tenant id, domain, and satellite.
      */
+    private Long parentOrganizationId;
+
+    /** Ignored. Kept so older review screens that still post portfolioId do not fail deserialization. */
     private Long portfolioId;
 
     public String getTenantId() {
@@ -174,6 +177,14 @@ public class TenantOnboardingApproveDTO implements Serializable {
 
     public void setNotifySubmitter(Boolean notifySubmitter) {
         this.notifySubmitter = notifySubmitter;
+    }
+
+    public Long getParentOrganizationId() {
+        return parentOrganizationId;
+    }
+
+    public void setParentOrganizationId(Long parentOrganizationId) {
+        this.parentOrganizationId = parentOrganizationId;
     }
 
     public Long getPortfolioId() {

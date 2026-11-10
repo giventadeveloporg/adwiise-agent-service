@@ -6,9 +6,11 @@ import com.adwiiseagent.domain.TenantOnboardingRequest;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestSource;
 import com.adwiiseagent.domain.enumeration.OnboardingRequestStatus;
 import com.adwiiseagent.errors.BadRequestAlertException;
-import com.adwiiseagent.repository.SatelliteDomainRepository;
 import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
+import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.service.DomainOwnershipCatalogLookup;
+import com.adwiiseagent.service.SatelliteDomainService;
 import com.adwiiseagent.service.SiteTypeCatalogLookup;
 import com.adwiiseagent.service.TenantOnboardingRequestService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
@@ -54,24 +56,32 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
 
     private final TenantOnboardingRequestMapper mapper;
 
-    private final SatelliteDomainRepository satelliteDomainRepository;
+    private final SatelliteDomainService satelliteDomainService;
 
     private final SiteTypeCatalogLookup siteTypeCatalogLookup;
 
     private final DomainOwnershipCatalogLookup domainOwnershipCatalogLookup;
 
+    private final TenantOrganizationRepository tenantOrganizationRepository;
+
+    private final TenantSettingsRepository tenantSettingsRepository;
+
     public TenantOnboardingRequestServiceImpl(
         TenantOnboardingRequestRepository repository,
         TenantOnboardingRequestMapper mapper,
-        SatelliteDomainRepository satelliteDomainRepository,
+        SatelliteDomainService satelliteDomainService,
         SiteTypeCatalogLookup siteTypeCatalogLookup,
-        DomainOwnershipCatalogLookup domainOwnershipCatalogLookup
+        DomainOwnershipCatalogLookup domainOwnershipCatalogLookup,
+        TenantOrganizationRepository tenantOrganizationRepository,
+        TenantSettingsRepository tenantSettingsRepository
     ) {
         this.repository = repository;
         this.mapper = mapper;
-        this.satelliteDomainRepository = satelliteDomainRepository;
+        this.satelliteDomainService = satelliteDomainService;
         this.siteTypeCatalogLookup = siteTypeCatalogLookup;
         this.domainOwnershipCatalogLookup = domainOwnershipCatalogLookup;
+        this.tenantOrganizationRepository = tenantOrganizationRepository;
+        this.tenantSettingsRepository = tenantSettingsRepository;
     }
 
     @Override
@@ -169,11 +179,17 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
                     String tenantId = TenantOnboardingSupport.trimToNull(dto.getAssignedTenantId());
                     dto.setAssignedTenantId(tenantId);
                     if (tenantId != null && repository.existsByAssignedTenantIdAndIdNot(tenantId, existing.getId())) {
-                        throw new BadRequestAlertException(
-                            "Another onboarding request already uses this tenant ID",
-                            ENTITY_NAME,
-                            "tenantidtaken"
-                        );
+                        boolean live =
+                            tenantOrganizationRepository.existsByTenantId(tenantId) ||
+                            tenantSettingsRepository.findByTenantId(tenantId).isPresent();
+                        if (live) {
+                            throw new BadRequestAlertException(
+                                "Another onboarding request already uses this tenant ID",
+                                ENTITY_NAME,
+                                "tenantidtaken"
+                            );
+                        }
+                        repository.releaseAssignedTenantIdExcept(tenantId, existing.getId());
                     }
                 }
                 if (dto.getSiteType() != null) {
@@ -227,12 +243,7 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
     }
 
     private boolean isHostnameAlreadyOnPlatform(String hostname) {
-        String bare = TenantOnboardingSupport.stripWww(hostname);
-        return (
-            satelliteDomainRepository.findByHostname(hostname).isPresent() ||
-            satelliteDomainRepository.findByHostname(bare).isPresent() ||
-            satelliteDomainRepository.findByHostname("www." + bare).isPresent()
-        );
+        return satelliteDomainService.hostnameHeldByLiveOrganization(hostname);
     }
 
     private String nextRequestCode() {

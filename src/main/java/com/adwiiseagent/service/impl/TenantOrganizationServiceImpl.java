@@ -2,8 +2,11 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.TenantOrganization;
 import com.adwiiseagent.errors.BadRequestAlertException;
+import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.service.SatelliteDomainService;
 import com.adwiiseagent.service.TenantOrganizationService;
+import com.adwiiseagent.service.dto.OrganizationWebsitesDTO;
 import com.adwiiseagent.service.dto.TenantOrganizationDTO;
 import com.adwiiseagent.service.mapper.TenantOrganizationMapper;
 import com.adwiiseagent.service.validation.TenantOrganizationProfileValidator;
@@ -36,17 +39,25 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
 
     private final TenantOrganizationProfileValidator tenantOrganizationProfileValidator;
 
+    private final SatelliteDomainService satelliteDomainService;
+
+    private final TenantOnboardingRequestRepository tenantOnboardingRequestRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
     public TenantOrganizationServiceImpl(
         TenantOrganizationRepository tenantOrganizationRepository,
         TenantOrganizationMapper tenantOrganizationMapper,
-        TenantOrganizationProfileValidator tenantOrganizationProfileValidator
+        TenantOrganizationProfileValidator tenantOrganizationProfileValidator,
+        SatelliteDomainService satelliteDomainService,
+        TenantOnboardingRequestRepository tenantOnboardingRequestRepository
     ) {
         this.tenantOrganizationRepository = tenantOrganizationRepository;
         this.tenantOrganizationMapper = tenantOrganizationMapper;
         this.tenantOrganizationProfileValidator = tenantOrganizationProfileValidator;
+        this.satelliteDomainService = satelliteDomainService;
+        this.tenantOnboardingRequestRepository = tenantOnboardingRequestRepository;
     }
 
     @Override
@@ -218,8 +229,71 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     @Override
     public void delete(Long id) {
         log.debug("Request to delete TenantOrganization : {}", id);
+        tenantOrganizationRepository
+            .findById(id)
+            .ifPresent(org -> {
+                for (TenantOrganization child : tenantOrganizationRepository.findByParentOrganizationId(id)) {
+                    child.setParentOrganization(null);
+                    tenantOrganizationRepository.save(child);
+                }
+                satelliteDomainService.releaseForOrganization(org.getTenantId(), org.getDomain(), org.getWebsiteUrl());
+                tenantOnboardingRequestRepository.releaseAssignedTenantId(org.getTenantId());
+            });
         tenantOrganizationRepository.deleteById(id);
         entityManager.flush();
         evictOrganizationCache(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrganizationWebsitesDTO findWebsites(Long organizationId) {
+        TenantOrganization viewed = tenantOrganizationRepository
+            .findById(organizationId)
+            .orElseThrow(() -> new BadRequestAlertException("Organization not found", "tenantOrganization", "idnotfound"));
+        TenantOrganization client = viewed.getParentOrganization() != null ? viewed.getParentOrganization() : viewed;
+        OrganizationWebsitesDTO result = new OrganizationWebsitesDTO();
+        result.setClient(tenantOrganizationMapper.toDto(client));
+        result.setViewedIsClient(viewed.getParentOrganization() == null);
+        result.setWebsites(
+            tenantOrganizationRepository
+                .findByParentOrganizationId(client.getId())
+                .stream()
+                .map(tenantOrganizationMapper::toDto)
+                .collect(Collectors.toCollection(LinkedList::new))
+        );
+        return result;
+    }
+
+    @Override
+    public TenantOrganizationDTO assignParent(Long organizationId, Long parentOrganizationId) {
+        TenantOrganization organization = tenantOrganizationRepository
+            .findById(organizationId)
+            .orElseThrow(() -> new BadRequestAlertException("Organization not found", "tenantOrganization", "idnotfound"));
+        if (parentOrganizationId == null) {
+            organization.setParentOrganization(null);
+            return tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization));
+        }
+        if (parentOrganizationId.equals(organizationId)) {
+            throw new BadRequestAlertException("An organization cannot be its own website", "tenantOrganization", "ownparent");
+        }
+        TenantOrganization parent = tenantOrganizationRepository
+            .findById(parentOrganizationId)
+            .orElseThrow(() -> new BadRequestAlertException("Client organization not found", "tenantOrganization", "parentnotfound"));
+        if (parent.getParentOrganization() != null) {
+            throw new BadRequestAlertException(
+                "Websites belong to one client organization. Choose the client, not another website.",
+                "tenantOrganization",
+                "parentiswebsite"
+            );
+        }
+        if (tenantOrganizationRepository.countByParentOrganizationId(organizationId) > 0) {
+            throw new BadRequestAlertException(
+                "This organization already owns websites, so it cannot be moved under another organization.",
+                "tenantOrganization",
+                "clienthaswebsites"
+            );
+        }
+        organization.setParentOrganization(parent);
+        return tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization));
     }
 }

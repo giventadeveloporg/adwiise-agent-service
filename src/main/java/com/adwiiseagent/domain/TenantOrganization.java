@@ -152,6 +152,11 @@ public class TenantOrganization implements Serializable {
     @Column(name = "site_template_version", length = 32)
     private String siteTemplateVersion;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_organization_id")
+    @JsonIgnoreProperties(value = { "parentOrganization", "tenantSettings" }, allowSetters = true)
+    private TenantOrganization parentOrganization;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -555,6 +560,14 @@ public class TenantOrganization implements Serializable {
 
     public void setSiteTemplateVersion(String siteTemplateVersion) {
         this.siteTemplateVersion = siteTemplateVersion;
+    }
+
+    public TenantOrganization getParentOrganization() {
+        return parentOrganization;
+    }
+
+    public void setParentOrganization(TenantOrganization parentOrganization) {
+        this.parentOrganization = parentOrganization;
     }
 
     public TenantSettings getTenantSettings() {

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261110170000-1" author="system" dbms="postgresql">
+        <sql splitStatements="false"><![CDATA[
+            ALTER TABLE public.tenant_organization
+                ADD COLUMN IF NOT EXISTS parent_organization_id bigint;
+
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'fk_tenant_organization__parent'
+                ) THEN
+                    ALTER TABLE public.tenant_organization
+                        ADD CONSTRAINT fk_tenant_organization__parent
+                        FOREIGN KEY (parent_organization_id)
+                        REFERENCES public.tenant_organization(id)
+                        ON DELETE RESTRICT;
+                END IF;
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'chk_tenant_organization__not_own_parent'
+                ) THEN
+                    ALTER TABLE public.tenant_organization
+                        ADD CONSTRAINT chk_tenant_organization__not_own_parent
+                        CHECK ((parent_organization_id IS NULL) OR (parent_organization_id <> id));
+                END IF;
+            END $$;
+
+            CREATE INDEX IF NOT EXISTS idx_tenant_organization_parent_organization_id
+                ON public.tenant_organization (parent_organization_id);
+
+            COMMENT ON COLUMN public.tenant_organization.parent_organization_id IS
+                'Client organization that owns this website. Empty means this row is the client. Its own tenant_id is the home site.';
+
+            DO $$
+            BEGIN
+                IF to_regclass('public.organization_portfolio_member') IS NULL THEN
+                    RETURN;
+                END IF;
+
+                UPDATE public.tenant_organization AS child
+                SET parent_organization_id = parent.id
+                FROM public.organization_portfolio_member AS member
+                JOIN public.organization_portfolio AS portfolio ON portfolio.id = member.portfolio_id
+                JOIN public.tenant_organization AS parent ON parent.tenant_id = portfolio.primary_tenant_id
+                WHERE child.tenant_id = member.tenant_id
+                  AND member.is_primary = false
+                  AND child.id <> parent.id;
+
+                UPDATE public.tenant_product_billing AS billing
+                SET notes = regexp_replace(
+                    regexp_replace(
+                        billing.notes,
+                        '(^|\n)portfolio-flat:' || portfolio.id::text || '($|\n)',
+                        '\1organization-flat:' || owner.id::text || '\2',
+                        'g'
+                    ),
+                    '(^|\n)covered-by-portfolio:' || portfolio.id::text || '($|\n)',
+                    '\1covered-by-organization:' || owner.id::text || '\2',
+                    'g'
+                )
+                FROM public.organization_portfolio AS portfolio
+                JOIN public.tenant_organization AS owner ON owner.tenant_id = portfolio.primary_tenant_id
+                WHERE billing.notes ~ ('(^|\n)(portfolio-flat|covered-by-portfolio):' || portfolio.id::text || '($|\n)');
+            END $$;
+
+            DROP TABLE IF EXISTS public.organization_portfolio_member CASCADE;
+            DROP TABLE IF EXISTS public.organization_portfolio CASCADE;
+            DROP SEQUENCE IF EXISTS public.organization_portfolio_member_id_seq;
+            DROP SEQUENCE IF EXISTS public.organization_portfolio_id_seq;
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>
