@@ -2,7 +2,7 @@ package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.SatelliteDomain;
 import com.adwiiseagent.repository.SatelliteDomainRepository;
-import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.service.SatelliteDomainService;
 import com.adwiiseagent.service.TenantOnboardingSupport;
 import com.adwiiseagent.service.dto.SatelliteDomainDTO;
@@ -31,16 +31,16 @@ public class SatelliteDomainServiceImpl implements SatelliteDomainService {
 
     private final SatelliteDomainMapper satelliteDomainMapper;
 
-    private final TenantOrganizationRepository tenantOrganizationRepository;
+    private final TenantSettingsRepository tenantSettingsRepository;
 
     public SatelliteDomainServiceImpl(
         SatelliteDomainRepository satelliteDomainRepository,
         SatelliteDomainMapper satelliteDomainMapper,
-        TenantOrganizationRepository tenantOrganizationRepository
+        TenantSettingsRepository tenantSettingsRepository
     ) {
         this.satelliteDomainRepository = satelliteDomainRepository;
         this.satelliteDomainMapper = satelliteDomainMapper;
-        this.tenantOrganizationRepository = tenantOrganizationRepository;
+        this.tenantSettingsRepository = tenantSettingsRepository;
     }
 
     @Override
@@ -148,7 +148,7 @@ public class SatelliteDomainServiceImpl implements SatelliteDomainService {
 
     private boolean organizationStillExists(String tenantId) {
         String tid = tenantId == null ? "" : tenantId.trim();
-        return !tid.isEmpty() && tenantOrganizationRepository.existsByTenantId(tid);
+        return !tid.isEmpty() && tenantSettingsRepository.findByTenantId(tid).isPresent();
     }
 
     private static void addHostnameVariants(Set<String> hosts, String raw) {

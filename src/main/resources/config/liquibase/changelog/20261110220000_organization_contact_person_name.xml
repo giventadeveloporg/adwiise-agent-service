@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261110220000-1" author="system" dbms="postgresql">
+        <sql splitStatements="false"><![CDATA[
+            ALTER TABLE public.tenant_organization
+                ADD COLUMN IF NOT EXISTS contact_person_name character varying(255) DEFAULT 'Pending' NOT NULL;
+
+            COMMENT ON COLUMN public.tenant_organization.contact_person_name IS
+                'Person to reach at this organization. Pending means the name has not been entered yet.';
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

@@ -181,8 +181,11 @@ class TenantOnboardingRequestResourceIT {
             .andExpect(jsonPath("$.status").value("APPROVED"))
             .andExpect(jsonPath("$.assignedTenantId").value(tenantId));
 
-        assertThat(tenantOrganizationRepository.existsByTenantId(tenantId)).isTrue();
-        assertThat(tenantSettingsRepository.findByTenantId(tenantId)).isPresent();
+        assertThat(tenantSettingsRepository.findByTenantId(tenantId))
+            .isPresent()
+            .get()
+            .extracting(settings -> settings.getTenantOrganization().getId())
+            .isNotNull();
         assertThat(satelliteDomainRepository.findBySatelliteKey(satelliteKey))
             .get()
             .satisfies(s -> {

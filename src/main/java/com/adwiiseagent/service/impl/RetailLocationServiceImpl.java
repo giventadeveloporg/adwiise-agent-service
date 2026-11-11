@@ -107,7 +107,7 @@ public class RetailLocationServiceImpl implements RetailLocationService {
             return;
         }
         tenantOrganizationRepository
-            .findOneByTenantId(dto.getTenantId().trim())
+            .findByWebsiteTenantId(dto.getTenantId().trim())
             .map(org -> org.getRetailerTypeCode())
             .filter(code -> code != null && !code.isBlank())
             .ifPresent(dto::setRetailerTypeCode);

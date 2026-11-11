@@ -11,15 +11,18 @@ import org.mapstruct.*;
 public interface TenantOrganizationMapper extends EntityMapper<TenantOrganizationDTO, TenantOrganization> {
     @Override
     @Mapping(target = "parentOrganization", ignore = true)
+    @Mapping(target = "tenantSettings", ignore = true)
     TenantOrganization toEntity(TenantOrganizationDTO dto);
 
     @Override
     @Mapping(target = "parentOrganizationId", source = "parentOrganization.id")
+    @Mapping(target = "websiteTenantIds", ignore = true)
     TenantOrganizationDTO toDto(TenantOrganization entity);
 
     @Override
     @Named("partialUpdate")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "parentOrganization", ignore = true)
+    @Mapping(target = "tenantSettings", ignore = true)
     void partialUpdate(@MappingTarget TenantOrganization entity, TenantOrganizationDTO dto);
 }

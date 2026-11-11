@@ -2,6 +2,7 @@ package com.adwiiseagent.web.rest;
 
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.service.RetailSiteTypes;
 import com.adwiiseagent.service.RetailerTypeLookup;
 import com.adwiiseagent.service.SiteTypeCatalogLookup;
@@ -49,6 +50,8 @@ public class TenantOrganizationResource {
 
     private final TenantOrganizationRepository tenantOrganizationRepository;
 
+    private final TenantSettingsRepository tenantSettingsRepository;
+
     private final TenantOrganizationQueryService tenantOrganizationQueryService;
 
     private final RetailerTypeLookup retailerTypeLookup;
@@ -57,12 +60,14 @@ public class TenantOrganizationResource {
     public TenantOrganizationResource(
         TenantOrganizationService tenantOrganizationService,
         TenantOrganizationRepository tenantOrganizationRepository,
+        TenantSettingsRepository tenantSettingsRepository,
         TenantOrganizationQueryService tenantOrganizationQueryService,
         RetailerTypeLookup retailerTypeLookup,
         SiteTypeCatalogLookup siteTypeCatalogLookup
     ) {
         this.tenantOrganizationService = tenantOrganizationService;
         this.tenantOrganizationRepository = tenantOrganizationRepository;
+        this.tenantSettingsRepository = tenantSettingsRepository;
         this.tenantOrganizationQueryService = tenantOrganizationQueryService;
         this.retailerTypeLookup = retailerTypeLookup;
         this.siteTypeCatalogLookup = siteTypeCatalogLookup;
@@ -177,6 +182,7 @@ public class TenantOrganizationResource {
         log.debug("REST request to get TenantOrganizations by criteria: {}", criteria);
 
         Page<TenantOrganizationDTO> page = tenantOrganizationQueryService.findByCriteria(criteria, pageable);
+        tenantOrganizationService.attachWebsiteTenantIds(page.getContent());
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -201,7 +207,7 @@ public class TenantOrganizationResource {
     @GetMapping("/tenant-ids")
     public ResponseEntity<List<String>> getAllTenantIds() {
         log.debug("REST request to get all TenantOrganization tenant IDs");
-        return ResponseEntity.ok().body(tenantOrganizationRepository.findAllTenantIds());
+        return ResponseEntity.ok().body(tenantSettingsRepository.findAllTenantIds());
     }
 
     /**
@@ -244,13 +250,9 @@ public class TenantOrganizationResource {
             }
             return;
         }
-        siteTypeCatalogLookup.requireAssignable(tenantOrganizationDTO.getSiteType().trim(), tenantOrganizationDTO.getTenantId());
+        siteTypeCatalogLookup.requireAssignable(tenantOrganizationDTO.getSiteType().trim(), null);
         if (RetailSiteTypes.RETAIL.equals(tenantOrganizationDTO.getSiteType())) {
-            retailerTypeLookup.requirePackForSite(
-                tenantOrganizationDTO.getRetailerTypeCode(),
-                tenantOrganizationDTO.getTenantId(),
-                RetailSiteTypes.RETAIL
-            );
+            retailerTypeLookup.requirePackForSite(tenantOrganizationDTO.getRetailerTypeCode(), null, RetailSiteTypes.RETAIL);
         } else if (tenantOrganizationDTO.getRetailerTypeCode() != null && !tenantOrganizationDTO.getRetailerTypeCode().isBlank()) {
             tenantOrganizationDTO.setRetailerTypeCode(null);
         }

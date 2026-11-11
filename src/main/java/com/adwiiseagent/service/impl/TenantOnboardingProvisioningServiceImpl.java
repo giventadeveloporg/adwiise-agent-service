@@ -167,7 +167,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         }
         try {
             tenantOrganizationRepository
-                .findOneByTenantId(in.getTenantId().trim())
+                .findByWebsiteTenantId(in.getTenantId().trim())
                 .ifPresent(created -> tenantOrganizationService.assignParent(created.getId(), in.getParentOrganizationId()));
             LOG.info("[ONBOARDING] Linked tenant {} under organization {}", in.getTenantId(), in.getParentOrganizationId());
         } catch (RuntimeException e) {
@@ -277,7 +277,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
     }
 
     private void precheck(Resolved r, Long requestId) {
-        if (tenantOrganizationRepository.existsByTenantId(r.tenantId) || tenantSettingsRepository.findByTenantId(r.tenantId).isPresent()) {
+        if (tenantSettingsRepository.findByTenantId(r.tenantId).isPresent()) {
             throw new BadRequestAlertException("Tenant ID already exists: " + r.tenantId, ENTITY_NAME, "tenantidtaken");
         }
         if (requestRepository.existsByAssignedTenantIdAndIdNot(r.tenantId, requestId)) {
@@ -297,9 +297,15 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         if (satelliteDomainService.hostnameHeldByLiveOrganization(r.hostname)) {}
     }
 
+    private static String contactPersonName(TenantOnboardingRequest request) {
+        String first = request.getContactFirstName() == null ? "" : request.getContactFirstName().trim();
+        String last = request.getContactLastName() == null ? "" : request.getContactLastName().trim();
+        String name = (first + " " + last).trim();
+        return name.isEmpty() ? "Pending" : name;
+    }
+
     private TenantOrganizationDTO createOrganization(TenantOnboardingRequest request, Resolved r, ZonedDateTime now) {
         TenantOrganizationDTO dto = new TenantOrganizationDTO();
-        dto.setTenantId(r.tenantId);
         dto.setOrganizationName(request.getOrganizationName());
         dto.setDomain(r.organizationDomain);
         dto.setPrimaryColor(request.getPrimaryColor());
@@ -307,6 +313,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         dto.setLogoUrl(request.getLogoUrl());
         dto.setContactEmail(r.contactEmail);
         dto.setContactPhone(request.getContactPhone());
+        dto.setContactPersonName(contactPersonName(request));
         dto.setDescription(request.getDescription());
         dto.setAddressLine1(request.getAddressLine1());
         dto.setAddressLine2(request.getAddressLine2());

@@ -11,6 +11,7 @@ public class OrganizationWebsitesDTO implements Serializable {
 
     private TenantOrganizationDTO client;
     private List<TenantOrganizationDTO> websites = new ArrayList<>();
+    private List<OrganizationWebsiteDTO> settingsWebsites = new ArrayList<>();
     private boolean viewedIsClient;
 
     public TenantOrganizationDTO getClient() {
@@ -27,6 +28,14 @@ public class OrganizationWebsitesDTO implements Serializable {
 
     public void setWebsites(List<TenantOrganizationDTO> websites) {
         this.websites = websites;
+    }
+
+    public List<OrganizationWebsiteDTO> getSettingsWebsites() {
+        return settingsWebsites;
+    }
+
+    public void setSettingsWebsites(List<OrganizationWebsiteDTO> settingsWebsites) {
+        this.settingsWebsites = settingsWebsites;
     }
 
     public boolean isViewedIsClient() {

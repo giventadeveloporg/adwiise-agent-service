@@ -1,19 +1,25 @@
 package com.adwiiseagent.service.impl;
 
 import com.adwiiseagent.domain.TenantOrganization;
+import com.adwiiseagent.domain.TenantSettings;
 import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TenantOnboardingRequestRepository;
 import com.adwiiseagent.repository.TenantOrganizationRepository;
+import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.service.SatelliteDomainService;
 import com.adwiiseagent.service.TenantOrganizationService;
+import com.adwiiseagent.service.dto.OrganizationWebsiteDTO;
 import com.adwiiseagent.service.dto.OrganizationWebsitesDTO;
 import com.adwiiseagent.service.dto.TenantOrganizationDTO;
 import com.adwiiseagent.service.mapper.TenantOrganizationMapper;
 import com.adwiiseagent.service.validation.TenantOrganizationProfileValidator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -35,6 +41,8 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
 
     private final TenantOrganizationRepository tenantOrganizationRepository;
 
+    private final TenantSettingsRepository tenantSettingsRepository;
+
     private final TenantOrganizationMapper tenantOrganizationMapper;
 
     private final TenantOrganizationProfileValidator tenantOrganizationProfileValidator;
@@ -48,12 +56,14 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
 
     public TenantOrganizationServiceImpl(
         TenantOrganizationRepository tenantOrganizationRepository,
+        TenantSettingsRepository tenantSettingsRepository,
         TenantOrganizationMapper tenantOrganizationMapper,
         TenantOrganizationProfileValidator tenantOrganizationProfileValidator,
         SatelliteDomainService satelliteDomainService,
         TenantOnboardingRequestRepository tenantOnboardingRequestRepository
     ) {
         this.tenantOrganizationRepository = tenantOrganizationRepository;
+        this.tenantSettingsRepository = tenantSettingsRepository;
         this.tenantOrganizationMapper = tenantOrganizationMapper;
         this.tenantOrganizationProfileValidator = tenantOrganizationProfileValidator;
         this.satelliteDomainService = satelliteDomainService;
@@ -66,25 +76,22 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
         tenantOrganizationProfileValidator.validateAndNormalize(tenantOrganizationDTO);
         TenantOrganization tenantOrganization = tenantOrganizationMapper.toEntity(tenantOrganizationDTO);
         tenantOrganization = tenantOrganizationRepository.save(tenantOrganization);
-        return tenantOrganizationMapper.toDto(tenantOrganization);
+        return decorate(tenantOrganizationMapper.toDto(tenantOrganization));
     }
 
     @Override
     public TenantOrganizationDTO update(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to update TenantOrganization : {}", tenantOrganizationDTO);
         tenantOrganizationProfileValidator.validateAndNormalize(tenantOrganizationDTO);
-        renameTenantIdIfChanged(tenantOrganizationDTO.getId(), tenantOrganizationDTO.getTenantId());
         TenantOrganization tenantOrganization = tenantOrganizationMapper.toEntity(tenantOrganizationDTO);
         tenantOrganization = tenantOrganizationRepository.save(tenantOrganization);
-        return tenantOrganizationMapper.toDto(tenantOrganization);
+        return decorate(tenantOrganizationMapper.toDto(tenantOrganization));
     }
 
     @Override
     public Optional<TenantOrganizationDTO> partialUpdate(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to partially update TenantOrganization : {}", tenantOrganizationDTO);
         tenantOrganizationProfileValidator.validatePresentFields(tenantOrganizationDTO);
-
-        renameTenantIdIfChanged(tenantOrganizationDTO.getId(), tenantOrganizationDTO.getTenantId());
 
         return tenantOrganizationRepository
             .findById(tenantOrganizationDTO.getId())
@@ -96,14 +103,17 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
                 return existingTenantOrganization;
             })
             .map(tenantOrganizationRepository::save)
-            .map(tenantOrganizationMapper::toDto);
+            .map(tenantOrganizationMapper::toDto)
+            .map(this::decorate);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<TenantOrganizationDTO> findAll(Pageable pageable) {
         log.debug("Request to get all TenantOrganizations");
-        return tenantOrganizationRepository.findAll(pageable).map(tenantOrganizationMapper::toDto);
+        Page<TenantOrganizationDTO> page = tenantOrganizationRepository.findAll(pageable).map(tenantOrganizationMapper::toDto);
+        decorate(page.getContent());
+        return page;
     }
 
     /**
@@ -128,7 +138,7 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
             evictOrganizationCache(id);
             return Optional.empty();
         }
-        return tenantOrganizationRepository.findById(id).map(tenantOrganizationMapper::toDto);
+        return tenantOrganizationRepository.findById(id).map(tenantOrganizationMapper::toDto).map(this::decorate);
     }
 
     /**
@@ -152,78 +162,32 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
         entityManager.getEntityManagerFactory().getCache().evict(TenantOrganization.class, id);
     }
 
-    /**
-     * Renames {@code tenant_organization.tenant_id} and every public table that stores the same value.
-     * Foreign keys to {@code tenant_organization(tenant_id)} must be {@code ON UPDATE CASCADE}.
-     * Tables without that foreign key are updated explicitly so a super-admin rename stays consistent.
-     */
-    private void renameTenantIdIfChanged(Long id, String requestedTenantId) {
-        if (id == null || requestedTenantId == null || requestedTenantId.isBlank()) {
-            return;
+    private TenantOrganizationDTO decorate(TenantOrganizationDTO dto) {
+        if (dto == null) {
+            return null;
         }
-        String newTenantId = requestedTenantId.trim();
-        String currentTenantId = tenantOrganizationRepository.findById(id).map(TenantOrganization::getTenantId).orElse(null);
-        if (currentTenantId == null || currentTenantId.equals(newTenantId)) {
-            return;
-        }
-        if (newTenantId.length() > 255 || !newTenantId.matches("[a-z0-9]+(?:_[a-z0-9]+)*")) {
-            throw new BadRequestAlertException(
-                "Tenant ID must use lowercase letters, numbers, and underscores",
-                "tenantOrganization",
-                "tenantidinvalid"
-            );
-        }
+        decorate(List.of(dto));
+        return dto;
+    }
 
-        Number clash = (Number) entityManager
-            .createNativeQuery("SELECT COUNT(*) FROM public.tenant_organization WHERE tenant_id = :newId AND id <> :id")
-            .setParameter("newId", newTenantId)
-            .setParameter("id", id)
-            .getSingleResult();
-        if (clash.longValue() > 0) {
-            throw new BadRequestAlertException("Tenant ID is already in use", "tenantOrganization", "tenantidexists");
-        }
+    @Override
+    public void attachWebsiteTenantIds(List<TenantOrganizationDTO> organizations) {
+        decorate(organizations);
+    }
 
-        int updated = entityManager
-            .createNativeQuery(
-                "UPDATE public.tenant_organization SET tenant_id = :newId, updated_at = NOW() WHERE id = :id AND tenant_id = :oldId"
-            )
-            .setParameter("newId", newTenantId)
-            .setParameter("id", id)
-            .setParameter("oldId", currentTenantId)
-            .executeUpdate();
-        if (updated != 1) {
-            throw new BadRequestAlertException("Could not update Tenant ID", "tenantOrganization", "tenantidupdatefailed");
-        }
-
-        @SuppressWarnings("unchecked")
-        List<Object> tables = entityManager
-            .createNativeQuery(
-                """
-                SELECT c.table_name
-                FROM information_schema.columns c
-                JOIN information_schema.tables t
-                  ON t.table_schema = c.table_schema
-                 AND t.table_name = c.table_name
-                WHERE c.table_schema = 'public'
-                  AND c.column_name = 'tenant_id'
-                  AND t.table_type = 'BASE TABLE'
-                  AND c.table_name <> 'tenant_organization'
-                """
-            )
-            .getResultList();
-        for (Object table : tables) {
-            String tableName = String.valueOf(table);
-            if (!tableName.matches("[a-z0-9_]+")) {
-                continue;
+    private void decorate(List<TenantOrganizationDTO> dtos) {
+        List<Long> ids = dtos.stream().map(TenantOrganizationDTO::getId).filter(id -> id != null).toList();
+        Map<Long, List<String>> tenantIds = new HashMap<>();
+        if (!ids.isEmpty()) {
+            for (Object[] row : tenantSettingsRepository.findTenantIdsByOrganizationIds(ids)) {
+                Long organizationId = (Long) row[0];
+                String tenantId = (String) row[1];
+                tenantIds.computeIfAbsent(organizationId, key -> new ArrayList<>()).add(tenantId);
             }
-            entityManager
-                .createNativeQuery("UPDATE public." + tableName + " SET tenant_id = :newId WHERE tenant_id = :oldId")
-                .setParameter("newId", newTenantId)
-                .setParameter("oldId", currentTenantId)
-                .executeUpdate();
         }
-        entityManager.flush();
-        entityManager.clear();
+        for (TenantOrganizationDTO dto : dtos) {
+            dto.setWebsiteTenantIds(tenantIds.getOrDefault(dto.getId(), List.of()));
+        }
     }
 
     @Override
@@ -236,8 +200,10 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
                     child.setParentOrganization(null);
                     tenantOrganizationRepository.save(child);
                 }
-                satelliteDomainService.releaseForOrganization(org.getTenantId(), org.getDomain(), org.getWebsiteUrl());
-                tenantOnboardingRequestRepository.releaseAssignedTenantId(org.getTenantId());
+                for (TenantSettings site : tenantSettingsRepository.findByTenantOrganizationId(id)) {
+                    satelliteDomainService.releaseForOrganization(site.getTenantId(), org.getDomain(), org.getWebsiteUrl());
+                    tenantOnboardingRequestRepository.releaseAssignedTenantId(site.getTenantId());
+                }
             });
         tenantOrganizationRepository.deleteById(id);
         entityManager.flush();
@@ -252,15 +218,24 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
             .orElseThrow(() -> new BadRequestAlertException("Organization not found", "tenantOrganization", "idnotfound"));
         TenantOrganization client = viewed.getParentOrganization() != null ? viewed.getParentOrganization() : viewed;
         OrganizationWebsitesDTO result = new OrganizationWebsitesDTO();
-        result.setClient(tenantOrganizationMapper.toDto(client));
+        result.setClient(decorate(tenantOrganizationMapper.toDto(client)));
         result.setViewedIsClient(viewed.getParentOrganization() == null);
-        result.setWebsites(
-            tenantOrganizationRepository
-                .findByParentOrganizationId(client.getId())
-                .stream()
-                .map(tenantOrganizationMapper::toDto)
-                .collect(Collectors.toCollection(LinkedList::new))
-        );
+        List<TenantOrganizationDTO> websites = tenantOrganizationRepository
+            .findByParentOrganizationId(client.getId())
+            .stream()
+            .map(tenantOrganizationMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
+        decorate(websites);
+        result.setWebsites(websites);
+        List<OrganizationWebsiteDTO> settingsWebsites = new ArrayList<>();
+        for (TenantSettings site : tenantSettingsRepository.findByTenantOrganizationId(viewed.getId())) {
+            OrganizationWebsiteDTO row = new OrganizationWebsiteDTO();
+            row.setSettingsId(site.getId());
+            row.setTenantId(site.getTenantId());
+            row.setOrganizationId(viewed.getId());
+            settingsWebsites.add(row);
+        }
+        result.setSettingsWebsites(settingsWebsites);
         return result;
     }
 
@@ -271,7 +246,7 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
             .orElseThrow(() -> new BadRequestAlertException("Organization not found", "tenantOrganization", "idnotfound"));
         if (parentOrganizationId == null) {
             organization.setParentOrganization(null);
-            return tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization));
+            return decorate(tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization)));
         }
         if (parentOrganizationId.equals(organizationId)) {
             throw new BadRequestAlertException("An organization cannot be its own website", "tenantOrganization", "ownparent");
@@ -294,6 +269,6 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
             );
         }
         organization.setParentOrganization(parent);
-        return tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization));
+        return decorate(tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization)));
     }
 }

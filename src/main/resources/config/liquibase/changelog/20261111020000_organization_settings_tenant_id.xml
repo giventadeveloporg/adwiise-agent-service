@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261111020000-1" author="system" dbms="postgresql">
+        <sql splitStatements="false"><![CDATA[
+            DO $mig$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'tenant_organization'
+                      AND column_name = 'tenant_id'
+                ) THEN
+                    INSERT INTO public.tenant_settings (tenant_id, tenant_organization_id, created_at, updated_at)
+                    SELECT o.tenant_id, o.id, now(), now()
+                    FROM public.tenant_organization o
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM public.tenant_settings s WHERE s.tenant_id = o.tenant_id
+                    );
+
+                    UPDATE public.tenant_settings s
+                    SET tenant_organization_id = o.id
+                    FROM public.tenant_organization o
+                    WHERE s.tenant_organization_id IS NULL
+                      AND s.tenant_id = o.tenant_id;
+
+                    IF EXISTS (SELECT 1 FROM public.tenant_settings WHERE tenant_organization_id IS NULL) THEN
+                        RAISE EXCEPTION 'tenant_settings.tenant_organization_id is still null';
+                    END IF;
+
+                    IF EXISTS (
+                        SELECT 1
+                        FROM public.tenant_organization o
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM public.tenant_settings s WHERE s.tenant_id = o.tenant_id
+                        )
+                    ) THEN
+                        RAISE EXCEPTION 'an organization tenant_id has no tenant_settings row';
+                    END IF;
+                END IF;
+            END $mig$;
+
+            ALTER TABLE public.tenant_settings DROP CONSTRAINT IF EXISTS fk_tenant_settings__tenant_id;
+
+            ALTER TABLE public.tenant_settings
+                ALTER COLUMN tenant_organization_id SET NOT NULL;
+
+            DO $mig$
+            DECLARE
+                r record;
+                del_action text;
+                upd_action text;
+            BEGIN
+                FOR r IN
+                    SELECT
+                        c.conname,
+                        n.nspname AS src_schema,
+                        src.relname AS src_table,
+                        a.attname AS src_column,
+                        c.confdeltype,
+                        c.confupdtype
+                    FROM pg_constraint c
+                    JOIN pg_class src ON src.oid = c.conrelid
+                    JOIN pg_namespace n ON n.oid = src.relnamespace
+                    JOIN pg_class tgt ON tgt.oid = c.confrelid
+                    JOIN pg_namespace tn ON tn.oid = tgt.relnamespace
+                    JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
+                    JOIN pg_attribute ta ON ta.attrelid = c.confrelid AND ta.attnum = c.confkey[1]
+                    WHERE c.contype = 'f'
+                      AND tn.nspname = 'public'
+                      AND tgt.relname = 'tenant_organization'
+                      AND ta.attname = 'tenant_id'
+                      AND array_length(c.conkey, 1) = 1
+                      AND src.relname <> 'tenant_settings'
+                LOOP
+                    del_action := CASE r.confdeltype
+                        WHEN 'c' THEN 'CASCADE'
+                        WHEN 'n' THEN 'SET NULL'
+                        WHEN 'r' THEN 'RESTRICT'
+                        WHEN 'd' THEN 'SET DEFAULT'
+                        ELSE 'NO ACTION'
+                    END;
+                    upd_action := CASE r.confupdtype
+                        WHEN 'c' THEN 'CASCADE'
+                        WHEN 'n' THEN 'SET NULL'
+                        WHEN 'r' THEN 'RESTRICT'
+                        WHEN 'd' THEN 'SET DEFAULT'
+                        ELSE 'NO ACTION'
+                    END;
+                    EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT %I', r.src_schema, r.src_table, r.conname);
+                    EXECUTE format(
+                        'ALTER TABLE %I.%I ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES public.tenant_settings (tenant_id) ON UPDATE %s ON DELETE %s',
+                        r.src_schema, r.src_table, r.conname, r.src_column, upd_action, del_action
+                    );
+                END LOOP;
+            END $mig$;
+
+            ALTER TABLE public.tenant_organization DROP CONSTRAINT IF EXISTS tenant_organization_tenant_id_key;
+            ALTER TABLE public.tenant_organization DROP COLUMN IF EXISTS tenant_id;
+
+            COMMENT ON COLUMN public.tenant_organization.parent_organization_id IS
+                'Client organization that owns this child organization. Empty means this row is the client. Websites of an organization are tenant_settings rows.';
+
+            COMMENT ON COLUMN public.tenant_organization.monthly_fee_usd IS
+                'Flat monthly fee for every website under this organization. Empty means each website can carry its own product amount. The card charged is this organization''s Stripe customer.';
+
+            COMMENT ON COLUMN public.tenant_organization.stripe_customer_id IS
+                'Stripe customer for this organization. Every website under the organization is charged to this customer.';
+
+            COMMENT ON COLUMN public.tenant_organization.stripe_subscription_id IS
+                'Stripe subscription for the organization flat monthly fee that covers every website under it.';
+
+            COMMENT ON COLUMN public.tenant_settings.tenant_id IS
+                'Website identity. Unique. Other tenant-scoped tables reference this value.';
+
+            COMMENT ON COLUMN public.tenant_settings.tenant_organization_id IS
+                'Required organization that owns this website. One organization can own many tenant_settings rows.';
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

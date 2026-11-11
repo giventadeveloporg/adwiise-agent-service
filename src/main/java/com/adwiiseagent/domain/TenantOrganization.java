@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -27,11 +29,6 @@ public class TenantOrganization implements Serializable {
     @SequenceGenerator(name = "tenantOrganizationSeq", sequenceName = "public.tenant_organization_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
-
-    @NotNull
-    @Size(max = 255)
-    @Column(name = "tenant_id", length = 255, nullable = false, unique = true)
-    private String tenantId;
 
     @NotNull
     @Size(max = 255)
@@ -62,6 +59,11 @@ public class TenantOrganization implements Serializable {
     @Size(max = 50)
     @Column(name = "contact_phone", length = 50)
     private String contactPhone;
+
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "contact_person_name", length = 255, nullable = false)
+    private String contactPersonName;
 
     @Size(max = 1000)
     @Column(name = "description", length = 1000)
@@ -131,9 +133,9 @@ public class TenantOrganization implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
+    @OneToMany(mappedBy = "tenantOrganization", fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "tenantOrganization" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "tenantOrganization")
-    private TenantSettings tenantSettings;
+    private Set<TenantSettings> tenantSettings = new HashSet<>();
 
     @NotNull
     @Size(max = 64)
@@ -170,19 +172,6 @@ public class TenantOrganization implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getTenantId() {
-        return this.tenantId;
-    }
-
-    public TenantOrganization tenantId(String tenantId) {
-        this.setTenantId(tenantId);
-        return this;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getOrganizationName() {
@@ -274,6 +263,19 @@ public class TenantOrganization implements Serializable {
 
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
+    }
+
+    public String getContactPersonName() {
+        return this.contactPersonName;
+    }
+
+    public TenantOrganization contactPersonName(String contactPersonName) {
+        this.setContactPersonName(contactPersonName);
+        return this;
+    }
+
+    public void setContactPersonName(String contactPersonName) {
+        this.contactPersonName = contactPersonName;
     }
 
     public String getDescription() {
@@ -570,23 +572,12 @@ public class TenantOrganization implements Serializable {
         this.parentOrganization = parentOrganization;
     }
 
-    public TenantSettings getTenantSettings() {
+    public Set<TenantSettings> getTenantSettings() {
         return this.tenantSettings;
     }
 
-    public void setTenantSettings(TenantSettings tenantSettings) {
-        if (this.tenantSettings != null) {
-            this.tenantSettings.setTenantOrganization(null);
-        }
-        if (tenantSettings != null) {
-            tenantSettings.setTenantOrganization(this);
-        }
+    public void setTenantSettings(Set<TenantSettings> tenantSettings) {
         this.tenantSettings = tenantSettings;
-    }
-
-    public TenantOrganization tenantSettings(TenantSettings tenantSettings) {
-        this.setTenantSettings(tenantSettings);
-        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
@@ -615,7 +606,6 @@ public class TenantOrganization implements Serializable {
     public String toString() {
         return "TenantOrganization{" +
                 "id=" + getId() +
-                ", tenantId='" + getTenantId() + "'" +
                 ", organizationName='" + getOrganizationName() + "'" +
                 ", domain='" + getDomain() + "'" +
                 ", primaryColor='" + getPrimaryColor() + "'" +
@@ -623,6 +613,7 @@ public class TenantOrganization implements Serializable {
                 ", logoUrl='" + getLogoUrl() + "'" +
                 ", contactEmail='" + getContactEmail() + "'" +
                 ", contactPhone='" + getContactPhone() + "'" +
+                ", contactPersonName='" + getContactPersonName() + "'" +
                 ", description='" + getDescription() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", city='" + getCity() + "'" +

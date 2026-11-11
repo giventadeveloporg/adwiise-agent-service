@@ -23,8 +23,6 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
 
     private LongFilter id;
 
-    private StringFilter tenantId;
-
     private StringFilter organizationName;
 
     private StringFilter domain;
@@ -69,7 +67,6 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
 
     public TenantOrganizationCriteria(TenantOrganizationCriteria other) {
         this.id = other.id == null ? null : other.id.copy();
-        this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
         this.organizationName = other.organizationName == null ? null : other.organizationName.copy();
         this.domain = other.domain == null ? null : other.domain.copy();
         this.primaryColor = other.primaryColor == null ? null : other.primaryColor.copy();
@@ -110,21 +107,6 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
 
     public void setId(LongFilter id) {
         this.id = id;
-    }
-
-    public StringFilter getTenantId() {
-        return tenantId;
-    }
-
-    public StringFilter tenantId() {
-        if (tenantId == null) {
-            tenantId = new StringFilter();
-        }
-        return tenantId;
-    }
-
-    public void setTenantId(StringFilter tenantId) {
-        this.tenantId = tenantId;
     }
 
     public StringFilter getOrganizationName() {
@@ -431,7 +413,6 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
         final TenantOrganizationCriteria that = (TenantOrganizationCriteria) o;
         return (
             Objects.equals(id, that.id) &&
-            Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(organizationName, that.organizationName) &&
             Objects.equals(domain, that.domain) &&
             Objects.equals(primaryColor, that.primaryColor) &&
@@ -459,7 +440,6 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
     public int hashCode() {
         return Objects.hash(
             id,
-            tenantId,
             organizationName,
             domain,
             primaryColor,
@@ -488,7 +468,6 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
     public String toString() {
         return "TenantOrganizationCriteria{" +
             (id != null ? "id=" + id + ", " : "") +
-            (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
             (organizationName != null ? "organizationName=" + organizationName + ", " : "") +
             (domain != null ? "domain=" + domain + ", " : "") +
             (primaryColor != null ? "primaryColor=" + primaryColor + ", " : "") +

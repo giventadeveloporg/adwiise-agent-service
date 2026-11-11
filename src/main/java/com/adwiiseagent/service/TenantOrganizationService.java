@@ -75,4 +75,7 @@ public interface TenantOrganizationService {
      * A client that already owns websites cannot become a website.
      */
     TenantOrganizationDTO assignParent(Long organizationId, Long parentOrganizationId);
+
+    /** Fill websiteTenantIds from tenant_settings for the given organization rows. */
+    void attachWebsiteTenantIds(List<TenantOrganizationDTO> organizations);
 }

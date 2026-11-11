@@ -38,6 +38,10 @@ public class TenantProductBillingDTO implements Serializable {
 
     /** When true on a partial update, customFeeUsd is stored even if it is null. */
     private Boolean clearCustomFee;
+    private Long organizationId;
+    private String organizationStripeCustomerId;
+    private BigDecimal organizationMonthlyFeeUsd;
+    private Boolean organizationFlatFee;
 
     public Long getId() {
         return id;
@@ -197,5 +201,37 @@ public class TenantProductBillingDTO implements Serializable {
 
     public void setClearCustomFee(Boolean clearCustomFee) {
         this.clearCustomFee = clearCustomFee;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public String getOrganizationStripeCustomerId() {
+        return organizationStripeCustomerId;
+    }
+
+    public void setOrganizationStripeCustomerId(String organizationStripeCustomerId) {
+        this.organizationStripeCustomerId = organizationStripeCustomerId;
+    }
+
+    public BigDecimal getOrganizationMonthlyFeeUsd() {
+        return organizationMonthlyFeeUsd;
+    }
+
+    public void setOrganizationMonthlyFeeUsd(BigDecimal organizationMonthlyFeeUsd) {
+        this.organizationMonthlyFeeUsd = organizationMonthlyFeeUsd;
+    }
+
+    public Boolean getOrganizationFlatFee() {
+        return organizationFlatFee;
+    }
+
+    public void setOrganizationFlatFee(Boolean organizationFlatFee) {
+        this.organizationFlatFee = organizationFlatFee;
     }
 }

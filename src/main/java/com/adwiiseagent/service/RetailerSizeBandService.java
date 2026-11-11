@@ -93,7 +93,7 @@ public class RetailerSizeBandService {
             count = locationRepository.countByTenantIdAndRetailerTypeCode(tenantId.trim(), pack);
             override =
                 organizationRepository
-                    .findOneByTenantId(tenantId.trim())
+                    .findByWebsiteTenantId(tenantId.trim())
                     .map(TenantOrganization::getRetailerSizeBandCode)
                     .filter(code -> code != null && !code.isBlank())
                     .map(code -> code.trim().toUpperCase())

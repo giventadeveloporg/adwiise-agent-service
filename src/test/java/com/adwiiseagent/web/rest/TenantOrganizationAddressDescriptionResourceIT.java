@@ -61,7 +61,7 @@ class TenantOrganizationAddressDescriptionResourceIT {
         TenantOrganization created = tenantOrganizationRepository
             .findAll()
             .stream()
-            .filter(o -> "tenant_org_addr_001".equals(o.getTenantId()))
+            .filter(o -> "Malayalee Federation".equals(o.getOrganizationName()))
             .findFirst()
             .orElseThrow();
 
@@ -169,7 +169,6 @@ class TenantOrganizationAddressDescriptionResourceIT {
     private TenantOrganizationDTO buildOrganizationDto(String tenantId, String organizationName) {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         TenantOrganizationDTO dto = new TenantOrganizationDTO();
-        dto.setTenantId(tenantId);
         dto.setOrganizationName(organizationName);
         dto.setContactEmail("contact@" + tenantId + ".example.com");
         dto.setIsActive(true);
@@ -181,8 +180,8 @@ class TenantOrganizationAddressDescriptionResourceIT {
     private TenantOrganization persistOrganization(String tenantId, String organizationName) {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         TenantOrganization organization = new TenantOrganization()
-            .tenantId(tenantId)
             .organizationName(organizationName)
+            .contactPersonName("Pending")
             .contactEmail("contact@" + tenantId + ".example.com")
             .isActive(true)
             .createdAt(now)
@@ -192,8 +191,10 @@ class TenantOrganizationAddressDescriptionResourceIT {
 
     private TenantSettings persistTenantSettings(String tenantId) {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        TenantOrganization organization = persistOrganization(tenantId, tenantId);
         TenantSettings settings = new TenantSettings()
             .tenantId(tenantId)
+            .tenantOrganization(organization)
             .allowUserRegistration(false)
             .requireAdminApproval(false)
             .enableWhatsappIntegration(false)

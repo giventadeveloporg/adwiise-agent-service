@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -19,9 +21,8 @@ public class TenantOrganizationDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
-    @Size(max = 255)
-    private String tenantId;
+    /** Website tenant ids stored on tenant_settings for this organization. */
+    private List<String> websiteTenantIds = new ArrayList<>();
 
     @NotNull
     @Size(max = 255)
@@ -45,6 +46,10 @@ public class TenantOrganizationDTO implements Serializable {
 
     @Size(max = 50)
     private String contactPhone;
+
+    @NotNull
+    @Size(max = 255)
+    private String contactPersonName;
 
     @Size(max = TenantOrganizationProfileValidator.MAX_DESCRIPTION_LENGTH)
     private String description;
@@ -140,12 +145,12 @@ public class TenantOrganizationDTO implements Serializable {
         this.id = id;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public List<String> getWebsiteTenantIds() {
+        return websiteTenantIds;
     }
 
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
+    public void setWebsiteTenantIds(List<String> websiteTenantIds) {
+        this.websiteTenantIds = websiteTenantIds == null ? new ArrayList<>() : websiteTenantIds;
     }
 
     public String getOrganizationName() {
@@ -202,6 +207,14 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
+    }
+
+    public String getContactPersonName() {
+        return contactPersonName;
+    }
+
+    public void setContactPersonName(String contactPersonName) {
+        this.contactPersonName = contactPersonName;
     }
 
     public String getDescription() {
@@ -462,7 +475,7 @@ public class TenantOrganizationDTO implements Serializable {
     public String toString() {
         return "TenantOrganizationDTO{" +
             "id=" + getId() +
-            ", tenantId='" + getTenantId() + "'" +
+            ", websiteTenantIds=" + getWebsiteTenantIds() +
             ", organizationName='" + getOrganizationName() + "'" +
             ", domain='" + getDomain() + "'" +
             ", primaryColor='" + getPrimaryColor() + "'" +
@@ -470,6 +483,7 @@ public class TenantOrganizationDTO implements Serializable {
             ", logoUrl='" + getLogoUrl() + "'" +
             ", contactEmail='" + getContactEmail() + "'" +
             ", contactPhone='" + getContactPhone() + "'" +
+            ", contactPersonName='" + getContactPersonName() + "'" +
             ", description='" + getDescription() + "'" +
             ", addressLine1='" + getAddressLine1() + "'" +
             ", city='" + getCity() + "'" +

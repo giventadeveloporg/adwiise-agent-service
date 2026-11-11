@@ -1,7 +1,9 @@
 package com.adwiiseagent.repository;
 
 import com.adwiiseagent.domain.TenantOrganization;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -11,13 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TenantOrganizationRepository
     extends JpaRepository<TenantOrganization, Long>, JpaSpecificationExecutor<TenantOrganization> {
-    /** All tenant IDs only — lets the frontend derive the next tenant sequence without paging whole rows. */
-    @Query("SELECT t.tenantId FROM TenantOrganization t")
-    java.util.List<String> findAllTenantIds();
-
-    boolean existsByTenantId(String tenantId);
-
-    java.util.Optional<TenantOrganization> findOneByTenantId(String tenantId);
+    @Query("select s.tenantOrganization from TenantSettings s where s.tenantId = :tenantId")
+    Optional<TenantOrganization> findByWebsiteTenantId(@Param("tenantId") String tenantId);
 
     java.util.List<TenantOrganization> findByParentOrganizationId(Long parentOrganizationId);
 

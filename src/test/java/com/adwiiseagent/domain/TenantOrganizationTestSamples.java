@@ -12,7 +12,6 @@ public class TenantOrganizationTestSamples {
     public static TenantOrganization getTenantOrganizationSample1() {
         return new TenantOrganization()
             .id(1L)
-            .tenantId("tenantId1")
             .organizationName("organizationName1")
             .domain("domain1")
             .primaryColor("primaryColor1")
@@ -28,7 +27,6 @@ public class TenantOrganizationTestSamples {
     public static TenantOrganization getTenantOrganizationSample2() {
         return new TenantOrganization()
             .id(2L)
-            .tenantId("tenantId2")
             .organizationName("organizationName2")
             .domain("domain2")
             .primaryColor("primaryColor2")
@@ -44,7 +42,6 @@ public class TenantOrganizationTestSamples {
     public static TenantOrganization getTenantOrganizationRandomSampleGenerator() {
         return new TenantOrganization()
             .id(longCount.incrementAndGet())
-            .tenantId(UUID.randomUUID().toString())
             .organizationName(UUID.randomUUID().toString())
             .domain(UUID.randomUUID().toString())
             .primaryColor(UUID.randomUUID().toString())

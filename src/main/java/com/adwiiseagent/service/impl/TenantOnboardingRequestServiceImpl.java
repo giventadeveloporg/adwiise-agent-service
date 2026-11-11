@@ -179,9 +179,7 @@ public class TenantOnboardingRequestServiceImpl implements TenantOnboardingReque
                     String tenantId = TenantOnboardingSupport.trimToNull(dto.getAssignedTenantId());
                     dto.setAssignedTenantId(tenantId);
                     if (tenantId != null && repository.existsByAssignedTenantIdAndIdNot(tenantId, existing.getId())) {
-                        boolean live =
-                            tenantOrganizationRepository.existsByTenantId(tenantId) ||
-                            tenantSettingsRepository.findByTenantId(tenantId).isPresent();
+                        boolean live = tenantSettingsRepository.findByTenantId(tenantId).isPresent();
                         if (live) {
                             throw new BadRequestAlertException(
                                 "Another onboarding request already uses this tenant ID",

@@ -1,7 +1,11 @@
 package com.adwiiseagent.service;
 
+import com.adwiiseagent.domain.TenantOrganization;
 import com.adwiiseagent.domain.TenantProductBilling;
+import com.adwiiseagent.domain.TenantSettings;
+import com.adwiiseagent.errors.BadRequestAlertException;
 import com.adwiiseagent.repository.TenantProductBillingRepository;
+import com.adwiiseagent.repository.TenantSettingsRepository;
 import com.adwiiseagent.service.dto.TenantProductBillingDTO;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -13,15 +17,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantProductBillingService {
 
     private final TenantProductBillingRepository repository;
+    private final TenantSettingsRepository tenantSettingsRepository;
 
-    public TenantProductBillingService(TenantProductBillingRepository repository) {
+    public TenantProductBillingService(TenantProductBillingRepository repository, TenantSettingsRepository tenantSettingsRepository) {
         this.repository = repository;
+        this.tenantSettingsRepository = tenantSettingsRepository;
     }
 
     public TenantProductBillingDTO save(TenantProductBillingDTO dto) {
         TenantProductBilling entity = new TenantProductBilling();
         copy(dto, entity, false);
         entity.setId(null);
+        applyOrganizationBilling(entity);
         applyChargeSwitch(null, entity);
         return toDto(repository.save(entity));
     }
@@ -30,6 +37,7 @@ public class TenantProductBillingService {
         TenantProductBilling existing = repository.findById(dto.getId()).orElseThrow();
         Boolean previousSwitch = existing.getChargeEnabled();
         copy(dto, existing, false);
+        applyOrganizationBilling(existing);
         applyChargeSwitch(previousSwitch, existing);
         return toDto(repository.save(existing));
     }
@@ -40,6 +48,7 @@ public class TenantProductBillingService {
             .map(existing -> {
                 Boolean previousSwitch = existing.getChargeEnabled();
                 copy(dto, existing, true);
+                applyOrganizationBilling(existing);
                 applyChargeSwitch(previousSwitch, existing);
                 return toDto(repository.save(existing));
             });
@@ -103,7 +112,62 @@ public class TenantProductBillingService {
         dto.setLocationQuantity(entity.getLocationQuantity());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
+        attachOrganization(dto, entity.getTenantId());
         return dto;
+    }
+
+    private void applyOrganizationBilling(TenantProductBilling entity) {
+        TenantOrganization organization = owningOrganization(entity.getTenantId());
+        if (organization.getMonthlyFeeUsd() != null) {
+            entity.setChargeEnabled(Boolean.FALSE);
+            entity.setStatus("COMPLIMENTARY");
+            entity.setStripeSubscriptionId(null);
+            entity.setCustomFeeUsd(null);
+            String marker = "covered-by-organization:" + organization.getId();
+            String notes = entity.getNotes();
+            if (notes == null || notes.isBlank()) {
+                entity.setNotes(marker);
+            } else if (!notes.contains(marker)) {
+                entity.setNotes(notes + "\n" + marker);
+            }
+            return;
+        }
+        if (Boolean.TRUE.equals(entity.getChargeEnabled())) {
+            String customer = organization.getStripeCustomerId();
+            if (customer == null || customer.isBlank()) {
+                throw new BadRequestAlertException(
+                    "The organization needs a Stripe customer before a website can be charged",
+                    "tenantProductBilling",
+                    "organizationcustomerrequired"
+                );
+            }
+        }
+    }
+
+    private void attachOrganization(TenantProductBillingDTO dto, String tenantId) {
+        if (tenantId == null || tenantId.isBlank()) {
+            return;
+        }
+        tenantSettingsRepository
+            .findByTenantId(tenantId)
+            .map(TenantSettings::getTenantOrganization)
+            .ifPresent(organization -> {
+                dto.setOrganizationId(organization.getId());
+                dto.setOrganizationStripeCustomerId(organization.getStripeCustomerId());
+                dto.setOrganizationMonthlyFeeUsd(organization.getMonthlyFeeUsd());
+                dto.setOrganizationFlatFee(organization.getMonthlyFeeUsd() != null);
+            });
+    }
+
+    private TenantOrganization owningOrganization(String tenantId) {
+        TenantSettings settings = tenantSettingsRepository
+            .findByTenantId(tenantId)
+            .orElseThrow(() -> new BadRequestAlertException("Website tenant was not found", "tenantProductBilling", "tenantnotfound"));
+        TenantOrganization organization = settings.getTenantOrganization();
+        if (organization == null || organization.getId() == null) {
+            throw new BadRequestAlertException("Website has no organization", "tenantProductBilling", "organizationrequired");
+        }
+        return organization;
     }
 
     private void copy(TenantProductBillingDTO dto, TenantProductBilling entity, boolean partial) {

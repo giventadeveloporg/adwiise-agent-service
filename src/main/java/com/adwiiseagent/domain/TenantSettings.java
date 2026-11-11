@@ -363,9 +363,10 @@ public class TenantSettings implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
-    @JsonIgnoreProperties(value = { "tenantSettings" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_organization_id", referencedColumnName = "id")
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_organization_id", nullable = false)
+    @JsonIgnoreProperties(value = { "tenantSettings", "parentOrganization" }, allowSetters = true)
     private TenantOrganization tenantOrganization;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
