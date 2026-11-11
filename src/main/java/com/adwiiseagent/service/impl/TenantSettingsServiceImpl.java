@@ -402,6 +402,24 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
         }
     }
 
+    @Override
+    public TenantSettingsDTO reassignOrganization(Long settingsId, Long organizationId) {
+        LOG.debug("Request to move TenantSettings {} to organization {}", settingsId, organizationId);
+        if (settingsId == null || organizationId == null) {
+            throw new BadRequestAlertException("Settings id and organization id are required", "tenantSettings", "idnull");
+        }
+        TenantSettings settings = tenantSettingsRepository
+            .findById(settingsId)
+            .orElseThrow(() -> new EntityNotFoundException("TenantSettings not found with id " + settingsId));
+        TenantOrganization organization = tenantOrganizationRepository
+            .findById(organizationId)
+            .orElseThrow(() -> new EntityNotFoundException("TenantOrganization not found with id " + organizationId));
+        settings.setTenantOrganization(organization);
+        settings = tenantSettingsRepository.save(settings);
+        tenantSettingsCacheInvalidation.evictForTenantSettingsId(settings.getId());
+        return tenantSettingsMapper.toDto(settings);
+    }
+
     private void requireOrganization(TenantOrganization organization) {
         if (organization == null || organization.getId() == null) {
             throw new BadRequestAlertException("An organization is required", "tenantSettings", "organizationrequired");

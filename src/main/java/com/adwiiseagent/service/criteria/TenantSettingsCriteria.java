@@ -81,6 +81,10 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private StringFilter logoImageUrl;
 
+    private StringFilter primaryColor;
+
+    private StringFilter secondaryColor;
+
     private StringFilter facebookUrl;
 
     private StringFilter instagramUrl;
@@ -182,6 +186,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.emailFooterHtmlUrl = other.optionalEmailFooterHtmlUrl().map(StringFilter::copy).orElse(null);
         this.emailHeaderImageUrl = other.optionalEmailHeaderImageUrl().map(StringFilter::copy).orElse(null);
         this.logoImageUrl = other.optionalLogoImageUrl().map(StringFilter::copy).orElse(null);
+        this.primaryColor = other.optionalPrimaryColor().map(StringFilter::copy).orElse(null);
+        this.secondaryColor = other.optionalSecondaryColor().map(StringFilter::copy).orElse(null);
         this.facebookUrl = other.optionalFacebookUrl().map(StringFilter::copy).orElse(null);
         this.instagramUrl = other.optionalInstagramUrl().map(StringFilter::copy).orElse(null);
         this.twitterUrl = other.optionalTwitterUrl().map(StringFilter::copy).orElse(null);
@@ -754,6 +760,44 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     public void setLogoImageUrl(StringFilter logoImageUrl) {
         this.logoImageUrl = logoImageUrl;
+    }
+
+    public StringFilter getPrimaryColor() {
+        return primaryColor;
+    }
+
+    public Optional<StringFilter> optionalPrimaryColor() {
+        return Optional.ofNullable(primaryColor);
+    }
+
+    public StringFilter primaryColor() {
+        if (primaryColor == null) {
+            setPrimaryColor(new StringFilter());
+        }
+        return primaryColor;
+    }
+
+    public void setPrimaryColor(StringFilter primaryColor) {
+        this.primaryColor = primaryColor;
+    }
+
+    public StringFilter getSecondaryColor() {
+        return secondaryColor;
+    }
+
+    public Optional<StringFilter> optionalSecondaryColor() {
+        return Optional.ofNullable(secondaryColor);
+    }
+
+    public StringFilter secondaryColor() {
+        if (secondaryColor == null) {
+            setSecondaryColor(new StringFilter());
+        }
+        return secondaryColor;
+    }
+
+    public void setSecondaryColor(StringFilter secondaryColor) {
+        this.secondaryColor = secondaryColor;
     }
 
     public StringFilter getFacebookUrl() {
@@ -1459,6 +1503,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(emailFooterHtmlUrl, that.emailFooterHtmlUrl) &&
             Objects.equals(emailHeaderImageUrl, that.emailHeaderImageUrl) &&
             Objects.equals(logoImageUrl, that.logoImageUrl) &&
+            Objects.equals(primaryColor, that.primaryColor) &&
+            Objects.equals(secondaryColor, that.secondaryColor) &&
             Objects.equals(facebookUrl, that.facebookUrl) &&
             Objects.equals(instagramUrl, that.instagramUrl) &&
             Objects.equals(twitterUrl, that.twitterUrl) &&
@@ -1528,6 +1574,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             emailFooterHtmlUrl,
             emailHeaderImageUrl,
             logoImageUrl,
+            primaryColor,
+            secondaryColor,
             facebookUrl,
             instagramUrl,
             twitterUrl,
@@ -1601,6 +1649,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalEmailFooterHtmlUrl().map(f -> "emailFooterHtmlUrl=" + f + ", ").orElse("") +
                 optionalEmailHeaderImageUrl().map(f -> "emailHeaderImageUrl=" + f + ", ").orElse("") +
                 optionalLogoImageUrl().map(f -> "logoImageUrl=" + f + ", ").orElse("") +
+                optionalPrimaryColor().map(f -> "primaryColor=" + f + ", ").orElse("") +
+                optionalSecondaryColor().map(f -> "secondaryColor=" + f + ", ").orElse("") +
                 optionalFacebookUrl().map(f -> "facebookUrl=" + f + ", ").orElse("") +
                 optionalInstagramUrl().map(f -> "instagramUrl=" + f + ", ").orElse("") +
                 optionalTwitterUrl().map(f -> "twitterUrl=" + f + ", ").orElse("") +

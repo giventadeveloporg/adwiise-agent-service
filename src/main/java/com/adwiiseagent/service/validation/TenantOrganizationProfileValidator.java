@@ -89,6 +89,7 @@ public class TenantOrganizationProfileValidator {
     }
 
     private void normalizeOptionalFields(TenantOrganizationDTO dto) {
+        dto.setDomain(normalizeOptionalString(dto.getDomain()));
         dto.setDescription(normalizeOptionalString(dto.getDescription()));
         dto.setAddressLine1(normalizeOptionalString(dto.getAddressLine1()));
         dto.setAddressLine2(normalizeOptionalString(dto.getAddressLine2()));

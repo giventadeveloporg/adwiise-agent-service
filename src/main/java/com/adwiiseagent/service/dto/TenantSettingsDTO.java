@@ -87,6 +87,12 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 2048)
     private String logoImageUrl;
 
+    @Size(max = 7)
+    private String primaryColor;
+
+    @Size(max = 7)
+    private String secondaryColor;
+
     @Size(max = 255)
     @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
     private String addressLine1;
@@ -536,6 +542,22 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setLogoImageUrl(String logoImageUrl) {
         this.logoImageUrl = logoImageUrl;
+    }
+
+    public String getPrimaryColor() {
+        return primaryColor;
+    }
+
+    public void setPrimaryColor(String primaryColor) {
+        this.primaryColor = primaryColor;
+    }
+
+    public String getSecondaryColor() {
+        return secondaryColor;
+    }
+
+    public void setSecondaryColor(String secondaryColor) {
+        this.secondaryColor = secondaryColor;
     }
 
     public String getAddressLine1() {
@@ -1169,6 +1191,8 @@ public class TenantSettingsDTO implements Serializable {
                 ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
                 ", emailHeaderImageUrl='" + getEmailHeaderImageUrl() + "'" +
                 ", logoImageUrl='" + getLogoImageUrl() + "'" +
+                ", primaryColor='" + getPrimaryColor() + "'" +
+                ", secondaryColor='" + getSecondaryColor() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", addressLine2='" + getAddressLine2() + "'" +
                 ", description='" + getDescription() + "'" +

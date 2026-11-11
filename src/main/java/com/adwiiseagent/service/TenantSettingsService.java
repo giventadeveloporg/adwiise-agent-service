@@ -83,4 +83,13 @@ public interface TenantSettingsService {
      * @return the public HTTPS URL of the uploaded image
      */
     String uploadDefaultHeroImage(String tenantId, MultipartFile file);
+
+    /**
+     * Point an existing tenant settings row at a different organization.
+     *
+     * @param settingsId the tenant settings id
+     * @param organizationId the destination organization id
+     * @return the updated settings
+     */
+    TenantSettingsDTO reassignOrganization(Long settingsId, Long organizationId);
 }

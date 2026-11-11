@@ -22,6 +22,19 @@ public interface TenantOrganizationRepository
 
     boolean existsByDomainIgnoreCase(String domain);
 
+    @Query(
+        "select (count(organization) > 0) from TenantOrganization organization where organization.domain is not null and lower(trim(organization.domain)) = lower(trim(:domain)) and organization.id <> :excludeId"
+    )
+    boolean existsByDomainIgnoreCaseAndIdNot(@Param("domain") String domain, @Param("excludeId") Long excludeId);
+
+    @Query(
+        "select (count(organization) > 0) from TenantOrganization organization where lower(trim(organization.organizationName)) = lower(trim(:organizationName)) and organization.id <> :excludeId"
+    )
+    boolean existsByOrganizationNameIgnoreCaseAndIdNot(
+        @Param("organizationName") String organizationName,
+        @Param("excludeId") Long excludeId
+    );
+
     boolean existsBySiteType(String siteType);
 
     boolean existsBySubscriptionPlan(String subscriptionPlan);

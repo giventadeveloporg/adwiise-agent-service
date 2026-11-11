@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261111140000-1" author="system" dbms="postgresql">
+        <sql splitStatements="false"><![CDATA[
+            UPDATE public.tenant_organization
+            SET organization_name = btrim(organization_name),
+                updated_at = now()
+            WHERE organization_name IS DISTINCT FROM btrim(organization_name);
+
+            UPDATE public.tenant_organization
+            SET organization_name = 'BST SChool Temp',
+                updated_at = now()
+            WHERE id = 19
+              AND lower(btrim(organization_name)) = 'bst software';
+
+            UPDATE public.tenant_organization
+            SET organization_name = 'KCNJ Temp',
+                updated_at = now()
+            WHERE id = 10
+              AND lower(btrim(organization_name)) = 'kcnj'
+              AND lower(btrim(domain)) = 'kcnj-temp.com';
+
+            DO $nameuniq$
+            DECLARE
+                dup text;
+            BEGIN
+                SELECT lower(btrim(organization_name))
+                INTO dup
+                FROM public.tenant_organization
+                GROUP BY lower(btrim(organization_name))
+                HAVING count(*) > 1
+                LIMIT 1;
+
+                IF dup IS NOT NULL THEN
+                    RAISE EXCEPTION 'organization names still collide after trim: %', dup;
+                END IF;
+            END
+            $nameuniq$;
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_tenant_organization_organization_name_ci
+                ON public.tenant_organization (lower(btrim(organization_name)));
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

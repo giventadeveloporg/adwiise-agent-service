@@ -199,8 +199,7 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         Map<String, Object> outcome = new LinkedHashMap<>();
         outcome.put("tenantId", r.tenantId);
 
-        TenantOrganizationDTO org = createOrganization(request, r, now);
-        tenantOrganizationRepository.flush();
+        TenantOrganizationDTO org = resolveOrganization(request, r, now);
         outcome.put("tenantOrganizationId", org.getId());
 
         TenantSettingsDTO settings = createSettings(request, r, org, now);
@@ -302,6 +301,28 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         String last = request.getContactLastName() == null ? "" : request.getContactLastName().trim();
         String name = (first + " " + last).trim();
         return name.isEmpty() ? "Pending" : name;
+    }
+
+    /**
+     * The organization chosen on the request is the tenant_settings assignment.
+     * A public request with no organization still creates one.
+     */
+    private TenantOrganizationDTO resolveOrganization(TenantOnboardingRequest request, Resolved r, ZonedDateTime now) {
+        Long sourceOrganizationId = request.getSourceOrganizationId();
+        if (sourceOrganizationId == null) {
+            TenantOrganizationDTO created = createOrganization(request, r, now);
+            tenantOrganizationRepository.flush();
+            return created;
+        }
+        return tenantOrganizationService
+            .findOne(sourceOrganizationId)
+            .orElseThrow(() ->
+                new BadRequestAlertException(
+                    "The organization selected on this request no longer exists",
+                    ENTITY_NAME,
+                    "organizationnotfound"
+                )
+            );
     }
 
     private TenantOrganizationDTO createOrganization(TenantOnboardingRequest request, Resolved r, ZonedDateTime now) {

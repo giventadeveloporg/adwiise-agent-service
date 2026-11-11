@@ -29,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 /**
  * Service Implementation for managing {@link com.adwiiseagent.domain.TenantOrganization}.
@@ -74,6 +75,8 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     public TenantOrganizationDTO save(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to save TenantOrganization : {}", tenantOrganizationDTO);
         tenantOrganizationProfileValidator.validateAndNormalize(tenantOrganizationDTO);
+        requireUniqueOrganizationName(tenantOrganizationDTO);
+        requireUniqueDomain(tenantOrganizationDTO);
         TenantOrganization tenantOrganization = tenantOrganizationMapper.toEntity(tenantOrganizationDTO);
         tenantOrganization = tenantOrganizationRepository.save(tenantOrganization);
         return decorate(tenantOrganizationMapper.toDto(tenantOrganization));
@@ -83,6 +86,8 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     public TenantOrganizationDTO update(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to update TenantOrganization : {}", tenantOrganizationDTO);
         tenantOrganizationProfileValidator.validateAndNormalize(tenantOrganizationDTO);
+        requireUniqueOrganizationName(tenantOrganizationDTO);
+        requireUniqueDomain(tenantOrganizationDTO);
         TenantOrganization tenantOrganization = tenantOrganizationMapper.toEntity(tenantOrganizationDTO);
         tenantOrganization = tenantOrganizationRepository.save(tenantOrganization);
         return decorate(tenantOrganizationMapper.toDto(tenantOrganization));
@@ -99,6 +104,15 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
                 tenantOrganizationMapper.partialUpdate(existingTenantOrganization, tenantOrganizationDTO);
                 tenantOrganizationProfileValidator.applyPartialNullableFields(existingTenantOrganization, tenantOrganizationDTO);
                 tenantOrganizationProfileValidator.validateEntityFields(existingTenantOrganization);
+                if (existingTenantOrganization.getOrganizationName() != null) {
+                    existingTenantOrganization.setOrganizationName(existingTenantOrganization.getOrganizationName().trim());
+                }
+                requireUniqueOrganizationName(existingTenantOrganization.getOrganizationName(), existingTenantOrganization.getId());
+                if (tenantOrganizationDTO.getDomain() != null) {
+                    String domain = tenantOrganizationDTO.getDomain().trim();
+                    existingTenantOrganization.setDomain(domain.isEmpty() ? null : domain);
+                }
+                requireUniqueDomain(existingTenantOrganization.getDomain(), existingTenantOrganization.getId());
 
                 return existingTenantOrganization;
             })
@@ -270,5 +284,50 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
         }
         organization.setParentOrganization(parent);
         return decorate(tenantOrganizationMapper.toDto(tenantOrganizationRepository.save(organization)));
+    }
+
+    private void requireUniqueDomain(TenantOrganizationDTO tenantOrganizationDTO) {
+        if (!StringUtils.hasText(tenantOrganizationDTO.getDomain())) {
+            tenantOrganizationDTO.setDomain(null);
+            return;
+        }
+        requireUniqueDomain(tenantOrganizationDTO.getDomain(), tenantOrganizationDTO.getId());
+    }
+
+    private void requireUniqueDomain(String domain, Long excludeId) {
+        if (!StringUtils.hasText(domain)) {
+            return;
+        }
+        String trimmed = domain.trim();
+        Long otherThan = excludeId == null ? -1L : excludeId;
+        if (tenantOrganizationRepository.existsByDomainIgnoreCaseAndIdNot(trimmed, otherThan)) {
+            throw new BadRequestAlertException(
+                "An organization with this domain already exists. Use a different domain or leave Domain empty.",
+                "tenantOrganization",
+                "domainexists"
+            );
+        }
+    }
+
+    private void requireUniqueOrganizationName(TenantOrganizationDTO tenantOrganizationDTO) {
+        if (tenantOrganizationDTO.getOrganizationName() != null) {
+            tenantOrganizationDTO.setOrganizationName(tenantOrganizationDTO.getOrganizationName().trim());
+        }
+        requireUniqueOrganizationName(tenantOrganizationDTO.getOrganizationName(), tenantOrganizationDTO.getId());
+    }
+
+    private void requireUniqueOrganizationName(String organizationName, Long excludeId) {
+        if (!StringUtils.hasText(organizationName)) {
+            throw new BadRequestAlertException("Organization name is required", "tenantOrganization", "organizationnamerequired");
+        }
+        String trimmed = organizationName.trim();
+        Long otherThan = excludeId == null ? -1L : excludeId;
+        if (tenantOrganizationRepository.existsByOrganizationNameIgnoreCaseAndIdNot(trimmed, otherThan)) {
+            throw new BadRequestAlertException(
+                "An organization named " + trimmed + " already exists",
+                "tenantOrganization",
+                "organizationnameexists"
+            );
+        }
     }
 }

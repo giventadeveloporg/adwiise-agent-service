@@ -6,6 +6,7 @@ import com.adwiiseagent.service.TenantSettingsQueryService;
 import com.adwiiseagent.service.TenantSettingsService;
 import com.adwiiseagent.service.criteria.TenantSettingsCriteria;
 import com.adwiiseagent.service.dto.TenantSettingsDTO;
+import com.adwiiseagent.service.dto.TenantSettingsOrganizationAssignmentDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -114,6 +115,25 @@ public class TenantSettingsResource {
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tenantSettingsDTO.getId().toString()))
             .body(tenantSettingsDTO);
+    }
+
+    /**
+     * {@code PUT  /tenant-settings/:id/organization} : point this tenant settings row at another organization.
+     */
+    @PutMapping("/{id}/organization")
+    public ResponseEntity<TenantSettingsDTO> reassignTenantSettingsOrganization(
+        @PathVariable Long id,
+        @Valid @RequestBody TenantSettingsOrganizationAssignmentDTO assignment
+    ) {
+        LOG.debug("REST request to move TenantSettings {} to organization {}", id, assignment.getOrganizationId());
+        if (!tenantSettingsRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        if (assignment.getOrganizationId() == null) {
+            throw new BadRequestAlertException("organizationId is required", ENTITY_NAME, "organizationidnull");
+        }
+        TenantSettingsDTO result = tenantSettingsService.reassignOrganization(id, assignment.getOrganizationId());
+        return ResponseEntity.ok(result);
     }
 
     /**

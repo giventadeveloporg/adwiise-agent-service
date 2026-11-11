@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261111150000-1" author="adwiise">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="primary_color"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            ALTER TABLE tenant_settings ADD COLUMN IF NOT EXISTS primary_color character varying(7);
+            ALTER TABLE tenant_settings ADD COLUMN IF NOT EXISTS secondary_color character varying(7);
+
+            UPDATE tenant_settings settings
+            SET primary_color = organization.primary_color
+            FROM tenant_organization organization
+            WHERE settings.tenant_organization_id = organization.id
+              AND (settings.primary_color IS NULL OR btrim(settings.primary_color) = '')
+              AND organization.primary_color IS NOT NULL
+              AND btrim(organization.primary_color) <> '';
+
+            UPDATE tenant_settings settings
+            SET secondary_color = organization.secondary_color
+            FROM tenant_organization organization
+            WHERE settings.tenant_organization_id = organization.id
+              AND (settings.secondary_color IS NULL OR btrim(settings.secondary_color) = '')
+              AND organization.secondary_color IS NOT NULL
+              AND btrim(organization.secondary_color) <> '';
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

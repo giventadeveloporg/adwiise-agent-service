@@ -121,6 +121,14 @@ public class TenantSettings implements Serializable {
     @Column(name = "logo_image_url", length = 2048)
     private String logoImageUrl;
 
+    @Size(max = 7)
+    @Column(name = "primary_color", length = 7)
+    private String primaryColor;
+
+    @Size(max = 7)
+    @Column(name = "secondary_color", length = 7)
+    private String secondaryColor;
+
     @Size(max = 255)
     @Column(name = "address_line_1", length = 255)
     private String addressLine1;
@@ -1243,6 +1251,32 @@ public class TenantSettings implements Serializable {
         this.logoImageUrl = logoImageUrl;
     }
 
+    public String getPrimaryColor() {
+        return this.primaryColor;
+    }
+
+    public TenantSettings primaryColor(String primaryColor) {
+        this.setPrimaryColor(primaryColor);
+        return this;
+    }
+
+    public void setPrimaryColor(String primaryColor) {
+        this.primaryColor = primaryColor;
+    }
+
+    public String getSecondaryColor() {
+        return this.secondaryColor;
+    }
+
+    public TenantSettings secondaryColor(String secondaryColor) {
+        this.setSecondaryColor(secondaryColor);
+        return this;
+    }
+
+    public void setSecondaryColor(String secondaryColor) {
+        this.secondaryColor = secondaryColor;
+    }
+
     public String getAddressLine1() {
         return this.addressLine1;
     }
@@ -1621,6 +1655,8 @@ public class TenantSettings implements Serializable {
                 ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
                 ", emailHeaderImageUrl='" + getEmailHeaderImageUrl() + "'" +
                 ", logoImageUrl='" + getLogoImageUrl() + "'" +
+                ", primaryColor='" + getPrimaryColor() + "'" +
+                ", secondaryColor='" + getSecondaryColor() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", addressLine2='" + getAddressLine2() + "'" +
                 ", description='" + getDescription() + "'" +

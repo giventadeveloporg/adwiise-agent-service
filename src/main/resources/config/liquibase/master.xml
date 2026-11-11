@@ -186,5 +186,7 @@
     <include file="config/liquibase/changelog/20261110170000_organization_parent.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261110220000_organization_contact_person_name.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261111020000_organization_settings_tenant_id.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261111140000_organization_name_unique.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261111150000_tenant_settings_brand_colors.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

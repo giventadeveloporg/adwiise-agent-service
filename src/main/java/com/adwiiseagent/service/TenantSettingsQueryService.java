@@ -199,6 +199,12 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
             if (criteria.getLogoImageUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getLogoImageUrl(), TenantSettings_.logoImageUrl));
             }
+            if (criteria.getPrimaryColor() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getPrimaryColor(), TenantSettings_.primaryColor));
+            }
+            if (criteria.getSecondaryColor() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getSecondaryColor(), TenantSettings_.secondaryColor));
+            }
             if (criteria.getFacebookUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getFacebookUrl(), TenantSettings_.facebookUrl));
             }
