@@ -122,6 +122,11 @@ public class TenantOrganization implements Serializable {
     @Column(name = "stripe_subscription_id", length = 255)
     private String stripeSubscriptionId;
 
+    @NotNull
+    @Size(max = 20)
+    @Column(name = "billing_scope", length = 20, nullable = false)
+    private String billingScope = "PER_TENANT";
+
     @Column(name = "is_active")
     private Boolean isActive;
 
@@ -473,6 +478,19 @@ public class TenantOrganization implements Serializable {
         this.stripeSubscriptionId = stripeSubscriptionId;
     }
 
+    public String getBillingScope() {
+        return this.billingScope;
+    }
+
+    public TenantOrganization billingScope(String billingScope) {
+        this.setBillingScope(billingScope);
+        return this;
+    }
+
+    public void setBillingScope(String billingScope) {
+        this.billingScope = billingScope;
+    }
+
     public Boolean getIsActive() {
         return this.isActive;
     }
@@ -626,6 +644,7 @@ public class TenantOrganization implements Serializable {
                 ", subscriptionStartDate='" + getSubscriptionStartDate() + "'" +
                 ", subscriptionEndDate='" + getSubscriptionEndDate() + "'" +
                 ", monthlyFeeUsd=" + getMonthlyFeeUsd() +
+                ", billingScope='" + getBillingScope() + "'" +
                 ", stripeCustomerId='" + getStripeCustomerId() + "'" +
                 ", isActive='" + getIsActive() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +

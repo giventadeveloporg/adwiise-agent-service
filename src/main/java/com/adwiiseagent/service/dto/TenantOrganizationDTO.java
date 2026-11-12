@@ -110,6 +110,7 @@ public class TenantOrganizationDTO implements Serializable {
     private LocalDate subscriptionEndDate;
 
     private BigDecimal monthlyFeeUsd;
+    private String billingScope;
 
     @Size(max = 255)
     private String stripeCustomerId;
@@ -367,6 +368,14 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setMonthlyFeeUsd(BigDecimal monthlyFeeUsd) {
         this.monthlyFeeUsd = monthlyFeeUsd;
+    }
+
+    public String getBillingScope() {
+        return billingScope;
+    }
+
+    public void setBillingScope(String billingScope) {
+        this.billingScope = billingScope;
     }
 
     public String getStripeCustomerId() {

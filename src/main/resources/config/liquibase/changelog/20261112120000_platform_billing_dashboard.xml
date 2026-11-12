@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261112120000-1" author="adwiise">
+        <sql><![CDATA[
+            ALTER TABLE tenant_organization ADD COLUMN IF NOT EXISTS billing_scope character varying(20) DEFAULT 'PER_TENANT';
+            UPDATE tenant_organization
+            SET billing_scope = 'ORGANIZATION'
+            WHERE monthly_fee_usd IS NOT NULL AND monthly_fee_usd > 0
+              AND (billing_scope IS NULL OR btrim(billing_scope) = '' OR billing_scope = 'PER_TENANT');
+            ALTER TABLE tenant_organization ALTER COLUMN billing_scope SET DEFAULT 'PER_TENANT';
+            ALTER TABLE tenant_organization ALTER COLUMN billing_scope SET NOT NULL;
+            ALTER TABLE tenant_organization DROP CONSTRAINT IF EXISTS chk_tenant_organization__billing_scope;
+            ALTER TABLE tenant_organization ADD CONSTRAINT chk_tenant_organization__billing_scope CHECK (billing_scope IN ('ORGANIZATION', 'PER_TENANT'));
+
+            ALTER TABLE platform_billing_plan ADD COLUMN IF NOT EXISTS interval_count integer DEFAULT 1;
+            UPDATE platform_billing_plan SET interval_count = 1 WHERE interval_count IS NULL;
+            ALTER TABLE platform_billing_plan ALTER COLUMN interval_count SET DEFAULT 1;
+            ALTER TABLE platform_billing_plan ALTER COLUMN interval_count SET NOT NULL;
+            ALTER TABLE platform_billing_plan DROP CONSTRAINT IF EXISTS chk_platform_billing_plan__interval;
+            ALTER TABLE platform_billing_plan DROP CONSTRAINT IF EXISTS chk_platform_billing_plan__interval_count;
+            ALTER TABLE platform_billing_plan ADD CONSTRAINT chk_platform_billing_plan__interval CHECK (billing_interval IS NULL OR billing_interval IN ('DAY', 'WEEK', 'MONTH', 'YEAR'));
+            ALTER TABLE platform_billing_plan ADD CONSTRAINT chk_platform_billing_plan__interval_count CHECK (interval_count >= 1);
+
+            ALTER TABLE tenant_product_billing ADD COLUMN IF NOT EXISTS billing_interval character varying(20);
+            ALTER TABLE tenant_product_billing ADD COLUMN IF NOT EXISTS interval_count integer DEFAULT 1;
+            UPDATE tenant_product_billing SET interval_count = 1 WHERE interval_count IS NULL;
+            ALTER TABLE tenant_product_billing ALTER COLUMN interval_count SET DEFAULT 1;
+            ALTER TABLE tenant_product_billing ALTER COLUMN interval_count SET NOT NULL;
+            ALTER TABLE tenant_product_billing DROP CONSTRAINT IF EXISTS chk_tenant_product_billing__interval;
+            ALTER TABLE tenant_product_billing DROP CONSTRAINT IF EXISTS chk_tenant_product_billing__interval_count;
+            ALTER TABLE tenant_product_billing ADD CONSTRAINT chk_tenant_product_billing__interval CHECK (billing_interval IS NULL OR billing_interval IN ('DAY', 'WEEK', 'MONTH', 'YEAR'));
+            ALTER TABLE tenant_product_billing ADD CONSTRAINT chk_tenant_product_billing__interval_count CHECK (interval_count >= 1);
+
+            CREATE SEQUENCE IF NOT EXISTS platform_billing_charge_id_seq INCREMENT BY 1 START WITH 1 CACHE 1;
+            CREATE SEQUENCE IF NOT EXISTS platform_billing_assignment_event_id_seq INCREMENT BY 1 START WITH 1 CACHE 1;
+
+            CREATE TABLE IF NOT EXISTS platform_billing_charge (
+                id bigint DEFAULT nextval('platform_billing_charge_id_seq'::regclass) NOT NULL,
+                organization_id bigint NOT NULL,
+                tenant_id character varying(255),
+                product character varying(32) NOT NULL,
+                billing_scope character varying(20) NOT NULL,
+                platform_plan_id bigint,
+                plan_code character varying(64),
+                amount_usd numeric(21,2) NOT NULL,
+                currency character varying(3) DEFAULT 'USD' NOT NULL,
+                billing_interval character varying(20),
+                interval_count integer DEFAULT 1 NOT NULL,
+                stripe_event_id character varying(255),
+                stripe_invoice_id character varying(255),
+                stripe_subscription_id character varying(255),
+                stripe_payment_intent_id character varying(255),
+                status character varying(20) NOT NULL,
+                period_start timestamp without time zone,
+                period_end timestamp without time zone,
+                occurred_at timestamp without time zone DEFAULT now() NOT NULL,
+                failure_reason character varying(2000),
+                notes character varying(2000),
+                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                CONSTRAINT platform_billing_charge_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_platform_billing_charge__stripe_event UNIQUE (stripe_event_id),
+                CONSTRAINT chk_platform_billing_charge__scope CHECK (billing_scope IN ('ORGANIZATION', 'PER_TENANT')),
+                CONSTRAINT chk_platform_billing_charge__status CHECK (status IN ('OPEN', 'PAID', 'FAILED', 'VOID', 'REFUNDED')),
+                CONSTRAINT chk_platform_billing_charge__product CHECK (product IN ('EVENT_SITE', 'GAS_STATION', 'RETAIL')),
+                CONSTRAINT chk_platform_billing_charge__interval CHECK (billing_interval IS NULL OR billing_interval IN ('DAY', 'WEEK', 'MONTH', 'YEAR')),
+                CONSTRAINT chk_platform_billing_charge__interval_count CHECK (interval_count >= 1),
+                CONSTRAINT chk_platform_billing_charge__amount CHECK (amount_usd >= 0),
+                CONSTRAINT fk_platform_billing_charge__organization FOREIGN KEY (organization_id) REFERENCES tenant_organization(id) ON DELETE CASCADE,
+                CONSTRAINT fk_platform_billing_charge__plan FOREIGN KEY (platform_plan_id) REFERENCES platform_billing_plan(id) ON DELETE SET NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_charge_organization ON platform_billing_charge (organization_id);
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_charge_tenant ON platform_billing_charge (tenant_id);
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_charge_status ON platform_billing_charge (status);
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_charge_occurred ON platform_billing_charge (occurred_at);
+
+            CREATE TABLE IF NOT EXISTS platform_billing_assignment_event (
+                id bigint DEFAULT nextval('platform_billing_assignment_event_id_seq'::regclass) NOT NULL,
+                organization_id bigint,
+                tenant_id character varying(255),
+                product character varying(32),
+                previous_plan_code character varying(64),
+                new_plan_code character varying(64),
+                previous_amount_usd numeric(21,2),
+                new_amount_usd numeric(21,2),
+                actor_user_id character varying(255),
+                reason character varying(2000),
+                occurred_at timestamp without time zone DEFAULT now() NOT NULL,
+                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                CONSTRAINT platform_billing_assignment_event_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_platform_billing_assignment_event__organization FOREIGN KEY (organization_id) REFERENCES tenant_organization(id) ON DELETE SET NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_assignment_event_organization ON platform_billing_assignment_event (organization_id);
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_assignment_event_tenant ON platform_billing_assignment_event (tenant_id);
+            CREATE INDEX IF NOT EXISTS idx_platform_billing_assignment_event_occurred ON platform_billing_assignment_event (occurred_at);
+
+            INSERT INTO platform_billing_plan (product, name, code, billing_mode, billing_interval, interval_count, list_price_usd, published, feature_summary)
+            SELECT 'EVENT_SITE', 'Test every day', 'test-every-day', 'RECURRING', 'DAY', 1, 1.00, false, 'Unpublished Stripe test-mode plan. Charges once a day.'
+            WHERE NOT EXISTS (SELECT 1 FROM platform_billing_plan WHERE product = 'EVENT_SITE' AND code = 'test-every-day');
+            INSERT INTO platform_billing_plan (product, name, code, billing_mode, billing_interval, interval_count, list_price_usd, published, feature_summary)
+            SELECT 'EVENT_SITE', 'Test every 2 days', 'test-every-2-days', 'RECURRING', 'DAY', 2, 1.00, false, 'Unpublished Stripe test-mode plan. Charges every two days.'
+            WHERE NOT EXISTS (SELECT 1 FROM platform_billing_plan WHERE product = 'EVENT_SITE' AND code = 'test-every-2-days');
+            INSERT INTO platform_billing_plan (product, name, code, billing_mode, billing_interval, interval_count, list_price_usd, published, feature_summary)
+            SELECT 'EVENT_SITE', 'Test every 15 days', 'test-every-15-days', 'RECURRING', 'DAY', 15, 1.00, false, 'Unpublished Stripe test-mode plan. Charges every 15 days.'
+            WHERE NOT EXISTS (SELECT 1 FROM platform_billing_plan WHERE product = 'EVENT_SITE' AND code = 'test-every-15-days');
+            INSERT INTO platform_billing_plan (product, name, code, billing_mode, billing_interval, interval_count, list_price_usd, published, feature_summary)
+            SELECT 'EVENT_SITE', 'Test monthly', 'test-monthly', 'RECURRING', 'MONTH', 1, 1.00, false, 'Unpublished Stripe test-mode plan. Charges once a month.'
+            WHERE NOT EXISTS (SELECT 1 FROM platform_billing_plan WHERE product = 'EVENT_SITE' AND code = 'test-monthly');
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

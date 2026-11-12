@@ -25,6 +25,8 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
 
     private StringFilter organizationName;
 
+    private StringFilter billingScope;
+
     private StringFilter domain;
 
     private StringFilter primaryColor;
@@ -68,6 +70,7 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
     public TenantOrganizationCriteria(TenantOrganizationCriteria other) {
         this.id = other.id == null ? null : other.id.copy();
         this.organizationName = other.organizationName == null ? null : other.organizationName.copy();
+        this.billingScope = other.billingScope == null ? null : other.billingScope.copy();
         this.domain = other.domain == null ? null : other.domain.copy();
         this.primaryColor = other.primaryColor == null ? null : other.primaryColor.copy();
         this.secondaryColor = other.secondaryColor == null ? null : other.secondaryColor.copy();
@@ -122,6 +125,21 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
 
     public void setOrganizationName(StringFilter organizationName) {
         this.organizationName = organizationName;
+    }
+
+    public StringFilter getBillingScope() {
+        return billingScope;
+    }
+
+    public StringFilter billingScope() {
+        if (billingScope == null) {
+            billingScope = new StringFilter();
+        }
+        return billingScope;
+    }
+
+    public void setBillingScope(StringFilter billingScope) {
+        this.billingScope = billingScope;
     }
 
     public StringFilter getDomain() {

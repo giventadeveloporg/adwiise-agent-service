@@ -28,6 +28,7 @@ public class PlatformBillingPlanDTO implements Serializable {
     private String billingMode;
 
     private String billingInterval;
+    private Integer intervalCount;
 
     @NotNull
     private BigDecimal listPriceUsd;
@@ -94,6 +95,14 @@ public class PlatformBillingPlanDTO implements Serializable {
 
     public void setBillingInterval(String billingInterval) {
         this.billingInterval = billingInterval;
+    }
+
+    public Integer getIntervalCount() {
+        return intervalCount;
+    }
+
+    public void setIntervalCount(Integer intervalCount) {
+        this.intervalCount = intervalCount;
     }
 
     public BigDecimal getListPriceUsd() {

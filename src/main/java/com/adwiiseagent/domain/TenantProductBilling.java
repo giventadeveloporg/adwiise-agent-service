@@ -48,6 +48,14 @@ public class TenantProductBilling implements Serializable {
     @Column(name = "billing_mode", length = 20)
     private String billingMode;
 
+    @Size(max = 20)
+    @Column(name = "billing_interval", length = 20)
+    private String billingInterval;
+
+    @NotNull
+    @Column(name = "interval_count", nullable = false)
+    private Integer intervalCount = 1;
+
     @Column(name = "review_by_date")
     private LocalDate reviewByDate;
 
@@ -165,6 +173,22 @@ public class TenantProductBilling implements Serializable {
 
     public void setBillingMode(String billingMode) {
         this.billingMode = billingMode;
+    }
+
+    public String getBillingInterval() {
+        return billingInterval;
+    }
+
+    public void setBillingInterval(String billingInterval) {
+        this.billingInterval = billingInterval;
+    }
+
+    public Integer getIntervalCount() {
+        return intervalCount;
+    }
+
+    public void setIntervalCount(Integer intervalCount) {
+        this.intervalCount = intervalCount;
     }
 
     public LocalDate getReviewByDate() {

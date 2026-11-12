@@ -97,6 +97,9 @@ public class TenantOrganizationQueryService extends QueryService<TenantOrganizat
                 specification =
                     specification.and(buildStringSpecification(criteria.getOrganizationName(), TenantOrganization_.organizationName));
             }
+            if (criteria.getBillingScope() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getBillingScope(), TenantOrganization_.billingScope));
+            }
             if (criteria.getDomain() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getDomain(), TenantOrganization_.domain));
             }

@@ -47,6 +47,10 @@ public class PlatformBillingPlan implements Serializable {
     private String billingInterval;
 
     @NotNull
+    @Column(name = "interval_count", nullable = false)
+    private Integer intervalCount = 1;
+
+    @NotNull
     @Column(name = "list_price_usd", precision = 21, scale = 2, nullable = false)
     private BigDecimal listPriceUsd;
 
@@ -150,6 +154,14 @@ public class PlatformBillingPlan implements Serializable {
 
     public void setBillingInterval(String billingInterval) {
         this.billingInterval = billingInterval;
+    }
+
+    public Integer getIntervalCount() {
+        return intervalCount;
+    }
+
+    public void setIntervalCount(Integer intervalCount) {
+        this.intervalCount = intervalCount;
     }
 
     public BigDecimal getListPriceUsd() {

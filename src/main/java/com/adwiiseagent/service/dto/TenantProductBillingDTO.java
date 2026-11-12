@@ -24,6 +24,8 @@ public class TenantProductBillingDTO implements Serializable {
     private Long platformPlanId;
     private BigDecimal customFeeUsd;
     private String billingMode;
+    private String billingInterval;
+    private Integer intervalCount;
     private LocalDate reviewByDate;
     private Integer graceDays;
     private ZonedDateTime graceEndsAt;
@@ -42,6 +44,7 @@ public class TenantProductBillingDTO implements Serializable {
     private String organizationStripeCustomerId;
     private BigDecimal organizationMonthlyFeeUsd;
     private Boolean organizationFlatFee;
+    private String organizationBillingScope;
 
     public Long getId() {
         return id;
@@ -105,6 +108,22 @@ public class TenantProductBillingDTO implements Serializable {
 
     public void setBillingMode(String billingMode) {
         this.billingMode = billingMode;
+    }
+
+    public String getBillingInterval() {
+        return billingInterval;
+    }
+
+    public void setBillingInterval(String billingInterval) {
+        this.billingInterval = billingInterval;
+    }
+
+    public Integer getIntervalCount() {
+        return intervalCount;
+    }
+
+    public void setIntervalCount(Integer intervalCount) {
+        this.intervalCount = intervalCount;
     }
 
     public LocalDate getReviewByDate() {
@@ -233,5 +252,13 @@ public class TenantProductBillingDTO implements Serializable {
 
     public void setOrganizationFlatFee(Boolean organizationFlatFee) {
         this.organizationFlatFee = organizationFlatFee;
+    }
+
+    public String getOrganizationBillingScope() {
+        return organizationBillingScope;
+    }
+
+    public void setOrganizationBillingScope(String organizationBillingScope) {
+        this.organizationBillingScope = organizationBillingScope;
     }
 }

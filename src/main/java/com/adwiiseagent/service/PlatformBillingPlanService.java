@@ -56,6 +56,7 @@ public class PlatformBillingPlanService {
         dto.setCode(entity.getCode());
         dto.setBillingMode(entity.getBillingMode());
         dto.setBillingInterval(entity.getBillingInterval());
+        dto.setIntervalCount(entity.getIntervalCount());
         dto.setListPriceUsd(entity.getListPriceUsd());
         dto.setPublished(entity.getPublished());
         dto.setFeatureSummary(entity.getFeatureSummary());
@@ -80,6 +81,7 @@ public class PlatformBillingPlanService {
         if (!partial || dto.getCode() != null) entity.setCode(dto.getCode());
         if (!partial || dto.getBillingMode() != null) entity.setBillingMode(dto.getBillingMode());
         if (!partial || dto.getBillingInterval() != null) entity.setBillingInterval(blankToNull(dto.getBillingInterval()));
+        if (!partial || dto.getIntervalCount() != null) entity.setIntervalCount(dto.getIntervalCount());
         if (!partial || dto.getListPriceUsd() != null) entity.setListPriceUsd(dto.getListPriceUsd());
         if (!partial || dto.getPublished() != null) entity.setPublished(dto.getPublished());
         if (!partial || dto.getFeatureSummary() != null) entity.setFeatureSummary(dto.getFeatureSummary());

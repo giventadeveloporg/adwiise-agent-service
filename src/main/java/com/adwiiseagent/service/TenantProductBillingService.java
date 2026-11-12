@@ -101,6 +101,8 @@ public class TenantProductBillingService {
         dto.setPlatformPlanId(entity.getPlatformPlanId());
         dto.setCustomFeeUsd(entity.getCustomFeeUsd());
         dto.setBillingMode(entity.getBillingMode());
+        dto.setBillingInterval(entity.getBillingInterval());
+        dto.setIntervalCount(entity.getIntervalCount());
         dto.setReviewByDate(entity.getReviewByDate());
         dto.setGraceDays(entity.getGraceDays());
         dto.setGraceEndsAt(entity.getGraceEndsAt());
@@ -118,14 +120,23 @@ public class TenantProductBillingService {
 
     private void applyOrganizationBilling(TenantProductBilling entity) {
         TenantOrganization organization = owningOrganization(entity.getTenantId());
-        if (organization.getMonthlyFeeUsd() != null) {
+        String notes = entity.getNotes() == null ? "" : entity.getNotes();
+        String flatMarker = "organization-flat:" + organization.getId();
+        if (notes.contains(flatMarker)) {
+            return;
+        }
+        boolean organizationMode =
+            "ORGANIZATION".equalsIgnoreCase(organization.getBillingScope()) ||
+            (organization.getBillingScope() == null &&
+                organization.getMonthlyFeeUsd() != null &&
+                organization.getMonthlyFeeUsd().signum() > 0);
+        if (organizationMode) {
             entity.setChargeEnabled(Boolean.FALSE);
             entity.setStatus("COMPLIMENTARY");
             entity.setStripeSubscriptionId(null);
             entity.setCustomFeeUsd(null);
             String marker = "covered-by-organization:" + organization.getId();
-            String notes = entity.getNotes();
-            if (notes == null || notes.isBlank()) {
+            if (notes.isBlank()) {
                 entity.setNotes(marker);
             } else if (!notes.contains(marker)) {
                 entity.setNotes(notes + "\n" + marker);
@@ -155,7 +166,8 @@ public class TenantProductBillingService {
                 dto.setOrganizationId(organization.getId());
                 dto.setOrganizationStripeCustomerId(organization.getStripeCustomerId());
                 dto.setOrganizationMonthlyFeeUsd(organization.getMonthlyFeeUsd());
-                dto.setOrganizationFlatFee(organization.getMonthlyFeeUsd() != null);
+                dto.setOrganizationFlatFee("ORGANIZATION".equalsIgnoreCase(organization.getBillingScope()));
+                dto.setOrganizationBillingScope(organization.getBillingScope());
             });
     }
 
@@ -182,6 +194,8 @@ public class TenantProductBillingService {
             entity.setCustomFeeUsd(dto.getCustomFeeUsd());
         }
         if (!partial || dto.getBillingMode() != null) entity.setBillingMode(blankToNull(dto.getBillingMode()));
+        if (!partial || dto.getBillingInterval() != null) entity.setBillingInterval(blankToNull(dto.getBillingInterval()));
+        if (!partial || dto.getIntervalCount() != null) entity.setIntervalCount(dto.getIntervalCount());
         if (!partial || dto.getReviewByDate() != null) entity.setReviewByDate(dto.getReviewByDate());
         if (!partial || dto.getGraceDays() != null) entity.setGraceDays(dto.getGraceDays());
         if (!partial || dto.getGraceEndsAt() != null) entity.setGraceEndsAt(dto.getGraceEndsAt());
