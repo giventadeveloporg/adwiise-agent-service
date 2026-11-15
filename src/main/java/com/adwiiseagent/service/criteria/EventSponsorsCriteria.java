@@ -23,6 +23,8 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
     private StringFilter companyName;
     private StringFilter tagline;
     private StringFilter description;
+    private StringFilter ocrText;
+    private StringFilter searchText;
     private StringFilter websiteUrl;
     private StringFilter contactEmail;
     private StringFilter contactPhone;
@@ -51,6 +53,8 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
         this.companyName = other.companyName == null ? null : other.companyName.copy();
         this.tagline = other.tagline == null ? null : other.tagline.copy();
         this.description = other.description == null ? null : other.description.copy();
+        this.ocrText = other.ocrText == null ? null : other.ocrText.copy();
+        this.searchText = other.searchText == null ? null : other.searchText.copy();
         this.websiteUrl = other.websiteUrl == null ? null : other.websiteUrl.copy();
         this.contactEmail = other.contactEmail == null ? null : other.contactEmail.copy();
         this.contactPhone = other.contactPhone == null ? null : other.contactPhone.copy();
@@ -129,6 +133,22 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
 
     public void setDescription(StringFilter description) {
         this.description = description;
+    }
+
+    public StringFilter getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(StringFilter ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public StringFilter getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(StringFilter searchText) {
+        this.searchText = searchText;
     }
 
     public StringFilter getWebsiteUrl() {
@@ -280,6 +300,8 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
             Objects.equals(companyName, that.companyName) &&
             Objects.equals(tagline, that.tagline) &&
             Objects.equals(description, that.description) &&
+            Objects.equals(ocrText, that.ocrText) &&
+            Objects.equals(searchText, that.searchText) &&
             Objects.equals(websiteUrl, that.websiteUrl) &&
             Objects.equals(contactEmail, that.contactEmail) &&
             Objects.equals(contactPhone, that.contactPhone) &&
@@ -310,6 +332,8 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
             companyName,
             tagline,
             description,
+            ocrText,
+            searchText,
             websiteUrl,
             contactEmail,
             contactPhone,
@@ -341,6 +365,8 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
             (companyName != null ? "companyName=" + companyName + ", " : "") +
             (tagline != null ? "tagline=" + tagline + ", " : "") +
             (description != null ? "description=" + description + ", " : "") +
+            (ocrText != null ? "ocrText=" + ocrText + ", " : "") +
+            (searchText != null ? "searchText=" + searchText + ", " : "") +
             (websiteUrl != null ? "websiteUrl=" + websiteUrl + ", " : "") +
             (contactEmail != null ? "contactEmail=" + contactEmail + ", " : "") +
             (contactPhone != null ? "contactPhone=" + contactPhone + ", " : "") +

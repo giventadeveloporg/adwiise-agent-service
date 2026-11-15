@@ -27,6 +27,10 @@ public class GalleryAlbumDTO implements Serializable {
     @Size(max = 2048)
     private String description;
 
+    private String ocrText;
+
+    private String searchText;
+
     @Size(max = 2048)
     private String coverImageUrl;
 
@@ -104,6 +108,22 @@ public class GalleryAlbumDTO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public String getCoverImageUrl() {

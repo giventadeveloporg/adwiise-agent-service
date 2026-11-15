@@ -48,6 +48,12 @@ public class FocusGroup implements Serializable {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "ocr_text_from_images_upload", columnDefinition = "text")
+    private String ocrText;
+
+    @Column(name = "search_text", columnDefinition = "text")
+    private String searchText;
+
     @Size(max = 1024)
     @Column(name = "cover_image_url", length = 1024)
     private String coverImageUrl;
@@ -143,6 +149,32 @@ public class FocusGroup implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return this.ocrText;
+    }
+
+    public FocusGroup ocrText(String ocrText) {
+        this.setOcrText(ocrText);
+        return this;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return this.searchText;
+    }
+
+    public FocusGroup searchText(String searchText) {
+        this.setSearchText(searchText);
+        return this;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public String getCoverImageUrl() {

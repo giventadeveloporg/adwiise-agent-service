@@ -10,6 +10,7 @@ import com.adwiiseagent.service.BatchJobEmailService;
 import com.adwiiseagent.service.EmailSenderService;
 import com.adwiiseagent.service.QRCodeService;
 import com.adwiiseagent.service.S3Service;
+import com.adwiiseagent.service.TicketConfirmationEmailBatchJobService;
 import com.adwiiseagent.service.TicketEmailSender;
 import com.adwiiseagent.service.UserProfileService;
 import com.adwiiseagent.service.dto.*;
@@ -61,6 +62,7 @@ public class QRCodeResource implements TicketEmailSender {
     private final EmailSenderService emailSenderService;
     private final UserProfileService userProfileService;
     private final BatchJobEmailService batchJobEmailService;
+    private final TicketConfirmationEmailBatchJobService ticketConfirmationEmailBatchJobService;
     private final TenantSettingsRepository tenantSettingsRepository;
     private final JwtEncoder jwtEncoder;
     private final Environment environment;
@@ -116,6 +118,7 @@ public class QRCodeResource implements TicketEmailSender {
         EmailSenderService emailSenderService,
         UserProfileService userProfileService,
         BatchJobEmailService batchJobEmailService,
+        TicketConfirmationEmailBatchJobService ticketConfirmationEmailBatchJobService,
         TenantSettingsRepository tenantSettingsRepository,
         JwtEncoder jwtEncoder,
         Environment environment,
@@ -134,6 +137,7 @@ public class QRCodeResource implements TicketEmailSender {
         this.emailSenderService = emailSenderService;
         this.userProfileService = userProfileService;
         this.batchJobEmailService = batchJobEmailService;
+        this.ticketConfirmationEmailBatchJobService = ticketConfirmationEmailBatchJobService;
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.jwtEncoder = jwtEncoder;
         this.environment = environment;
@@ -381,7 +385,6 @@ public class QRCodeResource implements TicketEmailSender {
     }
 
     @PostMapping("/events/{eventId}/transactions/{transactionId}/emailHostUrlPrefix/{emailHostUrlPrefix}/send-ticket-email")
-    @Async
     @Override
     public void sendTicketEmail(
         @PathVariable Long eventId,
@@ -389,348 +392,18 @@ public class QRCodeResource implements TicketEmailSender {
         @RequestParam(value = "to", required = false) String to,
         @PathVariable String emailHostUrlPrefix
     ) {
-        QrCodeUsageDTO dto = buildQrCodeUsageDTO(eventId, transactionId);
-        if (dto == null) {
+        EventTicketTransaction transaction = transactionRepository.findById(transactionId).orElse(null);
+        if (transaction == null || !eventId.equals(transaction.getEventId())) {
             return;
         }
         String recipient = (to != null && !to.isBlank()) ? to : "test@example.com";
-
-        // CRITICAL: Get tenantId first for multi-tenant email subscription check
-        String tenantId = dto.getTransaction().getTenantId();
-
-        // Check subscription - MUST use findByEmailAndTenantId to avoid NonUniqueResultException
-        // In multi-tenant systems, the same email can exist across different tenants
-        List<UserProfileDTO> profiles = userProfileService.findAllByEmailAndTenantId(recipient, tenantId);
-        boolean isSubscribed =
-            profiles.isEmpty() || profiles.stream().anyMatch(u -> Boolean.TRUE.equals(u.getIsEmailSubscribed()));
-        if (!isSubscribed) {
-            return;
-        }
-        // Generate unsubscribe token and link
-        JwtClaimsSet claims = JwtClaimsSet.builder().subject(recipient).build();
-        JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();
-        String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
-        String unsubscribeLinkPrefix = emailHostUrlPrefix + "/unsubscribe-email?email=%s&token=%s";
-        String unsubscribeLink = String.format(unsubscribeLinkPrefix, recipient, token);
-        // https://yourdomain.com/unsubscribe-email?email=user@example.com&token=UNIQUE_TOKEN
-        String unsubscribeHtml = String.format(
-            "<div style='margin:24px 0 0 0; text-align:center; color:#888; font-size:13px;'>If you no longer wish to receive these emails, <a href='%s' style='color:#6b207c;'>click here to unsubscribe</a>.</div>",
-            unsubscribeLink
+        ticketConfirmationEmailBatchJobService.sendIfNotAlreadySent(
+            transaction.getTenantId(),
+            eventId,
+            transactionId,
+            recipient,
+            emailHostUrlPrefix
         );
-        String profilePrefix = getActiveProfilePrefix();
-        String s3BaseUrl = getS3BaseUrl();
-
-        // Get email header image URL from event_details table, fallback to default path if not set
-        String headerImageUrl = dto.getEventDetails().getEmailHeaderImageUrl();
-        if (headerImageUrl == null || headerImageUrl.isEmpty()) {
-            // Fallback to default path for backward compatibility
-            headerImageUrl =
-                String.format(
-                    "%s/%s/events/tenantId/%s/event-id/%d/tickets/email-templates/email_header_image.jpeg",
-                    s3BaseUrl,
-                    profilePrefix,
-                    tenantId,
-                    eventId
-                );
-            log.debug("Using default email header image path for event {}: {}", eventId, headerImageUrl);
-        } else {
-            log.debug("Using custom email header image URL for event {}: {}", eventId, headerImageUrl);
-        }
-
-        String qrCodeImageUrl = dto.getTransaction().getQrCodeImageUrl();
-        String eventName = dto.getEventDetails().getTitle();
-        // Format event date and time
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy, h:mm:ss a", Locale.ENGLISH);
-        DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.ENGLISH);
-        DateTimeFormatter timeRangeFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
-        DateTimeFormatter timeWithZoneFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
-        String eventDate = "";
-        String eventStart = "";
-        String eventEnd = "";
-        String eventTimeZoneId = dto.getEventDetails().getTimezone();
-        java.time.ZoneId eventZoneId = java.time.ZoneId.systemDefault();
-        String eventTimeZoneAbbr = "";
-        if (eventTimeZoneId != null && !eventTimeZoneId.isBlank()) {
-            try {
-                eventZoneId = java.time.ZoneId.of(eventTimeZoneId);
-                java.time.LocalDate endDate = dto.getEventDetails().getEndDate();
-                java.time.ZonedDateTime endZdt = endDate.atStartOfDay(eventZoneId);
-                eventTimeZoneAbbr = endZdt.getZone().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH);
-            } catch (Exception e) {
-                eventZoneId = java.time.ZoneId.systemDefault();
-                eventTimeZoneAbbr = eventZoneId.getId();
-            }
-        }
-        if (dto.getEventDetails().getStartDate() != null && dto.getEventDetails().getEndDate() != null) {
-            java.time.LocalDate startDate = dto.getEventDetails().getStartDate();
-            java.time.LocalDate endDate = dto.getEventDetails().getEndDate();
-            java.time.ZonedDateTime start = startDate.atStartOfDay(eventZoneId);
-            java.time.ZonedDateTime end = endDate.atStartOfDay(eventZoneId);
-            eventDate = start.format(dateOnlyFormatter);
-            eventStart = start.format(timeRangeFormatter);
-            eventEnd = end.format(timeRangeFormatter) + " (" + eventTimeZoneAbbr + ")";
-        }
-        String dateOfPurchase = "";
-        if (dto.getTransaction().getCreatedAt() != null) {
-            dateOfPurchase = dto.getTransaction().getCreatedAt().format(dateTimeFormatter);
-        }
-        String checkInTime = "";
-        if (dto.getTransaction().getCheckInTime() != null) {
-            checkInTime = dto.getTransaction().getCheckInTime().format(dateTimeFormatter);
-        }
-        // Transaction details
-        String name = dto.getTransaction().getFirstName();
-        String email = dto.getTransaction().getEmail();
-        String amountPaid = dto.getTransaction().getTotalAmount() != null
-            ? String.format("$%.2f", dto.getTransaction().getFinalAmount())
-            : "";
-
-        EventTicketTransactionDTO txn = dto.getTransaction();
-        String ticketNumber;
-        if (txn.getTransactionReference() != null && !txn.getTransactionReference().isEmpty()) {
-            ticketNumber = txn.getTransactionReference();
-        } else if (txn.getId() != null) {
-            ticketNumber = "TKTN" + txn.getId().toString();
-        } else {
-            ticketNumber = null; // or handle as needed
-        }
-
-        String checkInStatus = dto.getTransaction().getCheckInStatus();
-
-        // Build ticket breakdown rows with centered text
-        StringBuilder ticketBreakdownRows = new StringBuilder();
-        for (EventTicketTransactionItemDTO item : dto.getItems()) {
-            String typeName = "";
-            for (EventTicketTypeDTO type : dto.getEventTicketTypes()) {
-                if (type.getId().equals(item.getTicketTypeId())) {
-                    typeName = type.getName();
-                    break;
-                }
-            }
-            ticketBreakdownRows.append(
-                String.format(
-                    "<tr>" +
-                    "<td style='padding:8px; text-align:center;'>%s</td>" +
-                    "<td style='padding:8px; text-align:center;'>%d</td>" +
-                    "<td style='padding:8px; text-align:center;'>$%.2f</td>" +
-                    "<td style='padding:8px; text-align:center;'>$%.2f</td>" +
-                    "</tr>",
-                    typeName,
-                    item.getQuantity(),
-                    item.getPricePerUnit(),
-                    item.getTotalAmount()
-                )
-            );
-        }
-
-        // Emojis for section headings
-        String moneyEmoji = "💵";
-        String ticketEmoji = "🎟️";
-        String calendarEmoji = "📅";
-        String qrEmoji = "🎫";
-        String discountEmoji = "🏷️";
-        String locationEmoji = "📍";
-        String discountAmount = "";
-        if (dto.getTransaction().getDiscountAmount() != null && dto.getTransaction().getDiscountAmount().doubleValue() > 0) {
-            discountAmount = String.format("%s $%.2f", discountEmoji, dto.getTransaction().getDiscountAmount());
-        }
-
-        // Enhanced location display with Google Maps link
-        String locationAddress = dto.getEventDetails().getLocation();
-        String googleMapsUrl = "";
-        String locationDisplay = "";
-        if (locationAddress != null && !locationAddress.trim().isEmpty()) {
-            // URL encode the address for Google Maps
-            try {
-                googleMapsUrl =
-                    "https://www.google.com/maps/search/" +
-                    java.net.URLEncoder.encode(locationAddress, java.nio.charset.StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                googleMapsUrl = "https://www.google.com/maps";
-            }
-
-            locationDisplay =
-                String.format(
-                    """
-                    <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 8px;">
-                      <span style="color: #dc2626; font-size: 16px; margin-top: 2px;">%s</span>
-                      <div style="flex: 1;">
-                        <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 3px solid #dc2626; margin: 4px 0;">
-                          <span style="color: #374151; line-height: 1.5; font-weight: 500;">%s</span>
-                        </div>
-                        <div style="margin-top: 8px;">
-                          <a href="%s" target="_blank"
-                             style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px;
-                                    background: #f3f4f6; border-radius: 6px; text-decoration: none;
-                                    color: #059669; font-size: 13px; border: 1px solid #d1d5db;">
-                            <span>🗺️</span>
-                            <span>View on Google Maps</span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                    """,
-                    locationEmoji,
-                    locationAddress,
-                    googleMapsUrl
-                );
-        } else {
-            locationDisplay = "<span style=\"color: #6b7280;\">Location TBD</span>";
-        }
-
-        // Build additional table rows for discount and amount paid
-        String additionalRows = "";
-
-        // Add discount row if applicable
-        if (!discountAmount.isEmpty()) {
-            additionalRows +=
-            String.format(
-                "<tr style=\"border-top: 2px solid #e5e7eb;\"><td colspan=\"2\" style=\"padding:8px; text-align:right; font-weight:bold;\">%s Discount Applied:</td><td colspan=\"2\" style=\"padding:8px; text-align:center; color:#dc2626; font-weight:bold;\">-%s</td></tr>",
-                discountEmoji,
-                String.format("$%.2f", dto.getTransaction().getDiscountAmount())
-            );
-        }
-
-        // Add amount paid row
-        String finalAmount = dto.getTransaction().getFinalAmount() != null
-            ? String.format("$%.2f", dto.getTransaction().getFinalAmount())
-            : String.format("$%.2f", dto.getTransaction().getTotalAmount());
-
-        additionalRows +=
-        String.format(
-            "<tr style=\"border-top: 2px solid #e5e7eb; background:#f0f9ff;\"><td colspan=\"2\" style=\"padding:12px; text-align:right; font-weight:bold; font-size:16px;\">%s Amount Paid:</td><td colspan=\"2\" style=\"padding:12px; text-align:center; color:#059669; font-weight:bold; font-size:16px;\">%s</td></tr>",
-            moneyEmoji,
-            finalAmount
-        );
-        String template = String.format(
-            """
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset=\"UTF-8\">
-              <title>Your Event Ticket</title>
-            </head>
-            <body style=\"font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px;\">
-              <div style=\"max-width: 650px; margin: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #eee; overflow: hidden;\">
-                <img src=\"%s\" alt=\"Event Header\" style=\"width: 100%%; display: block; border-bottom: 1px solid #eee;\">
-                <div style=\"padding: 32px;\">
-                  <h2 style=\"margin-top: 0; text-align:center; color:#6b207c;\">%s Your Ticket QR Code</h2>
-                  <div style=\"text-align:center; margin-bottom: 32px;\">
-                    <img src=\"%s\" alt=\"QR Code\" style=\"width:180px;height:180px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; padding: 12px;\">
-                  </div>
-                  <div style=\"margin-bottom: 32px;\">
-                    <h3 style=\"margin-bottom: 12px; color:#6b207c;\">%s Ticket # <span style='color:#2d3748;font-weight:bold;'>%s</span></h3>
-                    <h3 style=\"margin-bottom: 12px; color:#6b207c;\">%s Ticket Breakdown</h3>
-                    <table style=\"width:100%%; border-collapse:collapse;\">
-                      <tr style=\"background:#f5f5f5;\">
-                        <th style=\"padding:8px; text-align:center;\">Ticket Type</th>
-                        <th style=\"padding:8px; text-align:center;\">Quantity</th>
-                        <th style=\"padding:8px; text-align:center;\">Price Per Unit</th>
-                        <th style=\"padding:8px; text-align:center;\">Total</th>
-                      </tr>
-                      %s
-                      %s
-                    </table>
-                  </div>
-                  <div style=\"margin-bottom: 32px;\">
-                    <h3 style=\"margin-bottom: 12px; color:#6b207c;\">%s Event Details</h3>
-                    <p>
-                      <strong>%s</strong><br>
-                      <span>%s | %s - %s</span><br>
-                    </p>
-                    %s
-                  </div>
-                </div>
-              </div>
-            </body>
-            </html>
-            """,
-            headerImageUrl,
-            qrEmoji,
-            qrCodeImageUrl,
-            ticketEmoji,
-            ticketNumber,
-            ticketEmoji,
-            ticketBreakdownRows.toString(),
-            additionalRows,
-            calendarEmoji,
-            eventName,
-            eventDate,
-            eventStart,
-            eventEnd,
-            locationDisplay
-        );
-
-        // Prepare S3 URLs for footer and logo, replacing tenant_demo_001 with actual
-        // tenantId
-        String tenantIdPath = tenantId != null ? tenantId : "tenant_demo_001";
-        String footerHtmlS3Url = String.format(
-            "%s/%s/events/tenantId/%s/email-templates/email_footer.html",
-            s3BaseUrl,
-            profilePrefix,
-            tenantIdPath
-        );
-        String logoS3Url = String.format(
-            "%s/%s/events/tenantId/%s/email-templates/email_footer_logo.png",
-            s3BaseUrl,
-            profilePrefix,
-            tenantIdPath
-        );
-
-        // Download the footer HTML from S3
-        String footerHtml = "";
-        try {
-            footerHtml = s3Service.downloadHtmlFromUrl(footerHtmlS3Url); // Implement this method in S3Service
-            // Replace the logo placeholder
-            footerHtml = footerHtml.replace("{{LOGO_URL}}", logoS3Url);
-        } catch (Exception e) {
-            // If download fails, fallback to empty or default footer
-            footerHtml = "";
-        }
-
-        // Build ticket refund policy disclaimer
-        String ticketPolicyHtml =
-            """
-            <div style="margin: 24px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #555;">
-              <h4 style="margin: 0 0 12px 0; color: #333; font-size: 14px;">Ticket Sales Policy</h4>
-              <p style="margin: 0 0 12px 0;"><strong>All ticket sales are final and non-refundable, with the following exceptions:</strong></p>
-              <ul style="margin: 0 0 12px 0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;"><strong>Event Cancellation:</strong> If the event is outright canceled, you will be eligible for a full refund.</li>
-                <li style="margin-bottom: 8px;"><strong>Event Postponement/Rescheduling:</strong> In the event of a postponement or rescheduling, you may be offered the option of a refund or the ability to use your ticket for the new date, depending on the specific circumstances. Please refer to further communication regarding postponed or rescheduled events for details.</li>
-                <li style="margin-bottom: 8px;"><strong>Refund Processing:</strong> Approved refunds will typically be processed back to the original method of payment.</li>
-              </ul>
-              <p style="margin: 0; font-weight: bold;"><strong>By purchasing this ticket, you acknowledge and agree to the terms of this Ticket Sales Policy.</strong></p>
-            </div>
-            """;
-
-        // ... build the main email HTML as before ...
-        String fullEmailHtml = template + unsubscribeHtml + footerHtml + ticketPolicyHtml;
-
-        // Get from email with fallback chain:
-        // 1. Event's fromEmail (required field)
-        // 2. TenantSettings email (if event fromEmail is not set or empty)
-        // 3. Default config email (handled by EmailSenderService)
-        String fromEmail = dto.getEventDetails().getFromEmail();
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            // Try tenant settings as fallback
-            fromEmail =
-                tenantSettingsRepository
-                    .findByTenantId(tenantId)
-                    .map(settings -> settings.getEmail())
-                    .filter(tenantEmail -> tenantEmail != null && !tenantEmail.isEmpty())
-                    .orElse(null);
-        }
-
-        // List-Unsubscribe header
-        Map<String, String> headers = new HashMap<>();
-        headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(recipient, unsubscribeLink));
-
-        // Send email with fromEmail if available, otherwise use default
-        if (fromEmail != null && !fromEmail.isEmpty()) {
-            emailSenderService.sendEmail(fromEmail, recipient, "Your Event Ticket for " + eventName, fullEmailHtml, true, headers);
-        } else {
-            emailSenderService.sendEmail(recipient, "Your Event Ticket for " + eventName, fullEmailHtml, true, headers);
-        }
     }
 
     @PostMapping("/send-promotion-emails")

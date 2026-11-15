@@ -189,5 +189,10 @@
     <include file="config/liquibase/changelog/20261111140000_organization_name_unique.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261111150000_tenant_settings_brand_colors.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261112120000_platform_billing_dashboard.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261115010000_event_sponsors_search_text.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261115020000_event_gallery_focus_search_text.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261115030000_event_sponsors_ocr_text_from_sponsor_images.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261115040000_ocr_text_from_images_upload.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261115180000_tenant_settings_registrar_notes.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

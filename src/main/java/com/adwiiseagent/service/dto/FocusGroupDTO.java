@@ -28,6 +28,10 @@ public class FocusGroupDTO implements Serializable {
 
     private String description;
 
+    private String ocrText;
+
+    private String searchText;
+
     @Size(max = 1024)
     private String coverImageUrl;
 
@@ -77,6 +81,22 @@ public class FocusGroupDTO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public String getCoverImageUrl() {

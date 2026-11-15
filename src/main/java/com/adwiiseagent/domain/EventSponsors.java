@@ -51,6 +51,12 @@ public class EventSponsors implements Serializable {
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
+    @Column(name = "ocr_text_from_images_upload", columnDefinition = "text")
+    private String ocrText;
+
+    @Column(name = "search_text", columnDefinition = "text")
+    private String searchText;
+
     @Size(max = 1024)
     @Column(name = "website_url", length = 1024)
     private String websiteUrl;
@@ -210,6 +216,32 @@ public class EventSponsors implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return this.ocrText;
+    }
+
+    public EventSponsors ocrText(String ocrText) {
+        this.setOcrText(ocrText);
+        return this;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return this.searchText;
+    }
+
+    public EventSponsors searchText(String searchText) {
+        this.setSearchText(searchText);
+        return this;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public String getWebsiteUrl() {
@@ -482,6 +514,8 @@ public class EventSponsors implements Serializable {
         ", companyName='" + getCompanyName() + "'" +
         ", tagline='" + getTagline() + "'" +
         ", description='" + getDescription() + "'" +
+        ", ocrText='" + getOcrText() + "'" +
+        ", searchText='" + getSearchText() + "'" +
         ", websiteUrl='" + getWebsiteUrl() + "'" +
         ", contactEmail='" + getContactEmail() + "'" +
         ", contactPhone='" + getContactPhone() + "'" +

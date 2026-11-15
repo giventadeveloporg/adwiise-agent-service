@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261115010000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_sponsors"/>
+            <not>
+                <columnExists tableName="event_sponsors" columnName="ocr_text"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="event_sponsors">
+            <column name="ocr_text" type="text">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261115010000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_sponsors"/>
+            <not>
+                <columnExists tableName="event_sponsors" columnName="search_text"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="event_sponsors">
+            <column name="search_text" type="text">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261115010000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_sponsors"/>
+            <columnExists tableName="event_sponsors" columnName="search_text"/>
+        </preConditions>
+        <sql>
+            UPDATE public.event_sponsors
+            SET search_text = lower(
+                    trim(
+                        regexp_replace(
+                            concat_ws(
+                                ' ',
+                                nullif(trim(name), ''),
+                                nullif(trim(company_name), ''),
+                                nullif(trim(tagline), ''),
+                                nullif(trim(description), ''),
+                                nullif(trim(type), ''),
+                                nullif(trim(ocr_text), '')
+                            ),
+                            '\s+',
+                            ' ',
+                            'g'
+                        )
+                    )
+                )
+            WHERE search_text IS NULL
+               OR btrim(search_text) = '';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

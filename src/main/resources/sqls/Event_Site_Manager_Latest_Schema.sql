@@ -2218,6 +2218,8 @@ CREATE TABLE public.event_sponsors (
                                        company_name varchar(255) NULL,
                                        tagline varchar(500) NULL,
                                        description text NULL,
+                                       ocr_text text NULL,
+                                       search_text text NULL,
                                        website_url varchar(1024) NULL,
     -- Contact information
                                        contact_email varchar(255) NULL,

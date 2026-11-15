@@ -102,6 +102,12 @@ public class EventDetailsQueryService extends QueryService<EventDetails> {
             if (criteria.getDescription() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getDescription(), EventDetails_.description));
             }
+            if (criteria.getOcrText() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getOcrText(), EventDetails_.ocrText));
+            }
+            if (criteria.getSearchText() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getSearchText(), EventDetails_.searchText));
+            }
             if (criteria.getStartDate() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getStartDate(), EventDetails_.startDate));
             }

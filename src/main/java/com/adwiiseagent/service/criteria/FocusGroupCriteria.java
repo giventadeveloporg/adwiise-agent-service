@@ -30,6 +30,10 @@ public class FocusGroupCriteria implements Serializable, Criteria {
 
     private StringFilter slug;
 
+    private StringFilter ocrText;
+
+    private StringFilter searchText;
+
     private BooleanFilter isActive;
 
     private InstantFilter createdAt;
@@ -45,6 +49,8 @@ public class FocusGroupCriteria implements Serializable, Criteria {
         this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
         this.name = other.optionalName().map(StringFilter::copy).orElse(null);
         this.slug = other.optionalSlug().map(StringFilter::copy).orElse(null);
+        this.ocrText = other.ocrText == null ? null : other.ocrText.copy();
+        this.searchText = other.searchText == null ? null : other.searchText.copy();
         this.isActive = other.optionalIsActive().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
@@ -130,6 +136,22 @@ public class FocusGroupCriteria implements Serializable, Criteria {
 
     public void setSlug(StringFilter slug) {
         this.slug = slug;
+    }
+
+    public StringFilter getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(StringFilter ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public StringFilter getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(StringFilter searchText) {
+        this.searchText = searchText;
     }
 
     public BooleanFilter getIsActive() {

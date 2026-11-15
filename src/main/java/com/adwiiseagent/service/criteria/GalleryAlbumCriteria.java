@@ -27,6 +27,10 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
 
     private StringFilter description;
 
+    private StringFilter ocrText;
+
+    private StringFilter searchText;
+
     private StringFilter coverImageUrl;
 
     private BooleanFilter isPublic;
@@ -56,6 +60,8 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
         this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
         this.title = other.title == null ? null : other.title.copy();
         this.description = other.description == null ? null : other.description.copy();
+        this.ocrText = other.ocrText == null ? null : other.ocrText.copy();
+        this.searchText = other.searchText == null ? null : other.searchText.copy();
         this.coverImageUrl = other.coverImageUrl == null ? null : other.coverImageUrl.copy();
         this.isPublic = other.isPublic == null ? null : other.isPublic.copy();
         this.displayOrder = other.displayOrder == null ? null : other.displayOrder.copy();
@@ -132,6 +138,22 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
 
     public void setDescription(StringFilter description) {
         this.description = description;
+    }
+
+    public StringFilter getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(StringFilter ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public StringFilter getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(StringFilter searchText) {
+        this.searchText = searchText;
     }
 
     public StringFilter getCoverImageUrl() {

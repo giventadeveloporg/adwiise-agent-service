@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261115180000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="tenant_settings" columnName="registrar_notes"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="registrar_notes" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261115180000-2" author="system">
+        <sql>
+            COMMENT ON COLUMN public.tenant_settings.registrar_notes IS
+                'Text copied from the onboarding request: registrar name, domain, name servers, and URL or domain forwarding. Same kind of notes as tenant_onboarding_request.registrar_notes.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

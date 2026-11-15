@@ -148,6 +148,9 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 255)
     private String email;
 
+    @Schema(description = "Registrar name, domain, name servers, and URL or domain forwarding notes copied from onboarding")
+    private String registrarNotes;
+
     @Size(max = 1024)
     private String facebookUrl;
 
@@ -672,6 +675,14 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getRegistrarNotes() {
+        return registrarNotes;
+    }
+
+    public void setRegistrarNotes(String registrarNotes) {
+        this.registrarNotes = registrarNotes;
     }
 
     public String getFacebookUrl() {
@@ -1202,6 +1213,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", country='" + getCountry() + "'" +
                 ", stateProvince='" + getStateProvince() + "'" +
                 ", email='" + getEmail() + "'" +
+                ", registrarNotes='" + getRegistrarNotes() + "'" +
                 ", facebookUrl='" + getFacebookUrl() + "'" +
                 ", instagramUrl='" + getInstagramUrl() + "'" +
                 ", twitterUrl='" + getTwitterUrl() + "'" +

@@ -33,6 +33,10 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 900)
     private String description;
 
+    private String ocrText;
+
+    private String searchText;
+
     @NotNull
     private LocalDate startDate;
 
@@ -187,6 +191,22 @@ public class EventDetailsDTO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public LocalDate getStartDate() {

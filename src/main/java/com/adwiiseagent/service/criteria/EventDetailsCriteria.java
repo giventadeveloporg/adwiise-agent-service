@@ -32,6 +32,10 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private StringFilter description;
 
+    private StringFilter ocrText;
+
+    private StringFilter searchText;
+
     private LocalDateFilter startDate;
 
     private LocalDateFilter endDate;
@@ -100,6 +104,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.title = other.title == null ? null : other.title.copy();
         this.caption = other.caption == null ? null : other.caption.copy();
         this.description = other.description == null ? null : other.description.copy();
+        this.ocrText = other.ocrText == null ? null : other.ocrText.copy();
+        this.searchText = other.searchText == null ? null : other.searchText.copy();
         this.startDate = other.startDate == null ? null : other.startDate.copy();
         this.endDate = other.endDate == null ? null : other.endDate.copy();
         this.promotionStartDate = other.promotionStartDate == null ? null : other.promotionStartDate.copy();
@@ -211,6 +217,22 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     public void setDescription(StringFilter description) {
         this.description = description;
+    }
+
+    public StringFilter getOcrText() {
+        return ocrText;
+    }
+
+    public void setOcrText(StringFilter ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public StringFilter getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(StringFilter searchText) {
+        this.searchText = searchText;
     }
 
     public LocalDateFilter getStartDate() {

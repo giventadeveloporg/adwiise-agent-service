@@ -1,6 +1,7 @@
 package com.adwiiseagent.repository;
 
 import com.adwiiseagent.domain.EventTicketTransaction;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
@@ -58,4 +59,22 @@ public interface EventTicketTransactionRepository
      * @return List of ticket transactions matching the transaction reference
      */
     List<EventTicketTransaction> findByTransactionReference(String transactionReference);
+
+    /**
+     * Claim a ticket confirmation send. A second caller updates zero rows when the timestamp is already set.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        "UPDATE EventTicketTransaction t SET t.confirmationSentAt = :sentAt, t.updatedAt = :sentAt WHERE t.id = :id AND t.confirmationSentAt IS NULL"
+    )
+    int claimConfirmationSend(@Param("id") Long id, @Param("sentAt") ZonedDateTime sentAt);
+
+    /**
+     * Clear a claim when the batch job does not accept the send, so a later call can try again.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        "UPDATE EventTicketTransaction t SET t.confirmationSentAt = NULL, t.updatedAt = :updatedAt WHERE t.id = :id AND t.confirmationSentAt = :sentAt"
+    )
+    int releaseConfirmationSend(@Param("id") Long id, @Param("sentAt") ZonedDateTime sentAt, @Param("updatedAt") ZonedDateTime updatedAt);
 }

@@ -99,6 +99,12 @@ public class GalleryAlbumQueryService extends QueryService<GalleryAlbum> {
             if (criteria.getDescription() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getDescription(), GalleryAlbum_.description));
             }
+            if (criteria.getOcrText() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getOcrText(), GalleryAlbum_.ocrText));
+            }
+            if (criteria.getSearchText() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getSearchText(), GalleryAlbum_.searchText));
+            }
             if (criteria.getCoverImageUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getCoverImageUrl(), GalleryAlbum_.coverImageUrl));
             }

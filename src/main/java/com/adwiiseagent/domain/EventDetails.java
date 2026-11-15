@@ -55,6 +55,12 @@ public class EventDetails implements Serializable {
     @Column(name = "description", length = 900)
     private String description;
 
+    @Column(name = "ocr_text_from_images_upload", columnDefinition = "text")
+    private String ocrText;
+
+    @Column(name = "search_text", columnDefinition = "text")
+    private String searchText;
+
     @NotNull
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -332,6 +338,32 @@ public class EventDetails implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return this.ocrText;
+    }
+
+    public EventDetails ocrText(String ocrText) {
+        this.setOcrText(ocrText);
+        return this;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return this.searchText;
+    }
+
+    public EventDetails searchText(String searchText) {
+        this.setSearchText(searchText);
+        return this;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public LocalDate getStartDate() {
@@ -1239,6 +1271,8 @@ public class EventDetails implements Serializable {
                 ", title='" + getTitle() + "'" +
                 ", caption='" + getCaption() + "'" +
                 ", description='" + getDescription() + "'" +
+                ", ocrText='" + getOcrText() + "'" +
+                ", searchText='" + getSearchText() + "'" +
                 ", startDate='" + getStartDate() + "'" +
                 ", endDate='" + getEndDate() + "'" +
                 ", promotionStartDate='" + getPromotionStartDate() + "'" +

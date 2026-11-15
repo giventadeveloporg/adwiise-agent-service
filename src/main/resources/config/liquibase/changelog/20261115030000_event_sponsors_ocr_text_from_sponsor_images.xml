@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261115030000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_sponsors"/>
+            <columnExists tableName="event_sponsors" columnName="ocr_text"/>
+            <not>
+                <columnExists tableName="event_sponsors" columnName="ocr_text_from_sponsor_images"/>
+            </not>
+        </preConditions>
+        <renameColumn
+            tableName="event_sponsors"
+            oldColumnName="ocr_text"
+            newColumnName="ocr_text_from_sponsor_images"
+            columnDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20261115030000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="event_sponsors" columnName="ocr_text_from_sponsor_images"/>
+        </preConditions>
+        <sql>
+            COMMENT ON COLUMN public.event_sponsors.ocr_text_from_sponsor_images IS
+                'Text read from the sponsor banner, logo, and hero images. Copied into search_text so visitors can find the sponsor by words on those images.';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

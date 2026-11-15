@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- event_details -->
+    <changeSet id="20261115020000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="ocr_text"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="ocr_text" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20261115020000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="search_text"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="search_text" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20261115020000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="event_details" columnName="search_text"/>
+        </preConditions>
+        <sql>
+            UPDATE public.event_details
+            SET search_text = lower(trim(regexp_replace(
+                concat_ws(' ', nullif(trim(title), ''), nullif(trim(caption), ''), nullif(trim(description), ''), nullif(trim(location), ''), nullif(trim(ocr_text), '')),
+                '\s+', ' ', 'g')))
+            WHERE search_text IS NULL OR btrim(search_text) = '';
+        </sql>
+    </changeSet>
+
+    <!-- gallery_album -->
+    <changeSet id="20261115020000-4" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <not><columnExists tableName="gallery_album" columnName="ocr_text"/></not>
+        </preConditions>
+        <addColumn tableName="gallery_album">
+            <column name="ocr_text" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20261115020000-5" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <not><columnExists tableName="gallery_album" columnName="search_text"/></not>
+        </preConditions>
+        <addColumn tableName="gallery_album">
+            <column name="search_text" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20261115020000-6" author="system">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="gallery_album" columnName="search_text"/>
+        </preConditions>
+        <sql>
+            UPDATE public.gallery_album
+            SET search_text = lower(trim(regexp_replace(
+                concat_ws(' ', nullif(trim(title), ''), nullif(trim(description), ''), nullif(trim(event_location), ''), nullif(trim(ocr_text), '')),
+                '\s+', ' ', 'g')))
+            WHERE search_text IS NULL OR btrim(search_text) = '';
+        </sql>
+    </changeSet>
+
+    <!-- focus_group -->
+    <changeSet id="20261115020000-7" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="focus_group"/>
+            <not><columnExists tableName="focus_group" columnName="ocr_text"/></not>
+        </preConditions>
+        <addColumn tableName="focus_group">
+            <column name="ocr_text" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20261115020000-8" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="focus_group"/>
+            <not><columnExists tableName="focus_group" columnName="search_text"/></not>
+        </preConditions>
+        <addColumn tableName="focus_group">
+            <column name="search_text" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20261115020000-9" author="system">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="focus_group" columnName="search_text"/>
+        </preConditions>
+        <sql>
+            UPDATE public.focus_group
+            SET search_text = lower(trim(regexp_replace(
+                concat_ws(' ', nullif(trim(name), ''), nullif(trim(slug), ''), nullif(trim(description), ''), nullif(trim(ocr_text), '')),
+                '\s+', ' ', 'g')))
+            WHERE search_text IS NULL OR btrim(search_text) = '';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

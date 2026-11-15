@@ -367,6 +367,10 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         dto.setShowSponsorsSectionInHomePage(true);
         dto.setEmail(r.contactEmail);
         dto.setPhoneNumber(request.getContactPhone());
+        String registrarNotes = request.getRegistrarNotes();
+        if (registrarNotes != null && !registrarNotes.isBlank()) {
+            dto.setRegistrarNotes(registrarNotes.trim());
+        }
         dto.setHomepageCacheVersion(0L);
         dto.setDisplayEventHeroImages(true);
         dto.setEnableGoogleAdsense(false);

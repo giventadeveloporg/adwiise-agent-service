@@ -64,6 +64,8 @@ public class EventSponsorsQueryService extends QueryService<EventSponsors> {
                     criteria.getDescription() != null
                         ? buildStringSpecification(criteria.getDescription(), EventSponsors_.description)
                         : null,
+                    criteria.getOcrText() != null ? buildStringSpecification(criteria.getOcrText(), EventSponsors_.ocrText) : null,
+                    criteria.getSearchText() != null ? buildStringSpecification(criteria.getSearchText(), EventSponsors_.searchText) : null,
                     criteria.getWebsiteUrl() != null ? buildStringSpecification(criteria.getWebsiteUrl(), EventSponsors_.websiteUrl) : null,
                     criteria.getContactEmail() != null
                         ? buildStringSpecification(criteria.getContactEmail(), EventSponsors_.contactEmail)

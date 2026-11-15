@@ -95,6 +95,12 @@ public class FocusGroupQueryService extends QueryService<FocusGroup> {
             if (criteria.getSlug() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getSlug(), FocusGroup_.slug));
             }
+            if (criteria.getOcrText() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getOcrText(), FocusGroup_.ocrText));
+            }
+            if (criteria.getSearchText() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getSearchText(), FocusGroup_.searchText));
+            }
             if (criteria.getIsActive() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsActive(), FocusGroup_.isActive));
             }

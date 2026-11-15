@@ -165,6 +165,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "email", length = 255)
     private String email;
 
+    @Column(name = "registrar_notes", columnDefinition = "text")
+    private String registrarNotes;
+
     @Size(max = 1024)
     @Column(name = "facebook_url", length = 1024)
     private String facebookUrl;
@@ -1394,6 +1397,19 @@ public class TenantSettings implements Serializable {
         this.email = email;
     }
 
+    public String getRegistrarNotes() {
+        return this.registrarNotes;
+    }
+
+    public TenantSettings registrarNotes(String registrarNotes) {
+        this.setRegistrarNotes(registrarNotes);
+        return this;
+    }
+
+    public void setRegistrarNotes(String registrarNotes) {
+        this.registrarNotes = registrarNotes;
+    }
+
     public String getFacebookUrl() {
         return this.facebookUrl;
     }
@@ -1666,6 +1682,7 @@ public class TenantSettings implements Serializable {
                 ", country='" + getCountry() + "'" +
                 ", stateProvince='" + getStateProvince() + "'" +
                 ", email='" + getEmail() + "'" +
+                ", registrarNotes='" + getRegistrarNotes() + "'" +
                 ", facebookUrl='" + getFacebookUrl() + "'" +
                 ", instagramUrl='" + getInstagramUrl() + "'" +
                 ", twitterUrl='" + getTwitterUrl() + "'" +

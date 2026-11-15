@@ -40,6 +40,12 @@ public class GalleryAlbum implements Serializable {
     @Column(name = "description", length = 2048)
     private String description;
 
+    @Column(name = "ocr_text_from_images_upload", columnDefinition = "text")
+    private String ocrText;
+
+    @Column(name = "search_text", columnDefinition = "text")
+    private String searchText;
+
     @Size(max = 2048)
     @Column(name = "cover_image_url", length = 2048)
     private String coverImageUrl;
@@ -136,6 +142,32 @@ public class GalleryAlbum implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOcrText() {
+        return this.ocrText;
+    }
+
+    public GalleryAlbum ocrText(String ocrText) {
+        this.setOcrText(ocrText);
+        return this;
+    }
+
+    public void setOcrText(String ocrText) {
+        this.ocrText = ocrText;
+    }
+
+    public String getSearchText() {
+        return this.searchText;
+    }
+
+    public GalleryAlbum searchText(String searchText) {
+        this.setSearchText(searchText);
+        return this;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     public String getCoverImageUrl() {
@@ -308,6 +340,8 @@ public class GalleryAlbum implements Serializable {
             ", tenantId='" + getTenantId() + "'" +
             ", title='" + getTitle() + "'" +
             ", description='" + getDescription() + "'" +
+            ", ocrText='" + getOcrText() + "'" +
+            ", searchText='" + getSearchText() + "'" +
             ", coverImageUrl='" + getCoverImageUrl() + "'" +
             ", isPublic='" + getIsPublic() + "'" +
             ", displayOrder=" + getDisplayOrder() +
