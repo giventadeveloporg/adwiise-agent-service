@@ -61,6 +61,7 @@ public class PlatformBillingPlanService {
         dto.setPublished(entity.getPublished());
         dto.setFeatureSummary(entity.getFeatureSummary());
         dto.setGraduatedTiersJson(entity.getGraduatedTiersJson());
+        dto.setRetailerTypeCode(entity.getRetailerTypeCode());
         dto.setStripeProductId(entity.getStripeProductId());
         dto.setStripePriceId(entity.getStripePriceId());
         dto.setCreatedAt(entity.getCreatedAt());
@@ -86,6 +87,7 @@ public class PlatformBillingPlanService {
         if (!partial || dto.getPublished() != null) entity.setPublished(dto.getPublished());
         if (!partial || dto.getFeatureSummary() != null) entity.setFeatureSummary(dto.getFeatureSummary());
         if (!partial || dto.getGraduatedTiersJson() != null) entity.setGraduatedTiersJson(dto.getGraduatedTiersJson());
+        if (!partial || dto.getRetailerTypeCode() != null) entity.setRetailerTypeCode(blankToNull(dto.getRetailerTypeCode()));
         if (!partial || dto.getStripeProductId() != null) entity.setStripeProductId(blankToNull(dto.getStripeProductId()));
         if (!partial || dto.getStripePriceId() != null) entity.setStripePriceId(blankToNull(dto.getStripePriceId()));
         if (dto.getCreatedAt() != null) entity.setCreatedAt(dto.getCreatedAt());

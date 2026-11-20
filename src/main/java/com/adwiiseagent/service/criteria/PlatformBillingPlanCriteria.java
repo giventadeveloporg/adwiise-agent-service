@@ -14,6 +14,7 @@ public class PlatformBillingPlanCriteria implements Serializable, Criteria {
     private StringFilter tenantId;
     private StringFilter product;
     private StringFilter code;
+    private StringFilter retailerTypeCode;
     private BooleanFilter published;
 
     public PlatformBillingPlanCriteria() {}
@@ -23,6 +24,7 @@ public class PlatformBillingPlanCriteria implements Serializable, Criteria {
         this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
         this.product = other.product == null ? null : other.product.copy();
         this.code = other.code == null ? null : other.code.copy();
+        this.retailerTypeCode = other.retailerTypeCode == null ? null : other.retailerTypeCode.copy();
         this.published = other.published == null ? null : other.published.copy();
     }
 
@@ -61,6 +63,14 @@ public class PlatformBillingPlanCriteria implements Serializable, Criteria {
 
     public void setCode(StringFilter code) {
         this.code = code;
+    }
+
+    public StringFilter getRetailerTypeCode() {
+        return retailerTypeCode;
+    }
+
+    public void setRetailerTypeCode(StringFilter retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public BooleanFilter getPublished() {

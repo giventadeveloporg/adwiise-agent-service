@@ -65,6 +65,10 @@ public class PlatformBillingPlan implements Serializable {
     @Column(name = "graduated_tiers_json")
     private String graduatedTiersJson;
 
+    @Size(max = 64)
+    @Column(name = "retailer_type_code", length = 64)
+    private String retailerTypeCode;
+
     @Size(max = 255)
     @Column(name = "stripe_product_id", length = 255)
     private String stripeProductId;
@@ -194,6 +198,14 @@ public class PlatformBillingPlan implements Serializable {
 
     public void setGraduatedTiersJson(String graduatedTiersJson) {
         this.graduatedTiersJson = graduatedTiersJson;
+    }
+
+    public String getRetailerTypeCode() {
+        return retailerTypeCode;
+    }
+
+    public void setRetailerTypeCode(String retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public String getStripeProductId() {

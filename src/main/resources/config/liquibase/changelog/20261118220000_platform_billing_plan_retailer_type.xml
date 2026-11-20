@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261118220000-1" author="adwiise">
+        <sql><![CDATA[
+            ALTER TABLE platform_billing_plan ADD COLUMN IF NOT EXISTS retailer_type_code character varying(64);
+            COMMENT ON COLUMN platform_billing_plan.retailer_type_code IS 'Shop pack this catalog price is limited to, such as GAS_STATION or LIQUOR_STORE. Empty means the plan applies to every retail pack. Event-site plans leave this empty.';
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

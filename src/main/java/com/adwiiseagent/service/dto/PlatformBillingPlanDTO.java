@@ -36,6 +36,10 @@ public class PlatformBillingPlanDTO implements Serializable {
     private Boolean published;
     private String featureSummary;
     private String graduatedTiersJson;
+
+    @Size(max = 64)
+    private String retailerTypeCode;
+
     private String stripeProductId;
     private String stripePriceId;
     private ZonedDateTime createdAt;
@@ -135,6 +139,14 @@ public class PlatformBillingPlanDTO implements Serializable {
 
     public void setGraduatedTiersJson(String graduatedTiersJson) {
         this.graduatedTiersJson = graduatedTiersJson;
+    }
+
+    public String getRetailerTypeCode() {
+        return retailerTypeCode;
+    }
+
+    public void setRetailerTypeCode(String retailerTypeCode) {
+        this.retailerTypeCode = retailerTypeCode;
     }
 
     public String getStripeProductId() {

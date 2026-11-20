@@ -52,6 +52,9 @@ public class PlatformBillingPlanQueryService {
                 if (criteria.getCode() != null && criteria.getCode().getEquals() != null) {
                     predicates.add(cb.equal(root.get("code"), criteria.getCode().getEquals()));
                 }
+                if (criteria.getRetailerTypeCode() != null && criteria.getRetailerTypeCode().getEquals() != null) {
+                    predicates.add(cb.equal(root.get("retailerTypeCode"), criteria.getRetailerTypeCode().getEquals()));
+                }
                 if (criteria.getPublished() != null && criteria.getPublished().getEquals() != null) {
                     predicates.add(cb.equal(root.get("published"), criteria.getPublished().getEquals()));
                 }
