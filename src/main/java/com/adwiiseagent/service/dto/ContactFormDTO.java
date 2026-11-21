@@ -44,6 +44,14 @@ public class ContactFormDTO implements Serializable {
     @Size(max = 50)
     private String emailType;
 
+    /**
+     * Optional inbox override. When set, the batch job sends the submission here
+     * instead of the address resolved from tenant_email_addresses.
+     */
+    @Email
+    @Size(max = 255)
+    private String toEmail;
+
     public String getFirstName() {
         return firstName;
     }
@@ -82,6 +90,14 @@ public class ContactFormDTO implements Serializable {
 
     public void setEmailType(String emailType) {
         this.emailType = emailType;
+    }
+
+    public String getToEmail() {
+        return toEmail;
+    }
+
+    public void setToEmail(String toEmail) {
+        this.toEmail = toEmail;
     }
 
     @Override

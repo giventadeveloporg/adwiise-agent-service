@@ -46,6 +46,9 @@ public class ContactFormServiceImpl implements ContactFormService {
         request.setMessageBody(contactFormDTO.getMessageBody());
         request.setSenderEmail(contactFormDTO.getSenderEmail());
         request.setEmailType(emailType);
+        if (contactFormDTO.getToEmail() != null && !contactFormDTO.getToEmail().isBlank()) {
+            request.setToEmail(contactFormDTO.getToEmail().trim());
+        }
         request.setSubmittedAtEpochMillis(System.currentTimeMillis());
 
         ContactFormEmailJobResponse response = contactFormBatchJobService.triggerContactFormEmailJob(request);
