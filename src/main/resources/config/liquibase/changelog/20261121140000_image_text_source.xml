@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261121140000-1" author="adwiise">
+        <sql><![CDATA[
+            ALTER TABLE event_sponsors ADD COLUMN IF NOT EXISTS image_text_source character varying(32);
+            ALTER TABLE event_details ADD COLUMN IF NOT EXISTS image_text_source character varying(32);
+            ALTER TABLE gallery_album ADD COLUMN IF NOT EXISTS image_text_source character varying(32);
+            ALTER TABLE focus_group ADD COLUMN IF NOT EXISTS image_text_source character varying(32);
+            COMMENT ON COLUMN event_sponsors.image_text_source IS 'BEDROCK after a vision model reads the images. Empty means the stored image text is still the old scanner output or has not been read.';
+            COMMENT ON COLUMN event_details.image_text_source IS 'BEDROCK after a vision model reads the images. Empty means the stored image text is still the old scanner output or has not been read.';
+            COMMENT ON COLUMN gallery_album.image_text_source IS 'BEDROCK after a vision model reads the cover. Empty means the stored image text is still the old scanner output or has not been read.';
+            COMMENT ON COLUMN focus_group.image_text_source IS 'BEDROCK after a vision model reads the cover. Empty means the stored image text is still the old scanner output or has not been read.';
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

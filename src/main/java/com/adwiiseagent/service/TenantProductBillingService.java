@@ -187,7 +187,11 @@ public class TenantProductBillingService {
         if (!partial || dto.getProduct() != null) entity.setProduct(dto.getProduct());
         if (!partial || dto.getChargeEnabled() != null) entity.setChargeEnabled(dto.getChargeEnabled());
         if (!partial || dto.getStatus() != null) entity.setStatus(dto.getStatus());
-        if (!partial || dto.getPlatformPlanId() != null) entity.setPlatformPlanId(dto.getPlatformPlanId());
+        if (Boolean.TRUE.equals(dto.getClearPlatformPlan())) {
+            entity.setPlatformPlanId(null);
+        } else if (!partial || dto.getPlatformPlanId() != null) {
+            entity.setPlatformPlanId(dto.getPlatformPlanId());
+        }
         if (Boolean.TRUE.equals(dto.getClearCustomFee())) {
             entity.setCustomFeeUsd(null);
         } else if (!partial || dto.getCustomFeeUsd() != null) {

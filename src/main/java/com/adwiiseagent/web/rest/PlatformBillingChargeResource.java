@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
@@ -93,6 +94,11 @@ public class PlatformBillingChargeResource {
         Page<PlatformBillingChargeDTO> page = queryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/totals")
+    public ResponseEntity<List<Map<String, Object>>> totals(PlatformBillingChargeCriteria criteria) {
+        return ResponseEntity.ok(queryService.totalsByStatus(criteria));
     }
 
     @GetMapping("/{id}")

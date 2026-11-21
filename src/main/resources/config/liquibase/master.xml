@@ -195,5 +195,6 @@
     <include file="config/liquibase/changelog/20261115040000_ocr_text_from_images_upload.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261115180000_tenant_settings_registrar_notes.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261118220000_platform_billing_plan_retailer_type.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261121140000_image_text_source.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

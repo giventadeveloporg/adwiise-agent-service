@@ -40,6 +40,8 @@ public class TenantProductBillingDTO implements Serializable {
 
     /** When true on a partial update, customFeeUsd is stored even if it is null. */
     private Boolean clearCustomFee;
+    /** When true on a partial update, platformPlanId is stored as null. */
+    private Boolean clearPlatformPlan;
     private Long organizationId;
     private String organizationStripeCustomerId;
     private BigDecimal organizationMonthlyFeeUsd;
@@ -220,6 +222,14 @@ public class TenantProductBillingDTO implements Serializable {
 
     public void setClearCustomFee(Boolean clearCustomFee) {
         this.clearCustomFee = clearCustomFee;
+    }
+
+    public Boolean getClearPlatformPlan() {
+        return clearPlatformPlan;
+    }
+
+    public void setClearPlatformPlan(Boolean clearPlatformPlan) {
+        this.clearPlatformPlan = clearPlatformPlan;
     }
 
     public Long getOrganizationId() {

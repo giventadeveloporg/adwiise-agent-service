@@ -42,6 +42,9 @@ public class PlatformBillingAssignmentEventQueryService {
             if (criteria.getOrganizationId() != null && criteria.getOrganizationId().getEquals() != null) {
                 predicates.add(cb.equal(root.get("organizationId"), criteria.getOrganizationId().getEquals()));
             }
+            if (criteria.getOrganizationId() != null && criteria.getOrganizationId().getIn() != null) {
+                predicates.add(root.get("organizationId").in(criteria.getOrganizationId().getIn()));
+            }
             if (criteria.getTenantId() != null && criteria.getTenantId().getEquals() != null) {
                 predicates.add(cb.equal(root.get("tenantId"), criteria.getTenantId().getEquals()));
             }
