@@ -24,7 +24,8 @@ public class ImageSearchTextResource {
     @PostMapping
     public ResponseEntity<Map<String, Object>> extract(@RequestBody ImageSearchTextRequest request) {
         int words = imageSearchTextService.refresh(request.entityType(), request.entityId());
-        return ResponseEntity.ok(Map.of("words", words, "imageTextSource", "BEDROCK"));
+        String source = words > 0 ? "BEDROCK" : "BEDROCK_NONE";
+        return ResponseEntity.ok(Map.of("words", words, "imageTextSource", source));
     }
 
     public record ImageSearchTextRequest(String entityType, Long entityId) {}

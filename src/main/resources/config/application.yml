@@ -264,6 +264,10 @@ aws:
     secret-key: ${AWS_SECRET_ACCESS_KEY:test-secret-key}
     region: ${AWS_REGION:us-east-2}
     bucket-name: ${AWS_S3_BUCKET_NAME:eventapp-media-bucket}
+  bedrock:
+    # Same model and region as the AI engine and Admin Help. Do not add a second model.
+    region: ${BEDROCK_REGION:us-east-1}
+    image-text-model-id: ${BEDROCK_MODEL_ID:us.anthropic.claude-sonnet-5-5}
 
 # ===================================================================
 # File upload configuration
