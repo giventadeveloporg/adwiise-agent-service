@@ -59,6 +59,12 @@ public class TenantOnboardingApproveDTO implements Serializable {
     private Boolean notifySubmitter;
 
     /**
+     * Organization chosen on the review screen. When set, the new tenant settings row is assigned
+     * to this organization instead of creating another one.
+     */
+    private Long sourceOrganizationId;
+
+    /**
      * Optional client organization that owns the new website after provisioning succeeds.
      * The new row keeps its own tenant id, domain, and satellite.
      */
@@ -177,6 +183,14 @@ public class TenantOnboardingApproveDTO implements Serializable {
 
     public void setNotifySubmitter(Boolean notifySubmitter) {
         this.notifySubmitter = notifySubmitter;
+    }
+
+    public Long getSourceOrganizationId() {
+        return sourceOrganizationId;
+    }
+
+    public void setSourceOrganizationId(Long sourceOrganizationId) {
+        this.sourceOrganizationId = sourceOrganizationId;
     }
 
     public Long getParentOrganizationId() {

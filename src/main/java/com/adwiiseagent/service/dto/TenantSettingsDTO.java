@@ -169,6 +169,12 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 1024)
     private String tiktokUrl;
 
+    @Size(max = 255)
+    private String tenantName;
+
+    @Size(max = 1024)
+    private String whatsappUrl;
+
     /** Git repository URL for the project that belongs to this tenant. */
     @Size(max = 1024)
     private String repositoryUrl;
@@ -733,6 +739,22 @@ public class TenantSettingsDTO implements Serializable {
         this.tiktokUrl = tiktokUrl;
     }
 
+    public String getTenantName() {
+        return tenantName;
+    }
+
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+    }
+
+    public String getWhatsappUrl() {
+        return whatsappUrl;
+    }
+
+    public void setWhatsappUrl(String whatsappUrl) {
+        this.whatsappUrl = whatsappUrl;
+    }
+
     public String getRepositoryUrl() {
         return repositoryUrl;
     }
@@ -1220,6 +1242,8 @@ public class TenantSettingsDTO implements Serializable {
                 ", linkedinUrl='" + getLinkedinUrl() + "'" +
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", tenantName='" + getTenantName() + "'" +
+                ", whatsappUrl='" + getWhatsappUrl() + "'" +
                 ", repositoryUrl='" + getRepositoryUrl() + "'" +
                 ", homepageCacheVersion=" + getHomepageCacheVersion() +
                 ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +

@@ -192,6 +192,14 @@ public class TenantSettings implements Serializable {
     @Column(name = "tiktok_url", length = 1024)
     private String tiktokUrl;
 
+    @Size(max = 255)
+    @Column(name = "tenant_name", length = 255)
+    private String tenantName;
+
+    @Size(max = 1024)
+    @Column(name = "whatsapp_url", length = 1024)
+    private String whatsappUrl;
+
     /** Git repository URL for the project that belongs to this tenant. Null when no dedicated repo exists. */
     @Size(max = 1024)
     @Column(name = "repository_url", length = 1024)
@@ -1488,6 +1496,32 @@ public class TenantSettings implements Serializable {
         this.tiktokUrl = tiktokUrl;
     }
 
+    public String getTenantName() {
+        return this.tenantName;
+    }
+
+    public TenantSettings tenantName(String tenantName) {
+        this.setTenantName(tenantName);
+        return this;
+    }
+
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+    }
+
+    public String getWhatsappUrl() {
+        return this.whatsappUrl;
+    }
+
+    public TenantSettings whatsappUrl(String whatsappUrl) {
+        this.setWhatsappUrl(whatsappUrl);
+        return this;
+    }
+
+    public void setWhatsappUrl(String whatsappUrl) {
+        this.whatsappUrl = whatsappUrl;
+    }
+
     public Long getHomepageCacheVersion() {
         return this.homepageCacheVersion;
     }
@@ -1689,6 +1723,8 @@ public class TenantSettings implements Serializable {
                 ", linkedinUrl='" + getLinkedinUrl() + "'" +
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", tenantName='" + getTenantName() + "'" +
+                ", whatsappUrl='" + getWhatsappUrl() + "'" +
                 ", repositoryUrl='" + getRepositoryUrl() + "'" +
                 ", homepageCacheVersion=" + getHomepageCacheVersion() +
                 ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +

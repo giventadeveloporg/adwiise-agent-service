@@ -193,6 +193,9 @@ public class TenantOnboardingProvisioningServiceImpl implements TenantOnboarding
         }
 
         Resolved r = resolve(request, in);
+        if (in.getSourceOrganizationId() != null) {
+            request.setSourceOrganizationId(in.getSourceOrganizationId());
+        }
         precheck(r, request.getId());
 
         ZonedDateTime now = ZonedDateTime.now();
